@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "19"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "20"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1178,6 +1178,87 @@ button:disabled { cursor: default; }
 .w3-shadow { background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0, 0, 0, 0.22), transparent 75%); }
 .w3-tip { position: absolute; left: 10px; right: 10px; bottom: 132px; margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--w3-ui); color: var(--w3-ui-ink); font-size: 13px; line-height: 1.35; text-align: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18); pointer-events: none; transition: opacity 0.4s ease; }
 .w3-tip.gone { opacity: 0; }
+/* Kilometerzähler: bleibt in beiden Themen ein dunkles Instrument mit Ziffernrollen */
+.odo { display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+.car .odo { align-self: flex-start; }
+button.odo { cursor: pointer; border-radius: 8px; }
+.odo-w { flex: none; display: inline-flex; align-items: stretch; gap: 2px; padding: 3px; border-radius: 6px; background: #0b1012; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.25); }
+.odo-c { display: grid; place-items: center; width: 16px; height: 23px; border-radius: 2px; background: linear-gradient(180deg, #030405 0%, #222b30 40%, #222b30 60%, #030405 100%); color: #f2f5f6; font: 700 14px/1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.odo-c.z, .odo.none .odo-c { color: #56636c; }
+.odo.est .odo-c:not(.z) { color: #c2cbd0; }
+.odo-u { align-self: center; padding: 0 4px; color: #aeb8be; font: 700 10px/1 var(--f-mono); letter-spacing: 0.04em; }
+.odo-s { display: flex; flex-direction: column; gap: 1px; font-size: 13px; line-height: 1.25; color: var(--muted); font-variant-numeric: tabular-nums; }
+.odo.big { gap: 12px; }
+.odo.big .odo-c { width: 23px; height: 33px; font-size: 20px; }
+.odo.big .odo-u { font-size: 12px; }
+/* .plan (Raumplan) gab dem Chip „Eingeplant“ ungewollt einen Rahmen */
+.wst.plan { border: 0; }
+.edt { color: var(--focus); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+/* Pickerl-Plakette */
+.pkb { flex: none; display: inline-flex; align-items: center; gap: 9px; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+button.pkb { cursor: pointer; border-radius: 28px; }
+.pk { flex: none; width: 46px; height: 46px; filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.28)); }
+.pkb.big .pk { width: 56px; height: 56px; }
+.pk .pk-bg { fill: #fbfaf5; }
+.pk .pk-ring { stroke: #b9c1c5; stroke-width: 3.4; }
+.pk-o .pk-ring { stroke: #2c7a4b; }
+.pk-b .pk-ring { stroke: #d9661f; }
+.pk-f .pk-ring { stroke: #b23a2a; }
+.pk-n .pk-ring { stroke-dasharray: 4 3.2; }
+.pk .pk-t { stroke: #8d979c; stroke-width: 1.5; stroke-linecap: round; }
+.pk .pk-h { fill: var(--surface); stroke: #6c7a83; stroke-width: 0.8; }
+.pk .pk-y { font-family: var(--f-display); font-weight: 800; font-size: 17px; fill: #172024; text-anchor: middle; }
+.pk-n .pk-y { fill: #8d979c; }
+.pk .pk-s { font-family: var(--f-mono); font-weight: 700; font-size: 6px; fill: #56636c; text-anchor: middle; }
+.pkb-t { display: flex; flex-direction: column; gap: 1px; font-size: 13px; line-height: 1.25; color: var(--muted); }
+.pkb-t b { color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+.pkst { font-weight: 700; }
+.pkst.b { color: var(--ro-text); }
+.pkst.f { color: var(--kaufen); }
+/* Verschleißbalken: wie viel vom Wechselintervall verbraucht ist, in Zehnteln */
+.wbar { --wbar-gap: var(--surface); position: relative; display: block; height: 10px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.wbar::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--wbar-gap) calc(10% - 2px) 10%); }
+.wbar-f { position: absolute; left: 0; top: 0; bottom: 0; background: var(--in); }
+.wbar.s-bald .wbar-f { background: var(--ro); }
+.wbar.s-faellig .wbar-f { background: var(--kaufen); }
+.wbar.s-offen .wbar-f { background: var(--muted); }
+.wbar.sm { height: 8px; }
+.wp .wbar { --wbar-gap: var(--bg); margin: 4px 0 3px; }
+.i-n .wbar { margin-top: 6px; }
+/* Autokarten */
+.car { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 14px 12px 18px; overflow: hidden; }
+.car::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--line); }
+.car.lvl-ok::before { background: var(--in); }
+.car.lvl-bald::before { background: var(--ro); }
+.car.lvl-faellig::before { background: var(--kaufen); }
+.car-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.car-tt { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.car-d { color: var(--muted); }
+.car-w { display: flex; flex-direction: column; gap: 6px; padding: 9px 11px 8px; border-radius: 9px; background: var(--bg); }
+.car-w .wbar { --wbar-gap: var(--bg); }
+.car-wn { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; font-size: 15px; line-height: 1.25; }
+.car-wx { font-size: 13px; line-height: 1.35; color: var(--muted); font-variant-numeric: tabular-nums; }
+.car-s { align-items: baseline; gap: 4px 14px; font-size: 13px; }
+.car-sum { margin-left: auto; }
+.car-f { font-family: var(--f-mono); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; padding: 2px 6px 1px; border-radius: 3px; background: var(--ro); color: var(--ro-ink); }
+.car-gauges { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 18px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); }
+.car-gauges .pk .pk-h { fill: var(--bg); }
+/* Als Nächstes (Startseite) */
+.nextup:empty { display: none; }
+.nu { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.nu-b { position: relative; width: 100%; display: flex; flex-direction: column; gap: 5px; padding: 11px 12px 11px 17px; text-align: left; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); overflow: hidden; }
+.nu-b::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--in); }
+.nu-b.lvl-bald::before { background: var(--ro); }
+.nu-b.lvl-faellig::before { background: var(--kaufen); }
+.nu-b.lvl-plan::before { background: var(--wb); }
+.nu-t { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.nu-c { min-width: 0; font-size: 13px; font-weight: 700; color: var(--muted); overflow-wrap: anywhere; }
+.nu-n { font-family: var(--f-display); font-weight: 800; font-size: 23px; line-height: 1.05; overflow-wrap: anywhere; }
+.nu-x { font-size: 13px; line-height: 1.35; color: var(--muted); font-variant-numeric: tabular-nums; }
+.wp-pk { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 4px 12px; }
+.wp-pkt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.wp-pk .pk { width: 52px; height: 52px; margin-top: 2px; }
+.wp-pk .pk .pk-h { fill: var(--bg); }
 </style>
 
 <div class="wrap">
@@ -1205,6 +1286,7 @@ button:disabled { cursor: default; }
       <button type="button" class="linkbtn" data-act="new-nocode">+ Artikel ohne Barcode anlegen</button>
     </div>
     <div class="chips" id="sumchips"></div>
+    <div class="block nextup" id="nextup"></div>
     <div class="block">
       <h2 class="sec">Zuletzt gebucht</h2>
       <ol class="log" id="recent"></ol>
@@ -2564,6 +2646,8 @@ button:disabled { cursor: default; }
       });
       setHTML(chips, chip('alle', total, 'Artikel') + chip('kaufen', kaufen, 'nachkaufen') + chip('holen', holen, 'von oben holen') + (leih ? chip('verliehen', leih, 'verliehen') : '') + (rueck ? chip('rueckgabe', rueck, 'Rückgabe bald') : '') + (warten ? chip('autos', warten, 'Teile warten auf Einbau', 'goto-autos') : ''));
     }
+    var nu = $('#nextup');
+    if (nu) setHTML(nu, nextUpHtml());
     var rec = $('#recent'), ents = allEntries().slice(0, 6);
     if (!S.daysReady) setHTML(rec, '<li class="empty">' + (S.conn === 'aus' ? 'Kein Verlauf verfügbar.' : 'Verlauf wird geladen …') + '</li>');
     else if (!ents.length) setHTML(rec, '<li class="empty">Noch keine Buchungen. Nach dem ersten Einlagern steht sie hier.</li>');
@@ -2854,20 +2938,9 @@ button:disabled { cursor: default; }
       html += carCard(p[0], p[1], false);
     });
     var orphan = pick(function (it) { return it.bereich === 'einbau' && !it.archiviert && (!it.fahrzeug || !S.cars.has(it.fahrzeug)) && stockOf(it) > 0; });
-    if (orphan.length) html += '<li><button type="button" class="car" data-act="filter-orphan"><span class="car-n">Ohne Auto</span><span class="car-ab none">kein Fach</span><span class="car-s"><span><b>' + orphan.length + '</b> Teile ohne Zuordnung</span></span></button></li>';
+    if (orphan.length) html += '<li><button type="button" class="car" data-act="filter-orphan"><span class="car-top"><span class="car-tt"><span class="car-n">Ohne Auto</span><span class="car-d">Einbauteile, die keinem Auto zugeordnet sind</span></span></span><span class="car-s"><span><b>' + orphan.length + '</b> Teile ohne Zuordnung</span></span></button></li>';
     S.cars.forEach(function (c, id) { if (c.archiviert) html += carCard(id, c, true); });
     setHTML(box, html || '<li class="empty big">Noch keine Autos. Lege für jedes Auto ein Fach an, dann landen seine Einbauteile dort.</li>');
-  }
-  function carCard(id, car, arch) {
-    var st = carStats(id), ab = carAbteil(id, car), det = carDetails(car, false);
-    var nRep = repList(id).filter(function (p) { return repOpen(p[1]); }).length;
-    var wd = arch ? [] : wartDue(id), nF = wd.filter(function (r) { return r.status === 'faellig' || r.over; }).length, nB = wd.length - nF;
-    return '<li><button type="button" class="car' + (arch ? ' arch' : '') + '" data-act="open-car" data-id="' + esc(id) + '">' +
-      '<span class="car-n">' + esc(car.name || 'Auto ohne Namen') + '</span>' +
-      '<span class="car-ab' + (ab ? '' : ' none') + '">' + (ab ? esc(ab) : 'kein Fach') + '</span>' +
-      (det ? '<span class="car-d">' + esc(det) + '</span>' : '') +
-      '<span class="car-s"><span>Arbeiten: <b>' + st.works.length + '</b></span>' + (nRep ? '<span>Anstehend: <b>' + nRep + '</b></span>' : '') + (nF ? '<span class="due">Wartung fällig: <b>' + nF + '</b></span>' : nB ? '<span>Wartung bald: <b>' + nB + '</b></span>' : '') + (function () { var pk = arch ? null : pickerlInfo(car); return pk ? '<span' + (pk.status !== 'ok' ? ' class="due"' : '') + '>Pickerl: <b>' + ymTxt(pk.due) + '</b></span>' : ''; })() + '<span>Teile wartend: <b>' + st.waitN + '</b></span><span>Gesamt: <b>' + eur(st.total) + '</b></span>' + (arch ? '<span>archiviert</span>' : '') + '</span>' +
-      '</button></li>';
   }
   function dayLabel(k) {
     var today = new Date(), y = new Date(); y.setDate(y.getDate() - 1);
@@ -3154,7 +3227,7 @@ button:disabled { cursor: default; }
       .catch(function (e) { var el = $('#label-err'); if (el) el.textContent = (e && e.message) || 'Etikett konnte nicht gezeichnet werden.'; });
   }
   function sheetCar(id, car) {
-    var st = carStats(id), dis = canWrite() ? '' : ' disabled', ab = carAbteil(id, car), cellId = carCellId(id), det = carDetails(car, true);
+    var st = carStats(id), dis = canWrite() ? '' : ' disabled', ab = carAbteil(id, car), cellId = carCellId(id), det = carDetails(car.archiviert ? car : Object.assign({}, car, { km: null }), true);
     var reps = repList(id).filter(function (p) { return repOpen(p[1]); }).sort(repSort);
     var repHtml = reps.map(function (p) {
       var r = p[1], x = repResearch(r), ps = x ? repPartsSum(x) : null, due = repDue(r);
@@ -3199,6 +3272,7 @@ button:disabled { cursor: default; }
       (ids.length ? '<p class="buy">' + ids.join(' · ') + '</p>' : '') +
       (car.notiz ? '<p class="buy">' + esc(car.notiz) + '</p>' : '') + '</div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      (car.archiviert ? '' : '<div class="car-gauges">' + odoHtml(car, true, canWrite() ? id : null) + (pickerlInfo(car) || !car.fremd ? pkBadge(car, canWrite() ? id : null) : '') + '</div>') +
       '<div class="tot' + (car.fremd && st.kauf === null ? '' : ' four') + '">' +
       (car.fremd && st.kauf === null ? '' : '<div><span>Kaufpreis</span><b>' + (st.kauf === null ? '–' : eur(st.kauf)) + '</b></div>') +
       '<div><span>Erledigt</span><b>' + eur(st.done) + '</b></div>' +
@@ -3498,7 +3572,7 @@ button:disabled { cursor: default; }
       groups += '<div class="rgroup"><h3 class="rgh"><span>' + esc(c ? (c.name || 'Auto ohne Namen') : 'Ohne Auto') + '</span>' + (c && c.fremd ? '<small>Fremdfahrzeug</small>' : '') + '</h3>' +
         (tt ? '<p class="rsum-l">' + esc(tt) + '</p>' : '') +
         (sug.length || pk ? '<ul class="wsug">' + (pk ? pkSugRow(k, pk) : '') + sug.map(function (r) {
-          return '<li><button type="button" class="wsug-b" data-act="wart-open" data-id="' + esc(k) + '"><span class="i-n">' + esc(r.p.name) + ' ' + wstHtml(r) + '<small>' + esc('Wartungsplan: ' + shortNext(r)) + '</small></span></button>' +
+          return '<li><button type="button" class="wsug-b" data-act="wart-open" data-id="' + esc(k) + '"><span class="i-n">' + esc(r.p.name) + ' ' + wstHtml(r) + '<small>' + esc('Wartungsplan: ' + shortNext(r)) + '</small>' + wbarHtml(r, S.cars.get(k), true) + '</span></button>' +
             (can ? '<button type="button" class="btn small" data-act="wart-plan" data-car="' + esc(k) + '" data-posten="' + esc(r.p.id) + '">Einplanen</button>' : '') + '</li>';
         }).join('') + '</ul>' : '') +
         (list.length ? '<ul class="reps">' + list.sort(repSort).map(repCard).join('') + '</ul>' : '') + '</div>';
@@ -3949,7 +4023,7 @@ button:disabled { cursor: default; }
     return (a === null || ck.km >= a - 20000) && (b === null || ck.km <= b + 20000);
   }
   function wpHtml(carId, w, r) {
-    var p = r.p, iv = r.iv, can = canWrite(), h = '<li class="wp s-' + (r.over ? 'faellig' : r.status) + '"><div class="wp-h"><span class="wp-n">' + esc(p.name) + '</span>' + wstHtml(r) + '</div>';
+    var p = r.p, iv = r.iv, can = canWrite(), h = '<li class="wp s-' + (r.over ? 'faellig' : r.status) + '"><div class="wp-h"><span class="wp-n">' + esc(p.name) + '</span>' + wstHtml(r) + '</div>' + wbarHtml(r, S.cars.get(carId));
     if (iv.own) {
       h += '<p class="wp-i"><b>Deine Vorgabe:</b> ' + esc(ivText(iv.km, iv.monate, iv.kmMax)) + '</p>';
       var mt = ivText(iv.man.km, iv.man.monate, null);
@@ -4004,8 +4078,9 @@ button:disabled { cursor: default; }
     var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Wartungsplan · ' + (car.fremd ? 'Fremdfahrzeug' : 'Auto') + '</p>' +
       '<h2 class="sh-title" id="sheet-title">' + esc(car.name || 'Auto ohne Namen') + '</h2>' +
       (w && w.motor && typeof w.motor === 'object' && w.motor.text ? '<p class="buy">' + esc(w.motor.text) + srcRefs(w, w.motor.quelle) + '</p>' : '') +
-      '<p class="buy">' + esc(kmLine) + (can ? ' · <button type="button" class="linkbtn inl" data-act="km-edit" data-id="' + esc(carId) + '">' + (numOrNull(car.km) === null ? 'eintragen' : 'aktualisieren') + '</button>' : '') + '</p></div>' +
-      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+      '</div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<div class="car-gauges">' + odoHtml(car, true, can ? carId : null) + '</div>';
     var rBtn = !can ? '' : busy ? '<button type="button" class="btn ghost" disabled>' + (S.wFiring === carId ? 'Wird gestartet …' : (wartDoc(carId) || {}).laeuft ? 'Recherche läuft …' : 'Auftrag abgelegt') + '</button>'
       : '<button type="button" class="btn' + (hasPlan ? ' ghost' : '') + '" data-act="wart-research" data-id="' + esc(carId) + '">' + (hasPlan ? 'Neu recherchieren' : 'Wartungsplan recherchieren') + '</button>';
     var msg = S.wMsg && S.wMsg.car === carId ? S.wMsg : st;
@@ -4073,7 +4148,7 @@ button:disabled { cursor: default; }
       '<button type="button" class="linkbtn" data-act="wart-open" data-id="' + esc(id) + '">Wartungsplan</button></div>';
     if (due.length) {
       h += '<ul class="works">' + due.slice(0, 4).map(function (r) {
-        return '<li><button type="button" class="wbtn" data-act="wart-open" data-id="' + esc(id) + '"><span class="i-n">' + esc(r.p.name) + '<small>' + esc(shortNext(r)) + '</small></span><span class="i-p">' + wstHtml(r) + '</span></button></li>';
+        return '<li><button type="button" class="wbtn" data-act="wart-open" data-id="' + esc(id) + '"><span class="i-n">' + esc(r.p.name) + '<small>' + esc(shortNext(r)) + '</small>' + wbarHtml(r, car, true) + '</span><span class="i-p">' + wstHtml(r) + '</span></button></li>';
       }).join('') + '</ul>';
       if (due.length > 4) h += '<p class="note">und ' + (due.length - 4) + ' weitere im Wartungsplan.</p>';
     } else if (rows.some(function (r) { return r.status === 'ok'; })) {
@@ -4746,11 +4821,11 @@ button:disabled { cursor: default; }
   function pickerlHtml(carId, car) {
     var pk = pickerlInfo(car), can = canWrite();
     var cls = pk ? (pk.status === 'faellig' || pk.status === 'ueber' ? ' s-faellig' : pk.status === 'bald' ? ' s-bald' : '') : '';
-    var h = '<div class="sh-sec"><h3 class="sec">Pickerl (§57a)</h3><ul class="wlist"><li class="wp' + cls + '">';
+    var h = '<div class="sh-sec"><h3 class="sec">Pickerl (§57a)</h3><ul class="wlist"><li class="wp wp-pk' + cls + '">' + pkSvg(pk) + '<div class="wp-pkt">';
     if (!pk) h += '<div class="wp-h"><span class="wp-n">Monat noch nicht eingetragen</span></div><p class="wp-l">Er steht gelocht auf der Plakette.</p>';
     else h += '<div class="wp-h"><span class="wp-n">Fällig ' + esc(ymTxt(pk.due)) + '</span>' + pkChip(pk) + '</div><p class="wp-l">' + esc(pkWindow(pk)) + srcRefs(PICKERL_Q, pk.neu ? [2] : [1]) + '</p>';
     if (can) h += '<div class="wp-a"><button type="button" class="linkbtn" data-act="pickerl-edit" data-id="' + esc(carId) + '">' + (pk ? 'Monat ändern' : 'Monat eintragen') + '</button></div>';
-    return h + '</li></ul></div>';
+    return h + '</div></li></ul></div>';
   }
   function openPickerlForm(carId) {
     if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
@@ -4916,7 +4991,7 @@ button:disabled { cursor: default; }
       act = 'data-act="open-rep" data-id="' + esc(e.id) + '"';
       chip = '<span class="wst plan">Arbeit</span>';
     }
-    return '<li><button type="button" class="wbtn" ' + act + '><span class="i-n">' + esc(e.carName + ': ' + e.title) + '<small>' + esc(zpSub(e)) + '</small></span><span class="i-p">' + chip + '</span></button></li>';
+    return '<li><button type="button" class="wbtn" ' + act + '><span class="i-n">' + esc(e.carName + ': ' + e.title) + '<small>' + esc(zpSub(e)) + '</small>' + (e.kind === 'wart' ? wbarHtml(e.r, S.cars.get(e.car), true) : '') + '</span><span class="i-p">' + chip + '</span></button></li>';
   }
   function sheetZeitplan() {
     var d = zeitplanData(), can = canWrite(), h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Arbeitsplanung · alle Autos</p>' +
@@ -5444,6 +5519,118 @@ button:disabled { cursor: default; }
     } else hint.textContent = '';
     w3Mount(L, g);
     if (S.mapHl && S.mapHl.lager === L && !S.mapHl.walked && S.tab === 'karte') { S.mapHl.walked = true; S.mapHl.scrolled = true; w3GoCell(S.mapHl.cell); }
+  }
+  /* ---------- Optik: Kilometerzähler, Pickerl-Plakette, Verschleißbalken, „Als Nächstes“ ---------- */
+  function odoHtml(car, big, editId) {
+    var c = curKmEst(car), km = c ? Math.max(0, Math.round(c.km)) : null, pts = kmPoints(car), lp = pts.length ? pts[pts.length - 1] : null;
+    var digits = km === null ? '------' : String(km).padStart(6, '0');
+    var lead = km === null ? 0 : Math.max(0, digits.length - String(km).length);
+    var cells = digits.split('').map(function (d, i) { return '<span class="odo-c' + (i < lead ? ' z' : '') + '">' + (d === '-' ? '–' : d) + '</span>'; }).join('');
+    var when = '', fix = '';
+    if (km === null) when = 'km-Stand fehlt';
+    else if (!c.est) when = isDay(car.kmDatum) ? 'Stand ' + datum(car.kmDatum) : 'aktueller Stand';
+    else if (lp && lp.d === car.kaufdatum && numOrNull(car.kaufKm) === lp.km) when = 'beim Kauf' + (kaufDate(car) ? ' ' + kaufDate(car) : '');
+    else when = 'zuletzt bekannt' + (lp ? ' ' + datum(lp.d) : '');
+    if (editId) fix = km === null ? 'Eintragen' : c.est ? 'Aktuellen eintragen' : 'Ändern';
+    var label = km === null ? 'Kilometerstand fehlt' : 'Kilometerstand ' + nf.format(km) + ' km, ' + when;
+    var inner = '<span class="odo-w" aria-hidden="true">' + cells + '<span class="odo-u">km</span></span>' +
+      '<span class="odo-s" aria-hidden="true"><span>' + esc(when) + '</span>' + (fix ? '<span class="edt">' + esc(fix) + '</span>' : '') + '</span>';
+    var cls = 'odo' + (big ? ' big' : '') + (km === null ? ' none' : '') + (c && c.est ? ' est' : '');
+    if (editId) return '<button type="button" class="' + cls + '" data-act="km-edit" data-id="' + esc(editId) + '" aria-label="' + esc(label + '. ' + fix) + '">' + inner + '</button>';
+    return '<span class="' + cls + '"><span class="vh">' + esc(label) + '</span>' + inner + '</span>';
+  }
+  /* Plakette wie am Auto: Jahr in der Mitte, Monate rundum wie auf einem Zifferblatt, der fällige Monat ist gelocht */
+  function pkSvg(pk) {
+    var st = pk ? (pk.status === 'ueber' || pk.status === 'faellig' ? 'f' : pk.status === 'bald' ? 'b' : 'o') : 'n';
+    var m = pk ? Number(pk.due.slice(5, 7)) : 0, h = '<svg class="pk pk-' + st + '" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><circle class="pk-bg" cx="24" cy="24" r="21.5"></circle><circle class="pk-ring" cx="24" cy="24" r="21.5" fill="none"></circle>';
+    for (var i = 1; i <= 12; i++) {
+      var a = (i % 12) / 12 * 2 * Math.PI - Math.PI / 2, co = Math.cos(a), si = Math.sin(a);
+      h += i === m ? '<circle class="pk-h" cx="' + (24 + co * 16.4).toFixed(2) + '" cy="' + (24 + si * 16.4).toFixed(2) + '" r="3"></circle>'
+        : '<line class="pk-t" x1="' + (24 + co * 15).toFixed(2) + '" y1="' + (24 + si * 15).toFixed(2) + '" x2="' + (24 + co * 18).toFixed(2) + '" y2="' + (24 + si * 18).toFixed(2) + '"></line>';
+    }
+    h += pk ? '<text class="pk-y" x="24" y="28.6">' + esc(pk.due.slice(2, 4)) + '</text><text class="pk-s" x="24" y="35.2">§57a</text>' : '<text class="pk-y" x="24" y="30">?</text>';
+    return h + '</svg>';
+  }
+  function pkLabel(pk) {
+    return pk ? 'Pickerl fällig ' + ymTxt(pk.due) + (pk.status === 'ueber' ? ', überfällig' : pk.status === 'faellig' ? ', jetzt fällig' : pk.status === 'bald' ? ', bald fällig' : '') : 'Pickerl-Monat fehlt';
+  }
+  function pkBadge(car, editId) {
+    var pk = pickerlInfo(car);
+    if (!editId) return '<span class="pkb"><span class="vh">' + esc(pkLabel(pk)) + '</span>' + pkSvg(pk) + '</span>';
+    var t = pk ? ymTxt(pk.due) : 'Monat fehlt';
+    var s = !pk ? '<span class="edt">Eintragen</span>' : pk.status === 'ok' ? '<span class="edt">Ändern</span>'
+      : '<span class="pkst ' + (pk.status === 'bald' ? 'b' : 'f') + '">' + (pk.status === 'ueber' ? 'überfällig' : pk.status === 'faellig' ? 'jetzt fällig' : 'bald fällig') + '</span>';
+    return '<button type="button" class="pkb big" data-act="pickerl-edit" data-id="' + esc(editId) + '" aria-label="' + esc(pkLabel(pk) + '. ' + (pk ? 'Ändern' : 'Eintragen')) + '">' + pkSvg(pk) +
+      '<span class="pkb-t" aria-hidden="true"><span>Pickerl</span><b>' + esc(t) + '</b>' + s + '</span></button>';
+  }
+  /* Wie viel vom Wechselintervall ist verbraucht (km oder Zeit, was knapper ist); ohne aktuellen km-Stand nur die Zeit */
+  function wartProg(r, car) {
+    if (!r || r.status === 'info' || !r.last) return null;
+    var fr = [], cur = curKmEst(car), today = dayNum(dayKey(new Date()));
+    if (r.lastKm && r.nextKm !== null && cur && !cur.est && r.nextKm > r.lastKm.km) fr.push((cur.km - r.lastKm.km) / (r.nextKm - r.lastKm.km));
+    if (r.last.datum && r.nextD) { var a = dayNum(r.last.datum), b = dayNum(r.nextD); if (b > a) fr.push((today - a) / (b - a)); }
+    return fr.length ? Math.max.apply(null, fr) : null;
+  }
+  function wbarHtml(r, car, small) {
+    var f = wartProg(r, car);
+    if (f === null) return '';
+    var st = r.over || f >= 1 || r.status === 'faellig' ? 'faellig' : r.status === 'bald' ? 'bald' : r.status === 'offen' ? 'offen' : 'ok', w = Math.max(0.03, Math.min(1, f));
+    var pc = Math.round(Math.max(0, f) * 100);
+    return '<span class="wbar s-' + st + (small ? ' sm' : '') + '"><span class="vh">' + esc((pc > 100 ? 'Intervall überschritten' : pc + ' Prozent des Intervalls vorbei')) + '</span><span class="wbar-f" style="width:' + (w * 100).toFixed(1) + '%"></span></span>';
+  }
+  function carTopWart(id, car) {
+    var rows = wartRows(id).filter(function (r) { return !r.plan && (r.status === 'faellig' || r.status === 'bald' || r.status === 'ok'); });
+    rows.forEach(function (r) { r._f = wartProg(r, car); });
+    rows.sort(function (a, b) { return (WRANK[a.over ? 'faellig' : a.status] - WRANK[b.over ? 'faellig' : b.status]) || ((a.over ? 0 : 1) - (b.over ? 0 : 1)) || ((b._f || 0) - (a._f || 0)) || a.i - b.i; });
+    return rows[0] || null;
+  }
+  function carLevel(id, car) {
+    var rank = { none: 0, ok: 1, bald: 2, faellig: 3 }, lv = 'none', pk = pickerlInfo(car);
+    var up = function (l) { if (rank[l] > rank[lv]) lv = l; };
+    wartRows(id).forEach(function (r) { if (r.plan) return; if (r.over || r.status === 'faellig') up('faellig'); else if (r.status === 'bald') up('bald'); else if (r.status === 'ok') up('ok'); });
+    if (pk) up(pk.status === 'ueber' || pk.status === 'faellig' ? 'faellig' : pk.status === 'bald' ? 'bald' : 'ok');
+    return lv;
+  }
+  function carCard(id, car, arch) {
+    var st = carStats(id), ab = carAbteil(id, car), det = carDetails(Object.assign({}, car, { km: null }), false);
+    var nRep = repList(id).filter(function (p) { return repOpen(p[1]); }).length;
+    var top = arch ? null : carTopWart(id, car), due = arch ? [] : wartDue(id), w = '';
+    var pk = arch ? null : pickerlInfo(car), showPk = !arch && (pk || !car.fremd);
+    var wr = top ? (top.over || top.status === 'faellig' ? 2 : top.status === 'bald' ? 1 : 0) : -1, pr = pk && pk.status !== 'ok' ? (pk.status === 'bald' ? 1 : 2) : 0;
+    if (pr && pr >= wr) {
+      w = '<span class="car-w"><span class="car-wn"><span>Pickerl (§57a)</span>' + pkChip(pk) + '</span><span class="car-wx">' +
+        esc('fällig ' + ymTxt(pk.due) + (pk.neu ? ', möglich ab ' + ymTxt(pk.from) : ', möglich bis ' + ymTxt(pk.to)) + (due.length ? ' · dazu ' + due.length + (due.length === 1 ? ' Wartungspunkt' : ' Wartungspunkte') : '')) + '</span></span>';
+    } else if (top) {
+      var more = due.filter(function (r) { return r.p.id !== top.p.id; }).length;
+      w = '<span class="car-w"><span class="car-wn"><span>' + esc(top.p.name) + '</span>' + wstHtml(top) + '</span>' + wbarHtml(top, car, true) +
+        '<span class="car-wx">' + esc(shortNext(top) + (more ? ' · dazu ' + more + (more === 1 ? ' weiterer Punkt' : ' weitere Punkte') : '')) + '</span></span>';
+    }
+    var foot = [];
+    if (ab) foot.push('<span class="car-f">Fach ' + esc(ab) + '</span>');
+    if (st.works.length) foot.push('<span>Arbeiten <b>' + st.works.length + '</b></span>');
+    if (nRep) foot.push('<span>Anstehend <b>' + nRep + '</b></span>');
+    if (st.waitN) foot.push('<span>Teile wartend <b>' + st.waitN + '</b></span>');
+    if (arch) foot.push('<span>archiviert</span>');
+    foot.push('<span class="car-sum">Gesamt <b>' + esc(eur(st.total)) + '</b></span>');
+    return '<li><button type="button" class="car lvl-' + (arch ? 'none' : carLevel(id, car)) + (arch ? ' arch' : '') + '" data-act="open-car" data-id="' + esc(id) + '">' +
+      '<span class="car-top"><span class="car-tt"><span class="car-n">' + esc(car.name || 'Auto ohne Namen') + '</span>' + (det ? '<span class="car-d">' + esc(det) + '</span>' : '') + '</span>' +
+      (showPk ? pkBadge(car, null) : '') + '</span>' +
+      (arch ? '' : odoHtml(car, false, null)) + w +
+      '<span class="car-s">' + foot.join('') + '</span></button></li>';
+  }
+  function nextUpHtml() {
+    if (!S.carsReady || !S.repsReady || !S.wartReady || !S.itemsReady || !S.cars.size) return '';
+    var d = zeitplanData(), list = d.ev.slice(0, 3);
+    if (!list.length) return '';
+    return '<div class="vhead"><h2 class="sec">Als Nächstes</h2><button type="button" class="linkbtn" data-act="zeitplan">Zeitplan</button></div><ul class="nu">' + list.map(function (e) {
+      var car = S.cars.get(e.car), bar = e.kind === 'wart' && car ? wbarHtml(e.r, car, true) : '';
+      var chip = e.kind === 'wart' ? wstHtml(e.r) : e.kind === 'pickerl' ? pkChip(e.pk) : '<span class="wst plan">Arbeit</span>';
+      var act = e.kind === 'rep' ? 'data-act="open-rep" data-id="' + esc(e.id) + '"' : e.kind === 'wart' && e.plan && S.reps.has(e.plan) ? 'data-act="open-rep" data-id="' + esc(e.plan) + '"' : 'data-act="wart-open" data-id="' + esc(e.car) + '"';
+      var lv = e.now || (e.kind === 'wart' && (e.r.over || e.r.status === 'faellig')) || (e.kind === 'pickerl' && (e.pk.status === 'faellig' || e.pk.status === 'ueber')) ? 'faellig'
+        : (e.kind === 'wart' && e.r.status === 'bald') || (e.kind === 'pickerl' && e.pk.status === 'bald') ? 'bald' : e.kind === 'rep' ? 'plan' : 'ok';
+      return '<li><button type="button" class="nu-b lvl-' + lv + '" ' + act + '><span class="nu-t"><span class="nu-c">' + esc(e.carName) + '</span>' + chip + '</span>' +
+        '<span class="nu-n">' + esc(e.title) + '</span>' + bar + '<span class="nu-x">' + esc(zpSub(e)) + '</span></button></li>';
+    }).join('') + '</ul>';
   }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
