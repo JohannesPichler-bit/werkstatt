@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "18.1"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "19"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1079,6 +1079,105 @@ button:disabled { cursor: default; }
   .scanbtn:active, .act:active { transform: none; }
   .cell.hl { animation: none; }
 }
+/* 3D-Rundgang durchs Lager */
+:root {
+  --w3-sky: linear-gradient(180deg, #7d878c 0%, #a9b2b6 46%, #8d969a 50%, #b9c1c4 100%);
+  --w3-wall: linear-gradient(180deg, #a3acb0 0%, #b9c1c5 70%, #9aa3a8 100%);
+  --w3-wall-s: linear-gradient(180deg, #949da2 0%, #aab2b6 70%, #8c959a 100%);
+  --w3-floor: #c3c9cc; --w3-floor-line: rgba(40, 52, 58, 0.13);
+  --w3-board-t: linear-gradient(180deg, #e3e7e9, #cfd5d8); --w3-board-b: #8f989d;
+  --w3-back: #b7bfc3; --w3-back-dot: rgba(23, 32, 36, 0.22);
+  --w3-tag: #ffffff; --w3-tag-ink: #172024; --w3-sign: #172024; --w3-sign-ink: #ffffff;
+  --w3-ui: rgba(248, 249, 250, 0.9); --w3-ui-ink: #172024; --w3-shade: rgba(10, 16, 20, 0.3);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --w3-sky: linear-gradient(180deg, #070a0c 0%, #141b1f 46%, #0d1215 50%, #192024 100%);
+    --w3-wall: linear-gradient(180deg, #11171a 0%, #1b2327 70%, #12181b 100%);
+    --w3-wall-s: linear-gradient(180deg, #0d1215 0%, #161d21 70%, #0f1417 100%);
+    --w3-floor: #1e262a; --w3-floor-line: rgba(227, 232, 235, 0.07);
+    --w3-board-t: linear-gradient(180deg, #46525a, #37424a); --w3-board-b: #232b30;
+    --w3-back: #2a3338; --w3-back-dot: rgba(0, 0, 0, 0.4);
+    --w3-tag: #e3e8eb; --w3-tag-ink: #111618; --w3-sign: #e3e8eb; --w3-sign-ink: #111618;
+    --w3-ui: rgba(25, 32, 36, 0.88); --w3-ui-ink: #e3e8eb; --w3-shade: rgba(0, 0, 0, 0.45);
+  }
+}
+:root[data-theme="dark"] {
+  --w3-sky: linear-gradient(180deg, #070a0c 0%, #141b1f 46%, #0d1215 50%, #192024 100%);
+  --w3-wall: linear-gradient(180deg, #11171a 0%, #1b2327 70%, #12181b 100%);
+  --w3-wall-s: linear-gradient(180deg, #0d1215 0%, #161d21 70%, #0f1417 100%);
+  --w3-floor: #1e262a; --w3-floor-line: rgba(227, 232, 235, 0.07);
+  --w3-board-t: linear-gradient(180deg, #46525a, #37424a); --w3-board-b: #232b30;
+  --w3-back: #2a3338; --w3-back-dot: rgba(0, 0, 0, 0.4);
+  --w3-tag: #e3e8eb; --w3-tag-ink: #111618; --w3-sign: #e3e8eb; --w3-sign-ink: #111618;
+  --w3-ui: rgba(25, 32, 36, 0.88); --w3-ui-ink: #e3e8eb; --w3-shade: rgba(0, 0, 0, 0.45);
+}
+.viewseg { grid-template-columns: 1fr 1fr; }
+.viewseg button { min-height: 36px; font-size: 14px; }
+#map-hint:empty { display: none; }
+.viewseg button.on { border-color: var(--ink); background: var(--surface-2); }
+.w3 { position: relative; height: clamp(320px, 58vh, 620px); margin-inline: -16px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; background: var(--w3-sky); outline: none; cursor: grab; }
+.w3:active { cursor: grabbing; }
+.w3:focus-visible { box-shadow: inset 0 0 0 3px var(--focus); }
+@media (min-width: 700px) { .w3 { margin-inline: 0; border-radius: 14px; border: 1px solid var(--line); } }
+.w3::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 85% 75% at 50% 52%, transparent 60%, var(--w3-shade) 100%); }
+.w3-ro { --w3-frame: var(--ro); --w3-frame-d: #a84c12; }
+.w3-wb { --w3-frame: var(--wb); --w3-frame-d: #17467d; }
+.w3-cam { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+.w3-g { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
+.w3-x { position: absolute; left: 0; top: 0; transform-origin: 0 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-sizing: border-box; }
+.w3-floor { background: var(--w3-floor); box-shadow: inset 0 0 0 1px var(--w3-floor-line); }
+.w3-stripe { background: repeating-linear-gradient(45deg, #e8b400 0 12px, #1c1c1c 12px 24px); opacity: 0.85; }
+.w3-wall { background: var(--w3-wall); }
+.w3-wall-s { background: var(--w3-wall-s); }
+.w3-back { backface-visibility: visible; -webkit-backface-visibility: visible; background-color: var(--w3-back); background-image: radial-gradient(var(--w3-back-dot) 1.3px, transparent 1.8px); background-size: 10px 10px; }
+.w3-side { backface-visibility: visible; -webkit-backface-visibility: visible; background:
+  linear-gradient(90deg, var(--w3-frame) 0 11%, transparent 11% 89%, var(--w3-frame) 89% 100%),
+  repeating-linear-gradient(56deg, transparent 0 58px, var(--w3-frame-d) 58px 63px, transparent 63px 116px); }
+.w3-post { background: linear-gradient(90deg, var(--w3-frame-d), var(--w3-frame) 40%, var(--w3-frame)); }
+.w3-beam { background: linear-gradient(180deg, var(--w3-frame) 0 70%, var(--w3-frame-d) 100%); }
+.w3-bt0 { background: var(--w3-board-t); }
+.w3-bb0 { background: var(--w3-board-b); }
+.w3-div { backface-visibility: visible; -webkit-backface-visibility: visible; background: rgba(140, 150, 156, 0.55); border-inline: 1px solid rgba(0, 0, 0, 0.12); }
+.w3-sign { display: flex; align-items: center; justify-content: center; border-radius: 4px; background: var(--w3-sign); color: var(--w3-sign-ink); font-family: var(--f-display); font-weight: 800; font-size: 30px; line-height: 1; letter-spacing: 0.04em; }
+.w3-tag { display: flex; align-items: center; gap: 4px; padding: 0 5px; border-radius: 2px; background: var(--w3-tag); color: var(--w3-tag-ink); font-family: var(--f-mono); font-weight: 700; font-size: 10px; line-height: 1; white-space: nowrap; overflow: hidden; }
+.w3-tag i { flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--line); }
+.w3-tag.z-verbrauch i { background: var(--z-verbrauch-mid); } .w3-tag.z-werkzeug i { background: var(--z-werkzeug-mid); } .w3-tag.z-einbau i { background: var(--z-einbau-mid); }
+.w3-tag b { margin-left: auto; padding: 0 3px; border-radius: 2px; background: var(--w3-tag-ink); color: var(--w3-tag); font-size: 9px; }
+.w3-box { border: 1px solid rgba(0, 0, 0, 0.18); }
+.w3-box.z-verbrauch { background: var(--z-verbrauch); color: var(--z-verbrauch-ink); } .w3-box.z-werkzeug { background: var(--z-werkzeug); color: var(--z-werkzeug-ink); } .w3-box.z-einbau { background: var(--z-einbau); color: var(--z-einbau-ink); }
+.w3-bt { background-image: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)); }
+.w3-bs { background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)); }
+.w3-bf { display: flex; align-items: flex-start; padding: 3px 4px; border-top: 6px solid rgba(0, 0, 0, 0.16); font-family: var(--f-body); font-weight: 700; font-size: 9px; line-height: 1.15; overflow: hidden; }
+.w3-bf span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.w3-more { display: flex; align-items: center; justify-content: center; border-radius: 3px; background: var(--w3-sign); color: var(--w3-sign-ink); font: 700 10px/1 var(--f-mono); }
+.w3-slot { padding: 0; margin: 0; border: 0; border-radius: 2px; background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.w3-slot:hover { background: rgba(255, 255, 255, 0.08); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35); }
+.w3-slot:focus-visible { outline: none; box-shadow: inset 0 0 0 4px var(--focus); }
+.w3-slot.match { background: rgba(31, 93, 166, 0.16); box-shadow: inset 0 0 0 4px var(--focus); }
+.w3-slot.dim { background: rgba(8, 12, 14, 0.42); }
+.w3-slot.hl { box-shadow: inset 0 0 0 5px var(--kaufen); animation: w3pulse 0.9s ease-in-out 5; }
+@keyframes w3pulse { 50% { background: rgba(178, 58, 42, 0.28); } }
+.w3-ui { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.w3-go { position: absolute; left: 0; right: 100px; top: 0; display: flex; flex-wrap: nowrap; gap: 6px; padding: 10px; overflow-x: auto; scrollbar-width: none; pointer-events: auto; touch-action: pan-x; }
+.w3-go::-webkit-scrollbar { display: none; }
+.w3-chip { flex: none; pointer-events: auto; min-height: 32px; padding: 0 11px; border-radius: 16px; border: 1px solid var(--line); background: var(--w3-ui); color: var(--w3-ui-ink); font: 700 13px/1 var(--f-mono); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.w3-chip.w3-hit { border-color: var(--focus); color: var(--focus); }
+.w3-chip.none { display: inline-flex; align-items: center; font-family: var(--f-body); font-weight: 400; }
+.w3-mini { position: absolute; right: 10px; top: 10px; border-radius: 10px; background: var(--w3-ui); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
+.w3-mini rect { fill: var(--w3-frame); opacity: 0.85; }
+.w3-mini text { fill: #fff; font: 700 7px/1 var(--f-mono); text-anchor: middle; }
+.w3-mini path { fill: var(--focus); }
+.w3-mini .w3-me-r { fill: var(--focus); opacity: 0.18; }
+.w3-pad { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(2, 50px); gap: 6px; pointer-events: none; }
+.w3-pb { pointer-events: auto; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--line); background: var(--w3-ui); color: var(--w3-ui-ink); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); touch-action: none; -webkit-tap-highlight-color: transparent; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.w3-pb:active { background: var(--ink); color: var(--bg); }
+.w3-pb svg { width: 26px; height: 26px; fill: currentColor; }
+.w3-pb.f { grid-column: 2; grid-row: 1; } .w3-pb.l { grid-column: 1; grid-row: 2; } .w3-pb.b { grid-column: 2; grid-row: 2; } .w3-pb.r { grid-column: 3; grid-row: 2; }
+@media (prefers-reduced-motion: reduce) { .w3-slot.hl { animation: none; } }
+.w3-shadow { background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0, 0, 0, 0.22), transparent 75%); }
+.w3-tip { position: absolute; left: 10px; right: 10px; bottom: 132px; margin: 0; padding: 8px 12px; border-radius: 10px; background: var(--w3-ui); color: var(--w3-ui-ink); font-size: 13px; line-height: 1.35; text-align: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18); pointer-events: none; transition: opacity 0.4s ease; }
+.w3-tip.gone { opacity: 0; }
 </style>
 
 <div class="wrap">
@@ -1129,6 +1228,7 @@ button:disabled { cursor: default; }
         <button type="button" data-act="map-lager" data-lager="ro" aria-pressed="true">Regal oben</button>
         <button type="button" data-act="map-lager" data-lager="wb" aria-pressed="false">Werkbank</button>
       </div>
+      <div class="lagerseg viewseg" id="map-view" role="group" aria-label="Ansicht"><button type="button" data-act="map-view" data-view="3d" aria-pressed="true">3D-Rundgang</button><button type="button" data-act="map-view" data-view="plan" aria-pressed="false">Plan</button></div>
       <label class="vh" for="mq">Auf der Karte suchen</label>
       <input id="mq" type="search" placeholder="Was suchst du? z. B. Bremsenreiniger" autocomplete="off" spellcheck="false">
       <div class="map-actions"><p class="hint" id="map-hint"></p><button type="button" class="linkbtn" data-act="inv-overview" id="map-inv" hidden>Inventur</button><button type="button" class="linkbtn" data-act="map-edit" id="map-edit" hidden>Karte bearbeiten</button></div>
@@ -1244,7 +1344,7 @@ button:disabled { cursor: default; }
     layoutReady: false, layouts: { wb: null, ro: null }, cellMap: { wb: new Map(), ro: new Map() }, regalMap: { wb: new Map(), ro: new Map() },
     days: [], daysReady: false,
     tab: 'scan', filter: 'alle', fq: '',
-    mapLager: lsGet('mapLager') === 'wb' ? 'wb' : 'ro', mapEdit: false, mapQ: '', mapHl: null, mapSel: { ro: lsGet('mapSel.ro'), wb: lsGet('mapSel.wb') },
+    mapLager: lsGet('mapLager') === 'wb' ? 'wb' : 'ro', mapView: lsGet('mapView') === 'plan' ? 'plan' : '3d', mapViewPrev: null, mapEdit: false, mapQ: '', mapHl: null, mapSel: { ro: lsGet('mapSel.ro'), wb: lsGet('mapSel.wb') },
     sheet: null, pending: null,
     lager: lsGet('lager') === 'ro' ? 'ro' : 'wb',
     menge: 1, busy: false, toastUndo: null, undoArm: 0
@@ -2695,6 +2795,7 @@ button:disabled { cursor: default; }
   function renderKarte() {
     var L = S.mapLager, box = $('#map'), hint = $('#map-hint'), eb = $('#map-edit');
     $$('#map-lager button').forEach(function (b) { var on = b.dataset.lager === L; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    $$('#map-view button').forEach(function (b) { var on = b.dataset.view === (S.mapEdit ? 'plan' : S.mapView); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     var ae = document.activeElement;
     if (ae && box.contains(ae) && ae.tagName === 'INPUT') return;
     var lay = S.layouts[L], edit = S.mapEdit && !!lay && canWrite();
@@ -2710,6 +2811,7 @@ button:disabled { cursor: default; }
     if (!lay) { setHTML(box, setupCard(L)); hint.textContent = ''; return; }
     if (S.mapHl && S.mapHl.until <= Date.now()) S.mapHl = null;
     var idx = cellIndex(L), q = S.mapQ.trim(), sel = selRegal(L);
+    if (S.mapView === '3d' && !edit) { w3Render(L, lay, idx, q, box, hint); return; }
     if (S.mapHl && S.mapHl.lager === L) {
       var hi = cellInfo(L, S.mapHl.cell);
       if (hi) sel = hi.regal.id;
@@ -5048,6 +5150,301 @@ button:disabled { cursor: default; }
     if (!S.layoutReady || !S.itemsReady) { toast('Lädt noch, gleich nochmal.'); return; }
     openSheet('invoverview', {}, sheetInvOverview());
   }
+  /* ---------- Karte als 3D-Rundgang (CSS 3D, Maße in cm) ---------- */
+  var W3C = { W: 100, D: 45, H: 200, G: 150, EYE: 165, BASE: 12, POST: 5, BEAM: 8, T: 3, GAP: 6, ROOM: 260 };
+  var W3 = { k: 2.4, P: 400, x: null, z: null, yaw: 90, pitch: 8, hold: null, keys: {}, anim: null, raf: 0, last: 0, geo: null, L: null, drag: null, noClick: 0, mini: null, bound: false };
+  function w3r(n) { return Math.round(n * 10) / 10; }
+  function w3T(x, y, z, rot) { var k = W3.k; return 'translate3d(' + w3r(x * k) + 'px,' + w3r(y * k) + 'px,' + w3r(z * k) + 'px)' + (rot ? ' ' + rot : ''); }
+  function w3F(cls, w, h, tf, inner) {
+    var k = W3.k;
+    return '<div class="w3-x ' + cls + '" style="width:' + w3r(w * k) + 'px;height:' + w3r(h * k) + 'px;transform:' + tf + '">' + (inner || '') + '</div>';
+  }
+  function w3Geo(lay) {
+    var c = W3C, g = { rows: [], regs: [], cells: new Map(), gangs: [], x1: 0, z0: 0, z1: 0 }, z = 0;
+    layReihen(lay).forEach(function (rh, ri) {
+      if (ri > 0) { g.gangs.push({ zc: z + c.G / 2 }); z += c.G; }
+      var face = ri === 0 ? 1 : -1, zF = face === 1 ? z + c.D : z, zB = face === 1 ? z : z + c.D, x = 0;
+      arr(rh.regale).forEach(function (rg, gi) {
+        var ets = arr(rg.etagen), maxc = 1;
+        ets.forEach(function (et) { maxc = Math.max(maxc, arr(et.faecher).length); });
+        var w = Math.max(c.W, Math.min(8, maxc) * 50), n = ets.length, lh = n ? (c.H - c.BASE) / n : 0;
+        var R = { rg: rg, rh: rh, ri: ri, gi: gi, x0: x, x1: x + w, w: w, zF: zF, zB: zB, face: face, lh: lh };
+        g.regs.push(R);
+        ets.forEach(function (et, ei) {
+          var cells = arr(et.faecher), m = cells.length, cw = m ? (w - 2 * c.POST) / m : 0, yb = c.BASE + (n - 1 - ei) * lh;
+          var oh = ei === 0 ? c.H - 6 - yb : lh - c.BEAM;
+          cells.forEach(function (cl, j) {
+            var lx = c.POST + (j + 0.5) * cw;
+            g.cells.set(cl.id, { R: R, cell: cl, wx: face === 1 ? x + lx : x + w - lx, yc: yb + oh / 2 });
+          });
+        });
+        x += w + c.GAP;
+      });
+      var x1 = Math.max(0, x - c.GAP);
+      g.rows.push({ ri: ri, x0: 0, x1: x1, zF: zF, face: face, z0: Math.min(zF, zB), z1: Math.max(zF, zB) });
+      g.x1 = Math.max(g.x1, x1);
+      z += c.D;
+    });
+    if (g.rows.length === 1) { g.gangs.push({ zc: g.rows[0].z1 + c.G / 2 }); z += c.G; }
+    g.z1 = z;
+    g.bx0 = -c.ROOM + 40; g.bx1 = g.x1 + c.ROOM - 40; g.bz0 = g.z0 - 160; g.bz1 = g.z1 + 160;
+    return g;
+  }
+  function w3Items(items, x0, cw, yb, oh) {
+    var c = W3C, list = items.slice(0, 4), n = list.length, h = '';
+    if (!n) return '';
+    var gap = 3, bw = Math.max(8, Math.min(26, (cw - 8 - gap * (n - 1)) / n)), bh = Math.max(8, Math.min(22, oh - 10)), bd = Math.min(30, c.D - 12);
+    var sx = x0 + (cw - (n * bw + (n - 1) * gap)) / 2, zf = -6;
+    list.forEach(function (p, i) {
+      var it = p[1], z = it.bereich === 'werkzeug' ? 'werkzeug' : it.bereich === 'einbau' ? 'einbau' : 'verbrauch', bx = sx + i * (bw + gap), top = -(yb + bh);
+      h += w3F('w3-box w3-bt z-' + z, bw, bd, w3T(bx, top, zf - bd, 'rotateX(90deg)'));
+      h += w3F('w3-box w3-bs z-' + z, bd, bh, w3T(bx, top, zf - bd, 'rotateY(-90deg)'));
+      h += w3F('w3-box w3-bs z-' + z, bd, bh, w3T(bx + bw, top, zf, 'rotateY(90deg)'));
+      h += w3F('w3-box w3-bf z-' + z, bw, bh, w3T(bx, top, zf), '<span>' + esc(itemName(it).slice(0, 40)) + '</span>');
+    });
+    if (items.length > n) h += w3F('w3-more', 16, 8, w3T(x0 + cw - 18, -(yb + 9), -3), '+' + (items.length - n));
+    return h;
+  }
+  function w3Regal(L, R, idx, q) {
+    var c = W3C, w = R.w, rg = R.rg, ets = arr(rg.etagen), n = ets.length, lh = R.lh;
+    var h = '<div class="w3-g" style="transform:' + (R.face === 1 ? w3T(R.x0, 0, R.zF) : w3T(R.x1, 0, R.zF, 'rotateY(180deg)')) + '">';
+    h += w3F('w3-back', w, c.H, w3T(0, -c.H, -c.D));
+    h += w3F('w3-side', c.D, c.H, w3T(0, -c.H, 0, 'rotateY(90deg)'));
+    h += w3F('w3-side', c.D, c.H, w3T(w, -c.H, 0, 'rotateY(90deg)'));
+    h += w3F('w3-post', c.POST, c.H, w3T(0, -c.H, 0.6));
+    h += w3F('w3-post', c.POST, c.H, w3T(w - c.POST, -c.H, 0.6));
+    h += w3F('w3-beam', w, 6, w3T(0, -c.H, 0.8));
+    h += w3F('w3-sign', 36, 17, w3T(w / 2 - 18, -c.H - 19, 0.8), '<b>' + esc(rg.code || '?') + '</b>');
+    ets.forEach(function (et, ei) {
+      var cells = arr(et.faecher), m = cells.length, cw = m ? (w - 2 * c.POST) / m : 0, yb = c.BASE + (n - 1 - ei) * lh;
+      var oh = ei === 0 ? c.H - 6 - yb : lh - c.BEAM;
+      h += w3F('w3-bt0', w - 2, c.D - 2, w3T(1, -yb, -c.D + 1, 'rotateX(90deg)'));
+      h += w3F('w3-bb0', w - 2, c.D - 2, w3T(1, -yb + c.T, -1, 'rotateX(-90deg)'));
+      h += w3F('w3-beam', w, c.BEAM, w3T(0, -yb, 1));
+      if (!m) h += w3F('w3-tag z-frei', 30, 6, w3T(c.POST + 2, -yb + 1, 1.6), '<span>Etage ' + esc(et.nr) + '</span>');
+      cells.forEach(function (cl, j) {
+        var x0 = c.POST + j * cw, e = idx.get(cl.id), items = e ? e.items : [], z = zoneOf(cl);
+        var hits = q ? items.filter(function (p) { return matchQ(p[1], q); }) : [];
+        var hl = S.mapHl && S.mapHl.lager === L && S.mapHl.cell === cl.id && S.mapHl.until > Date.now();
+        h += w3F('w3-tag z-' + z, Math.max(14, Math.min(36, cw - 4)), 6, w3T(x0 + 2, -yb + 1, 1.6), '<i></i><span>' + esc(cl.label || '?') + '</span>' + (items.length ? '<b>' + items.length + '</b>' : ''));
+        h += w3Items(items, x0, cw, yb, oh);
+        if (j < m - 1) h += w3F('w3-div', c.D - 4, oh, w3T(x0 + cw, -(yb + oh), -2, 'rotateY(90deg)'));
+        var zoneTxt = z === 'einbau' ? (cl.fahrzeug ? carName(cl.fahrzeug) : 'Einbauteile') : z === 'frei' ? '' : BEREICH_NAME[z];
+        var aria = 'Fach ' + (cl.label || '') + (zoneTxt ? ', ' + zoneTxt : '') + ', ' + items.length + ' Artikel';
+        h += '<button type="button" class="w3-x w3-slot' + (q ? (hits.length ? ' match' : ' dim') : '') + (hl ? ' hl' : '') + '" data-act="map-cell" data-cell="' + esc(cl.id) + '" aria-label="' + esc(aria) + '" style="width:' + w3r(cw * W3.k) + 'px;height:' + w3r((oh + c.BEAM) * W3.k) + 'px;transform:' + w3T(x0, -(yb + oh), 2.4) + '"></button>';
+      });
+    });
+    return h + '</div>';
+  }
+  function w3Scene(L, g, idx, q) {
+    var c = W3C, h = '', X0 = -c.ROOM, X1 = g.x1 + c.ROOM, Z0 = g.z0 - 200, Z1 = g.z1 + 200;
+    for (var x = X0; x < X1; x += 100) for (var z = Z0; z < Z1; z += 100) h += w3F('w3-floor', Math.min(100, X1 - x), Math.min(100, Z1 - z), w3T(x, 0, z, 'rotateX(90deg)'));
+    g.rows.forEach(function (r) {
+      if (r.x1 <= r.x0) return;
+      h += w3F('w3-shadow', r.x1 - r.x0 + 40, c.D + 40, w3T(r.x0 - 20, -0.2, r.z0 - 20, 'rotateX(90deg)'));
+      var zs = r.face === 1 ? r.zF + 10 : r.zF - 18;
+      h += w3F('w3-stripe', r.x1 - r.x0 + 24, 8, w3T(r.x0 - 12, -0.4, zs, 'rotateX(90deg)'));
+    });
+    var WH = 340;
+    h += w3F('w3-wall', X1 - X0, WH, w3T(X0, -WH, Z0));
+    h += w3F('w3-wall', X1 - X0, WH, w3T(X1, -WH, Z1, 'rotateY(180deg)'));
+    h += w3F('w3-wall w3-wall-s', Z1 - Z0, WH, w3T(X0, -WH, Z1, 'rotateY(90deg)'));
+    h += w3F('w3-wall w3-wall-s', Z1 - Z0, WH, w3T(X1, -WH, Z0, 'rotateY(-90deg)'));
+    g.regs.forEach(function (R) { h += w3Regal(L, R, idx, q); });
+    return h;
+  }
+  function w3Ui(L, g, idx, q) {
+    var c = W3C, chips = '<button type="button" class="w3-chip" data-w3go="start">Eingang</button>';
+    if (q) {
+      var hits = [];
+      g.cells.forEach(function (v, id) { var e = idx.get(id); if (e && e.items.some(function (p) { return matchQ(p[1], q); })) hits.push(v); });
+      chips = hits.length ? hits.map(function (v) { return '<button type="button" class="w3-chip w3-hit" data-w3cell="' + esc(v.cell.id) + '">' + esc(v.cell.label || '?') + '</button>'; }).join('') : '<span class="w3-chip none">Kein Treffer</span>';
+    } else {
+      chips += g.regs.map(function (R) { return '<button type="button" class="w3-chip" data-w3go="' + esc(R.rg.id) + '">' + esc(R.rg.code || '?') + '</button>'; }).join('');
+    }
+    var X0 = -160, X1 = g.x1 + 160, Z0 = g.z0 - 70, Z1 = g.z1 + 70, sw = 84, sh = Math.round(Math.max(44, Math.min(84, sw * (Z1 - Z0) / Math.max(1, X1 - X0)))), sx = sw / (X1 - X0), sz = sh / (Z1 - Z0);
+    W3.mini = { X0: X0, Z0: Z0, sx: sx, sz: sz };
+    var mini = '<svg class="w3-mini" viewBox="0 0 ' + sw + ' ' + sh + '" width="' + sw + '" height="' + sh + '" aria-hidden="true">' +
+      g.regs.map(function (R) {
+        var rx = (R.x0 - X0) * sx, rz = (Math.min(R.zF, R.zB) - Z0) * sz, rw = R.w * sx, rh = c.D * sz;
+        return '<rect x="' + w3r(rx) + '" y="' + w3r(rz) + '" width="' + w3r(rw) + '" height="' + w3r(rh) + '" rx="1.5"></rect><text x="' + w3r(rx + rw / 2) + '" y="' + w3r(rz + rh / 2 + 3) + '">' + esc(R.rg.code || '') + '</text>';
+      }).join('') +
+      '<g id="w3-me"><circle r="7" class="w3-me-r"></circle><path d="M0,-8 L5,4 L0,1.5 L-5,4 Z"></path></g></svg>';
+    var pad = '<div class="w3-pad" role="group" aria-label="Gehen und drehen">' +
+      '<button type="button" class="w3-pb f" data-w3="f" aria-label="Vorwärts gehen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l7 9H5z"/></svg></button>' +
+      '<button type="button" class="w3-pb l" data-w3="l" aria-label="Nach links drehen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6a7 7 0 1 1-6.6 9.3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M4 9l3.6 5.8L11 9z"/></svg></button>' +
+      '<button type="button" class="w3-pb r" data-w3="r" aria-label="Nach rechts drehen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6a7 7 0 1 0 6.6 9.3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 9l-3.6 5.8L13 9z"/></svg></button>' +
+      '<button type="button" class="w3-pb b" data-w3="b" aria-label="Zurück gehen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19l7-9H5z"/></svg></button></div>';
+    var tip = W3.tipSeen || lsGet('w3tip') ? '' : '<p class="w3-tip">Wischen zum Umsehen · Pfeile zum Gehen · Regal-Knopf bringt dich hin · Fach antippen öffnet es</p>';
+    return '<div class="w3-ui"><div class="w3-go" role="toolbar" aria-label="Hingehen zu">' + chips + '</div>' + mini + tip + pad + '</div>';
+  }
+  function w3Size() {
+    var el = document.getElementById('w3');
+    if (!el) return;
+    var r = el.getBoundingClientRect(), tb = document.querySelector('.tabbar'), tbh = tb ? tb.getBoundingClientRect().height : 0;
+    var top = r.top + (window.scrollY || 0), vh = window.innerHeight || 700;
+    if (r.width) {
+      var want = Math.round(Math.max(320, Math.min(680, vh - tbh - top - 12)));
+      if (Math.abs(want - r.height) > 2) { el.style.height = want + 'px'; r = el.getBoundingClientRect(); }
+    }
+    var W = r.width || 360, H = r.height || 460;
+    W3.P = Math.round(Math.max(200, Math.min(W * 0.6, H * 0.62)));
+    el.style.perspective = W3.P + 'px';
+  }
+  function w3Apply() {
+    var cam = document.getElementById('w3-cam');
+    if (!cam || W3.x === null) return;
+    var k = W3.k;
+    cam.style.transform = 'translateZ(' + W3.P + 'px) rotateX(' + w3r(-W3.pitch) + 'deg) rotateY(' + w3r(W3.yaw) + 'deg) translate3d(' + w3r(-W3.x * k) + 'px,' + w3r(W3C.EYE * k) + 'px,' + w3r(-W3.z * k) + 'px)';
+    var me = document.getElementById('w3-me'), mm = W3.mini;
+    if (me && mm) me.setAttribute('transform', 'translate(' + w3r((W3.x - mm.X0) * mm.sx) + ' ' + w3r((W3.z - mm.Z0) * mm.sz) + ') rotate(' + w3r(W3.yaw) + ')');
+  }
+  function w3Free(x, z) {
+    var g = W3.geo;
+    if (!g) return true;
+    if (x < g.bx0 || x > g.bx1 || z < g.bz0 || z > g.bz1) return false;
+    for (var i = 0; i < g.rows.length; i++) { var r = g.rows[i]; if (r.x1 > r.x0 && x > r.x0 - 32 && x < r.x1 + 32 && z > r.z0 - 32 && z < r.z1 + 32) return false; }
+    return true;
+  }
+  function w3Step(d) {
+    var a = W3.yaw * Math.PI / 180, nx = W3.x + Math.sin(a) * d, nz = W3.z - Math.cos(a) * d;
+    if (w3Free(nx, W3.z)) W3.x = nx;
+    if (w3Free(W3.x, nz)) W3.z = nz;
+  }
+  function w3Save() { if (W3.L && W3.x !== null) lsSet('w3.' + W3.L, JSON.stringify({ x: Math.round(W3.x), z: Math.round(W3.z), yaw: Math.round(W3.yaw), pitch: Math.round(W3.pitch) })); }
+  function w3Loop(t) {
+    W3.raf = 0;
+    var dt = W3.last ? Math.min(0.05, (t - W3.last) / 1000) : 0.016, go = 0, turn = 0, moving = false;
+    W3.last = t;
+    if (W3.hold === 'f' || W3.keys.f) go += 1;
+    if (W3.hold === 'b' || W3.keys.b) go -= 1;
+    if (W3.hold === 'l' || W3.keys.l) turn -= 1;
+    if (W3.hold === 'r' || W3.keys.r) turn += 1;
+    if (go || turn) {
+      W3.anim = null; moving = true;
+      W3.yaw += turn * 80 * dt;
+      if (go) w3Step(go * 150 * dt);
+    } else if (W3.anim) {
+      var A = W3.anim, p = Math.min(1, (t - A.t0) / A.dur), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      W3.x = A.x0 + (A.x1 - A.x0) * e; W3.z = A.z0 + (A.z1 - A.z0) * e; W3.yaw = A.y0 + A.dy * e; W3.pitch = A.p0 + (A.p1 - A.p0) * e;
+      moving = p < 1;
+      if (!moving) W3.anim = null;
+    }
+    w3Apply();
+    if (moving) W3.raf = requestAnimationFrame(w3Loop);
+    else { W3.last = 0; w3Save(); }
+  }
+  function w3TipDone() {
+    if (W3.tipSeen) return;
+    W3.tipSeen = true; lsSet('w3tip', '1');
+    var t = document.querySelector('.w3-tip');
+    if (t) t.classList.add('gone');
+  }
+  function w3Kick() { if (!W3.raf) W3.raf = requestAnimationFrame(w3Loop); }
+  function w3GoTo(x, z, yaw, pitch) {
+    var dy = ((yaw - W3.yaw) % 360 + 540) % 360 - 180, dist = Math.sqrt((x - W3.x) * (x - W3.x) + (z - W3.z) * (z - W3.z));
+    W3.anim = { t0: performance.now(), dur: reduceMotion ? 1 : Math.min(1800, 420 + dist * 3.5 + Math.abs(dy) * 2.5), x0: W3.x, z0: W3.z, x1: x, z1: z, y0: W3.yaw, dy: dy, p0: W3.pitch, p1: pitch };
+    W3.last = 0; w3Kick();
+  }
+  function w3Start(g) { W3.x = -140; W3.z = g.gangs.length ? g.gangs[0].zc : 0; W3.yaw = 90; W3.pitch = 8; }
+  function w3GoRegal(R, wx, yc) {
+    var dist = Math.min(120, W3C.G - 36), z = R.zF + R.face * dist, x = wx === undefined ? (R.x0 + R.x1) / 2 : wx;
+    var pitch = Math.max(-25, Math.min(48, Math.atan2(W3C.EYE - (yc === undefined ? 125 : yc), dist) * 180 / Math.PI));
+    w3GoTo(x, z, R.face === 1 ? 0 : 180, pitch);
+  }
+  function w3GoCell(id) { var v = W3.geo && W3.geo.cells.get(id); if (v) w3GoRegal(v.R, v.wx, v.yc); return !!v; }
+  function w3Mount(L, g) {
+    W3.geo = g;
+    if (W3.L !== L || W3.x === null) {
+      W3.L = L;
+      var s = null;
+      try { s = JSON.parse(lsGet('w3.' + L) || 'null'); } catch (_) {}
+      if (s && isFinite(s.x) && isFinite(s.z) && w3Free(+s.x, +s.z)) { W3.x = +s.x; W3.z = +s.z; W3.yaw = isFinite(s.yaw) ? +s.yaw : 90; W3.pitch = isFinite(s.pitch) ? +s.pitch : 8; }
+      else w3Start(g);
+    } else if (!w3Free(W3.x, W3.z)) {
+      var best = null;
+      g.gangs.forEach(function (gg) { if (best === null || Math.abs(gg.zc - W3.z) < Math.abs(best - W3.z)) best = gg.zc; });
+      if (best !== null && w3Free(W3.x, best)) W3.z = best; else w3Start(g);
+    }
+    w3Size(); w3Apply(); w3Bind();
+  }
+  function w3Bind() {
+    if (W3.bound) return;
+    var map = $('#map');
+    if (!map) return;
+    W3.bound = true;
+    var DIR = { ArrowUp: 'f', w: 'f', W: 'f', ArrowDown: 'b', s: 'b', S: 'b', ArrowLeft: 'l', a: 'l', A: 'l', ArrowRight: 'r', d: 'r', D: 'r' };
+    map.addEventListener('pointerdown', function (e) {
+      var v = e.target.closest && e.target.closest('.w3');
+      if (!v) return;
+      w3TipDone();
+      var pad = e.target.closest('[data-w3]');
+      if (pad) { W3.hold = pad.dataset.w3; W3.last = 0; w3Kick(); e.preventDefault(); return; }
+      if (e.target.closest('.w3-go, .w3-mini')) return;
+      W3.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, yaw: W3.yaw, pitch: W3.pitch, moved: false };
+    });
+    document.addEventListener('pointermove', function (e) {
+      var d = W3.drag;
+      if (!d || e.pointerId !== d.id) return;
+      var dx = e.clientX - d.x, dy = e.clientY - d.y;
+      if (!d.moved && dx * dx + dy * dy > 64) d.moved = true;
+      if (!d.moved) return;
+      W3.anim = null;
+      W3.yaw = d.yaw - dx * 0.28;
+      W3.pitch = Math.max(-30, Math.min(50, d.pitch - dy * 0.22));
+      w3Apply();
+    });
+    var end = function (e) {
+      W3.hold = null;
+      var d = W3.drag;
+      if (!d || e.pointerId !== d.id) return;
+      if (d.moved) { W3.noClick = Date.now(); w3Save(); }
+      W3.drag = null;
+    };
+    document.addEventListener('pointerup', end);
+    document.addEventListener('pointercancel', end);
+    map.addEventListener('click', function (e) {
+      if (!e.target.closest || !e.target.closest('.w3')) return;
+      if (W3.noClick && Date.now() - W3.noClick < 450) { e.stopPropagation(); e.preventDefault(); W3.noClick = 0; }
+    }, true);
+    map.addEventListener('click', function (e) {
+      var t = e.target.closest && e.target.closest('[data-w3go],[data-w3cell],[data-w3]');
+      if (!t || !W3.geo) return;
+      if (t.dataset.w3go) {
+        if (t.dataset.w3go === 'start') { var gz = W3.geo.gangs.length ? W3.geo.gangs[0].zc : 0; w3GoTo(-140, gz, 90, 8); }
+        else { var R = W3.geo.regs.filter(function (r) { return r.rg.id === t.dataset.w3go; })[0]; if (R) w3GoRegal(R); }
+      } else if (t.dataset.w3cell) w3GoCell(t.dataset.w3cell);
+      else if (t.dataset.w3 && e.detail === 0) {
+        var m = t.dataset.w3;
+        if (m === 'f' || m === 'b') { w3Step(m === 'f' ? 60 : -60); w3Apply(); w3Save(); } else { W3.yaw += m === 'l' ? -30 : 30; w3Apply(); w3Save(); }
+      }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (S.tab !== 'karte' || S.mapView !== '3d' || S.sheet || e.ctrlKey || e.metaKey || e.altKey) return;
+      var a = document.activeElement, m = DIR[e.key];
+      if (!m || !a || !a.closest || !a.closest('.w3')) return;
+      e.preventDefault(); w3TipDone();
+      if (!W3.keys[m]) { W3.keys[m] = true; W3.last = 0; w3Kick(); }
+    });
+    document.addEventListener('keyup', function (e) { var m = DIR[e.key]; if (m) W3.keys[m] = false; });
+    window.addEventListener('blur', function () { W3.keys = {}; W3.hold = null; });
+    window.addEventListener('resize', function () { if (document.getElementById('w3')) { w3Size(); w3Apply(); } });
+  }
+  function w3Render(L, lay, idx, q, box, hint) {
+    var g = w3Geo(lay);
+    var html = '<div class="w3 w3-' + L + '" id="w3" tabindex="0" role="application" aria-roledescription="3D-Rundgang" aria-label="Lager als 3D-Rundgang. Ziehen zum Umsehen, Pfeiltasten zum Gehen, Fächer antippen zum Öffnen.">' +
+      '<div class="w3-cam" id="w3-cam">' + w3Scene(L, g, idx, q) + '</div>' + w3Ui(L, g, idx, q) + '</div>';
+    var un = unplaced(L);
+    if (un.length) html += '<div class="sh-sec"><h3 class="sec">Ohne festes Fach · ' + un.length + '</h3><ul class="items">' + un.map(function (p) { return itemRow(p[0], p[1], 'map'); }).join('') + '</ul></div>';
+    setHTML(box, html);
+    if (q) {
+      var n = 0;
+      idx.forEach(function (e) { if (e.items.some(function (p) { return matchQ(p[1], q); })) n++; });
+      hint.textContent = n ? n + (n === 1 ? ' Fach enthält' : ' Fächer enthalten') + ' „' + q + '“. Oben im Bild antippen, dann gehst du hin.' : 'Kein Fach enthält „' + q + '“.';
+    } else hint.textContent = '';
+    w3Mount(L, g);
+    if (S.mapHl && S.mapHl.lager === L && !S.mapHl.walked && S.tab === 'karte') { S.mapHl.walked = true; S.mapHl.scrolled = true; w3GoCell(S.mapHl.cell); }
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -5345,7 +5742,8 @@ button:disabled { cursor: default; }
       case 'einkauf-save': saveEinkauf(); break;
       case 'work-del': removeWork(t); break;
       case 'map-lager': S.mapLager = t.dataset.lager === 'wb' ? 'wb' : 'ro'; lsSet('mapLager', S.mapLager); S.mapHl = null; renderKarte(); break;
-      case 'map-edit': S.mapEdit = !S.mapEdit; renderKarte(); break;
+      case 'map-edit': S.mapEdit = !S.mapEdit; if (S.mapEdit && S.mapView === '3d') { S.mapViewPrev = '3d'; S.mapView = 'plan'; } else if (!S.mapEdit && S.mapViewPrev) { S.mapView = S.mapViewPrev; S.mapViewPrev = null; } renderKarte(); break;
+      case 'map-view': S.mapView = t.dataset.view === 'plan' ? 'plan' : '3d'; S.mapViewPrev = null; S.mapEdit = false; lsSet('mapView', S.mapView); renderKarte(); break;
       case 'map-create': createLayout(S.mapLager); break;
       case 'map-sel': selectRegal(S.mapLager, t.dataset.regal); S.mapHl = null; renderKarte(); break;
       case 'map-cell': openCell(S.mapLager, t.dataset.cell); break;
