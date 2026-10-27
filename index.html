@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "20"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "21"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1259,6 +1259,26 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .wp-pkt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .wp-pk .pk { width: 52px; height: 52px; margin-top: 2px; }
 .wp-pk .pk .pk-h { fill: var(--bg); }
+/* Zeitplan als Wandkalender: je Monat ein Abreißblatt */
+.zp-m { display: grid; grid-template-columns: 50px minmax(0, 1fr); gap: 0 14px; align-items: start; }
+.zp-b { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.zp-cal { position: sticky; top: 0; display: flex; flex-direction: column; width: 50px; margin-top: 2px; border-radius: 7px; overflow: hidden; border: 1px solid var(--line); background: var(--bg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); text-align: center; }
+.zp-y { padding: 4px 0 3px; background: var(--ink); color: var(--bg); font: 700 11px/1 var(--f-mono); letter-spacing: 0.03em; }
+.zp-mo { padding: 6px 0 7px; font-family: var(--f-display); font-weight: 800; font-size: 22px; line-height: 1; }
+.zp-cal.now { border-color: var(--kaufen); }
+.zp-cal.now .zp-y { background: var(--kaufen); color: var(--paper); }
+.zp-cal.now .zp-mo { color: var(--kaufen); }
+.zp-cal.none { border-style: dashed; box-shadow: none; }
+.zp-cal.none .zp-y { background: var(--surface-2); color: var(--muted); }
+.zp-cal.none .zp-mo { color: var(--muted); }
+/* Anstehende Arbeiten: farbiger Rand nach Dringlichkeit */
+.rep.lvl-plan, .rep.lvl-bald, .rep.lvl-faellig { position: relative; overflow: hidden; padding-left: 18px; }
+.rep.lvl-plan::before, .rep.lvl-bald::before, .rep.lvl-faellig::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--wb); }
+.rep.lvl-bald::before { background: var(--ro); }
+.rep.lvl-faellig::before { background: var(--kaufen); }
+.rep.lvl-faellig .rep-d { color: var(--kaufen); font-weight: 700; }
+/* Eingebaute Teile: ohne leere Datumsspalte */
+.inst li { grid-template-columns: minmax(0, 1fr) auto; }
 </style>
 
 <div class="wrap">
@@ -3243,8 +3263,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var wait = st.items.sort(byName).map(function (p) { return itemRow(p[0], p[1], 'car'); }).join('');
     var inst = st.inst.sort(function (a, b) { return String(b.r.t || '').localeCompare(String(a.r.t || '')); }).map(function (x) {
       var p = numOrNull(x.r.preis);
-      return '<li><span class="i-d">' + (datum(x.r.datum) || '–') + '</span><span class="i-n">' + esc(itemName(x.it)) +
-        '<small>' + fmt(x.r.menge) + ' ' + esc(unitOf(x.it)) + (p === null ? ' · ohne Preis' : ' à ' + esc(eur(p))) + (isDay(x.it.kaufdatum) ? ' · gekauft ' + itemKauf(x.it) : '') + '</small></span>' +
+      return '<li><span class="i-n">' + esc(itemName(x.it)) +
+        '<small>' + fmt(x.r.menge) + ' ' + esc(unitOf(x.it)) + (p === null ? ' · ohne Preis' : ' à ' + esc(eur(p))) + (isDay(x.r.datum) ? ' · eingebaut ' + datum(x.r.datum) : '') + (isDay(x.it.kaufdatum) ? ' · gekauft ' + itemKauf(x.it) : '') + '</small></span>' +
         '<span class="i-p">' + (p === null ? '–' : esc(eur(p * num(x.r.menge)))) + '</span></li>';
     }).join('');
     var wl = st.works.map(function (w, i) { return { w: w, i: i }; });
@@ -3549,7 +3569,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function repCard(p) {
     var r = p[1], due = repDue(r), open = repOpen(r);
     var line = [open ? '' : repStatusText(r), due ? 'fällig bis ' + due : ''].filter(Boolean).join(' · ');
-    return '<li><button type="button" class="rep' + (open ? '' : ' closed') + '" data-act="open-rep" data-id="' + esc(p[0]) + '">' +
+    return '<li><button type="button" class="rep' + (open ? ' lvl-' + repLevel(r) : ' closed') + '" data-act="open-rep" data-id="' + esc(p[0]) + '">' +
       '<span class="rep-t">' + esc(r.titel) + '</span>' +
       (line ? '<span class="rep-d">' + esc(line) + '</span>' : '') +
       (open ? '<span class="rchips">' + repChips(r) + '</span>' : '') + '</button></li>';
@@ -4999,12 +5019,12 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<p class="buy">' + esc('Wartung, Pickerl und anstehende Arbeiten bis ' + ymLong(ymAdd(d.until, -1)) + ', nach Monat sortiert.') + '</p></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
     var now = d.ev.filter(function (e) { return e.now; }), later = d.ev.filter(function (e) { return !e.now; });
-    if (now.length) h += '<div class="sh-sec"><h3 class="sec">Jetzt fällig · ' + now.length + '</h3><ul class="works">' + now.map(zpRow).join('') + '</ul></div>';
+    if (now.length) h += zpMonth('jetzt', 'Jetzt fällig', now);
     var cur = null, buf = [];
-    var flush = function () { if (cur) h += '<div class="sh-sec"><h3 class="sec">' + esc(ymLong(cur)) + ' · ' + buf.length + '</h3><ul class="works">' + buf.map(zpRow).join('') + '</ul></div>'; };
+    var flush = function () { if (cur) h += zpMonth(cur, ymLong(cur), buf); };
     later.forEach(function (e) { var m = e.d.slice(0, 7); if (m !== cur) { flush(); cur = m; buf = []; } buf.push(e); });
     flush();
-    if (d.ohne.length) h += '<div class="sh-sec"><h3 class="sec">Ohne Termin · ' + d.ohne.length + '</h3><ul class="works">' + d.ohne.map(zpRow).join('') + '</ul></div>';
+    if (d.ohne.length) h += zpMonth('ohne', 'Ohne Termin', d.ohne);
     if (!d.ev.length && !d.ohne.length) h += '<p class="note">Nach den vorhandenen Daten steht in den nächsten 12 Monaten nichts an.</p>';
     var gaps = '';
     if (d.missingKm.length) gaps += '<li>' + esc('km-Stand fehlt: ' + d.missingKm.map(function (p) { return p[1].name || 'Auto'; }).join(', ') + '. ') + (can ? '<button type="button" class="linkbtn inl" data-act="km-all">Alle km-Stände eintragen</button>' : '') + '</li>';
@@ -5631,6 +5651,21 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       return '<li><button type="button" class="nu-b lvl-' + lv + '" ' + act + '><span class="nu-t"><span class="nu-c">' + esc(e.carName) + '</span>' + chip + '</span>' +
         '<span class="nu-n">' + esc(e.title) + '</span>' + bar + '<span class="nu-x">' + esc(zpSub(e)) + '</span></button></li>';
     }).join('') + '</ul>';
+  }
+  /* ---------- Optik: Zeitplan als Wandkalender, Dringlichkeit bei anstehenden Arbeiten ---------- */
+  var ZP_MON = ['Jän', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+  function zpMonth(key, label, list) {
+    var cal = key === 'jetzt' ? '<span class="zp-cal now" aria-hidden="true"><span class="zp-y">jetzt</span><span class="zp-mo">!</span></span>'
+      : key === 'ohne' ? '<span class="zp-cal none" aria-hidden="true"><span class="zp-y">offen</span><span class="zp-mo">?</span></span>'
+      : '<span class="zp-cal" aria-hidden="true"><span class="zp-y">' + esc(key.slice(0, 4)) + '</span><span class="zp-mo">' + esc(ZP_MON[Number(key.slice(5, 7)) - 1] || '') + '</span></span>';
+    return '<div class="sh-sec zp-m">' + cal + '<div class="zp-b"><h3 class="sec">' + esc(label) + ' · ' + list.length + '</h3><ul class="works">' + list.map(zpRow).join('') + '</ul></div></div>';
+  }
+  function repLevel(r) {
+    if (!repOpen(r)) return '';
+    if (!isDay(r.faellig)) return 'plan';
+    var g = r.faelligGenau, end = g === 'jahr' ? r.faellig.slice(0, 4) + '-12-31' : g === 'monat' ? addDays(addMonths(r.faellig.slice(0, 7) + '-01', 1), -1) : r.faellig;
+    var left = dayNum(end) - dayNum(dayKey(new Date()));
+    return left < 0 ? 'faellig' : left <= 45 ? 'bald' : 'plan';
   }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
