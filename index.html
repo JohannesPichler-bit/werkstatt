@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "24.2", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "25", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -355,6 +355,65 @@
     }
   };
 
+  /* ---------- Fotos und Belege: Bilder und PDFs als eigene Dateien im Daten-Repository (belege/<auto>/<datei>) ---------- */
+  var BL_CACHE = 'werkstatt-belege-v1';
+  var BL_MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', pdf: 'application/pdf' };
+  function belegPathOk(p) { return /^belege\/[A-Za-z0-9_\-]+\/[A-Za-z0-9_\-.]+\.(jpg|jpeg|png|webp|pdf)$/i.test(String(p)) && String(p).indexOf('..') < 0; }
+  function blMime(p) { return BL_MIME[String(p).split('.').pop().toLowerCase()] || 'application/octet-stream'; }
+  function blKey(ref) { return 'https://belege.werkstatt.invalid/' + encodeURIComponent(repoKey()) + '/' + encodeURIComponent(ref.sha || ref.pfad); }
+  function blobToB64(blob) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { var s = String(r.result || ''), i = s.indexOf(','); resolve(i >= 0 ? s.slice(i + 1) : s); };
+      r.onerror = function () { reject(codeErr('bl_file', 'Die Datei ließ sich nicht lesen.')); };
+      r.readAsDataURL(blob);
+    });
+  }
+  async function blCacheGet(ref) {
+    try { if (!window.caches) return null; var c = await caches.open(BL_CACHE), r = await c.match(blKey(ref)); return r ? await r.blob() : null; } catch (_) { return null; }
+  }
+  async function blCachePut(ref, blob) {
+    try { if (!window.caches) return; var c = await caches.open(BL_CACHE); await c.put(blKey(ref), new Response(blob, { headers: { 'Content-Type': blob.type || blMime(ref.pfad) } })); } catch (_) {}
+  }
+  var belege = {
+    max: 12 * 1024 * 1024,
+    /* Lädt eine Datei hoch (eigener Commit, nacheinander mit den übrigen Schreibvorgängen). Vorhandene Dateien werden nie überschrieben. */
+    put: function (path, blob, message) {
+      return enqueue(async function () {
+        if (!belegPathOk(path)) throw codeErr('bl_file', 'Ungültiger Dateiname für den Beleg.');
+        if (!blob || !blob.size) throw codeErr('bl_file', 'Die Datei ist leer.');
+        if (blob.size > belege.max) throw codeErr('bl_file', 'Die Datei ist zu groß (höchstens 12 MB).');
+        var body = { message: String(message || ('App: ' + path)).slice(0, 200), content: await blobToB64(blob), branch: BRANCH };
+        var res = await gh('PUT', repoPath('/contents/' + encPath(path)), body);
+        if (res.status === 200 || res.status === 201) {
+          var j = await res.json(), sha = j && j.content && j.content.sha ? String(j.content.sha) : null;
+          st.etag = null;
+          await blCachePut({ pfad: path, sha: sha }, blob);
+          return { pfad: path, sha: sha, bytes: blob.size };
+        }
+        if (res.status === 409 || res.status === 422) {
+          var msg = ''; try { msg = (await res.json()).message || ''; } catch (_) {}
+          throw codeErr(res.status === 409 ? 'conflict' : 'bl_file', 'GitHub hat die Datei abgelehnt' + (msg ? ': ' + msg : '.'));
+        }
+        throw await errFrom(res, 'Datei');
+      });
+    },
+    /* Holt eine Datei als Blob; einmal geladen, liegt sie auf dem Gerät und geht auch ohne Netz. */
+    get: async function (ref) {
+      if (!ref || !belegPathOk(ref.pfad)) throw codeErr('bl_file', 'Ungültiger Dateiname für den Beleg.');
+      var hit = await blCacheGet(ref);
+      if (hit) return hit.type ? hit : new Blob([hit], { type: blMime(ref.pfad) });
+      var raw = { Accept: 'application/vnd.github.raw+json' };
+      var res = ref.sha && /^[0-9a-f]{40}$/.test(ref.sha)
+        ? await gh('GET', repoPath('/git/blobs/' + ref.sha), undefined, raw)
+        : await gh('GET', repoPath('/contents/' + encPath(ref.pfad) + '?ref=' + encodeURIComponent(BRANCH)), undefined, raw);
+      if (!res.ok) throw await errFrom(res, 'Beleg');
+      var b = new Blob([await res.arrayBuffer()], { type: blMime(ref.pfad) });
+      await blCachePut(ref, b);
+      return b;
+    }
+  };
+
   /* ---------- Rechte und Recherche-Aufträge ---------- */
   var user = {
     can: async function (what) {
@@ -481,7 +540,7 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
-  var caps = { db: db, user: user, downloads: downloads, mcp: mcp };
+  var caps = { db: db, user: user, downloads: downloads, mcp: mcp, belege: belege };
   window.claude = { use: function (name) { return Promise.resolve(caps[name] || null); } };
   window.__werkstattGh = { sync: sync, state: st };
 })();
@@ -1392,6 +1451,51 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .rf-pg span { font-size: 11px; line-height: 1.2; color: var(--muted); }
 .rf-pg input { width: 100%; min-height: 44px; padding: 8px 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); text-align: center; font-variant-numeric: tabular-nums; }
 @media (max-width: 380px) { .rf-pg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Fotos und Belege */
+.bl-s { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 2px; }
+.bl-w { position: relative; display: block; flex: none; }
+.bl-t { position: relative; display: block; width: 78px; height: 78px; padding: 0; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); overflow: hidden; color: var(--muted); }
+.bl-t .bl-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.bl-t .bl-img:not([src]) { visibility: hidden; }
+.bl-t.pdf { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--ink); background: var(--bg); }
+.bl-pdfi { width: 30px; height: 30px; }
+.bl-pn { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; }
+.bl-w.err .bl-t::after { content: "nicht geladen"; position: absolute; inset: 0; display: grid; place-items: center; padding: 4px; font-size: 11px; font-weight: 700; line-height: 1.2; text-align: center; color: var(--kaufen); background: var(--kaufen-soft); }
+.bl-x { position: absolute; top: -9px; right: -9px; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border-radius: 50%; border: 2px solid var(--surface); background: var(--ink); color: var(--bg); font-size: 19px; font-weight: 700; line-height: 1; }
+.bl-add { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 78px; height: 78px; padding: 4px; border-radius: 10px; border: 1.5px dashed var(--line); color: var(--wb); font-size: 12px; font-weight: 700; line-height: 1.2; text-align: center; cursor: pointer; }
+.bl-add svg { width: 22px; height: 22px; }
+.bl-add input, .bl-btn input { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; opacity: 0; overflow: hidden; pointer-events: none; }
+.bl-add:focus-within, .bl-btn:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.bl-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.bl-n { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+.bl-clip { width: 14px; height: 14px; flex: none; }
+.she-bls { padding: 0 0 12px 94px; }
+.she-aus { display: block; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.she-aus .wst { margin-right: 4px; vertical-align: 1px; }
+.sh-blopt { margin-top: 10px; font-size: 14px; }
+/* Betrachter im Vollbild, immer dunkel */
+.bv { position: fixed; inset: 0; z-index: 960; display: flex; flex-direction: column; background: #0d1214; color: #eef2f3; outline: 0; }
+.bv[hidden] { display: none; }
+.bv-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: max(10px, env(safe-area-inset-top, 0px)) 12px 6px 16px; }
+.bv-n { font-weight: 700; font-variant-numeric: tabular-nums; color: #c3ccd0; }
+.bv-b { width: 46px; height: 46px; display: grid; place-items: center; padding: 0; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.14); color: inherit; font-size: 28px; line-height: 1; }
+.bv-st { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 0 8px; }
+.bv-st.z { display: block; overflow: auto; padding: 0; -webkit-overflow-scrolling: touch; }
+.bv-img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; user-select: none; -webkit-user-select: none; }
+.bv-st.z .bv-img { max-width: none; max-height: none; cursor: zoom-out; }
+.bv-load { margin: 0; padding: 24px; text-align: center; color: #c3ccd0; }
+.bv-pdf { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; text-align: center; overflow-wrap: anywhere; }
+.bv-pdf .bl-pdfi { width: 72px; height: 72px; }
+.bv-pdf .btn { background: #eef2f3; color: #0d1214; border-color: #eef2f3; }
+.bv-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 68px; padding: 0; border: 0; border-radius: 12px; background: rgba(0, 0, 0, 0.45); color: #fff; font-size: 36px; line-height: 1; }
+.bv-nav.l { left: 6px; }
+.bv-nav.r { right: 6px; }
+.bv-bot { display: flex; align-items: center; gap: 10px; padding: 10px 12px max(12px, env(safe-area-inset-bottom, 0px)) 16px; }
+.bv-m { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; line-height: 1.35; color: #c3ccd0; overflow-wrap: anywhere; }
+.bv-h { color: #8d999f; }
+.bv-a { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.bv .btn.ghost { background: transparent; color: #eef2f3; border-color: rgba(255, 255, 255, 0.4); }
+.bv .btn:focus-visible, .bv-b:focus-visible, .bv-nav:focus-visible { outline: 3px solid #8ab4ff; outline-offset: 2px; }
 </style>
 
 <div class="wrap">
@@ -1883,7 +1987,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function carStats(carId) {
     var car = S.cars.get(carId) || {};
     var s = { waitN: 0, waitV: 0, noPrice: 0, instN: 0, instV: 0, items: [], inst: [], works: arr(car.arbeiten).filter(function (w) { return w && typeof w === 'object' && w.titel; }), workV: 0, workOpen: 0, preN: 0, kauf: numOrNull(car.kaufpreis) };
-    s.works.forEach(function (w) { if (workVorKauf(car, w)) { s.preN++; return; } if (numOrNull(w.kosten) === null) s.workOpen++; else s.workV += num(w.kosten); });
+    s.works.forEach(function (w) { if (workVorKauf(car, w)) { s.preN++; return; } if (blOffen(w)) return; if (numOrNull(w.kosten) === null) s.workOpen++; else s.workV += num(w.kosten); });
     S.items.forEach(function (it, iid) {
       if (it.bereich === 'einbau' && it.fahrzeug === carId && !it.archiviert && stockOf(it) > 0) {
         s.waitN++; s.items.push([iid, it]);
@@ -2596,12 +2700,19 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var rec = { titel: titel.slice(0, 80), datum: isDay(d) ? d : null, datumGenau: isDay(d) ? (gen === 'monat' || gen === 'jahr' ? gen : 'tag') : null, kosten: k === null ? null : round2(k), km: km === null ? null : Math.round(km), kmCa: kmCa, notiz: g('w-notiz').slice(0, 300) };
     rec.durch = g('w-durch').slice(0, 60) || null;
     rec.beleg = !!(($('#w-beleg') || {}).checked);
+    if (BL && s.bl) {
+      setBusy(true);
+      try { rec.belege = await blCommitForm(s.car, rec.titel); }
+      catch (e) { setBusy(false); showErr(blErrText(e)); return; }
+      setBusy(false);
+      car = S.cars.get(s.car) || car;
+    }
     var wbox = $('#w-wart');
     if (wbox) rec.wartung = $$('input[name="w-wart"]', wbox).filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
     else if (!s.work && s.wartung) rec.wartung = s.wartung;
     var now = new Date().toISOString(), newId = s.work ? null : rid(10);
     var list = arr(car.arbeiten).map(function (x) { return Object.assign({}, x); });
-    if (s.work) list = list.map(function (x) { return x.id === s.work ? Object.assign(x, rec, { geaendert: now }) : x; });
+    if (s.work) list = list.map(function (x) { return x.id === s.work ? Object.assign(x, rec, { geaendert: now }, blAusSave(x, rec, now)) : x; });
     else list.push(Object.assign({ id: newId, erstellt: now }, rec));
     setBusy(true);
     try {
@@ -3396,8 +3507,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var w = x.w, k = numOrNull(w.kosten);
       var sub = [numOrNull(w.km) !== null ? 'bei ' + (w.kmCa ? 'ca. ' : '') + nf.format(num(w.km)) + ' km' : '', w.notiz || ''].filter(Boolean).join(' · ');
       return '<li><button type="button" class="wbtn" data-act="work-edit" data-id="' + esc(id) + '" data-work="' + esc(w.id) + '"' + dis + '>' +
-        '<span class="i-n">' + esc(w.titel) + '<small><span class="i-d">' + esc(workDate(w) || 'Datum offen') + '</span>' + (sub ? ' · ' + esc(sub) : '') + '</small></span>' +
-        '<span class="i-p">' + (workVorKauf(car, w) ? '<span class="muted">vor dem Kauf</span>' : k === null ? '<span class="muted">Kosten offen</span>' : esc(eur(k))) + '</span></button></li>';
+        '<span class="i-n">' + esc(w.titel) + blClipCount(w.belege) + '<small><span class="i-d">' + esc(workDate(w) || 'Datum offen') + '</span>' + (sub ? ' · ' + esc(sub) : '') + '</small></span>' +
+        '<span class="i-p">' + (blOffen(w) ? '<span class="wst plan">wird ausgelesen</span>' : workVorKauf(car, w) ? '<span class="muted">vor dem Kauf</span>' : k === null ? '<span class="muted">Kosten offen</span>' : esc(eur(k))) + '</span></button></li>';
     }).join('');
     var open = [];
     if (st.workOpen) open.push(st.workOpen + (st.workOpen === 1 ? ' Arbeit' : ' Arbeiten') + ' ohne Kosten');
@@ -3421,6 +3532,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       shBanner(id, car) +
       carWartSec(id, car) +
       reifenSec(id, car) +
+      carFotosSec(id, car) +
       '<div class="sh-sec"><div class="vhead"><h3 class="sec">Anstehend · ' + reps.length + '</h3>' +
       (canWrite() ? '<button type="button" class="linkbtn" data-act="rep-new" data-car="' + esc(id) + '">+ Eintragen</button>' : '') + '</div>' +
       (repHtml ? '<ul class="works">' + repHtml + '</ul>' : '<p class="note">Nichts geplant.</p>') + '</div>' +
@@ -3493,11 +3605,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (workId && !w) { toast('Diesen Eintrag gibt es nicht mehr.'); return; }
     pre = pre || {};
     w = w || { titel: pre.titel || '', datum: pre.datum || null, kosten: null, km: null, notiz: '' };
-    openSheet('workform', { car: carId, work: workId || null, repair: pre.repair || null, wartung: pre.wartung || null, back: pre.back || null },
+    openSheet('workform', { car: carId, work: workId || null, repair: pre.repair || null, wartung: pre.wartung || null, back: pre.back || null, bl: BL ? { keep: blList(w.belege), pend: [] } : null },
       '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc((pre.back === 'sh' ? 'Serviceheft · ' : 'Arbeit · ') + carName(carId)) + '</p>' +
       '<h2 class="sh-title' + (workId && String(w.titel || '').length > 26 ? ' long' : '') + '" id="sheet-title">' + (workId ? esc(w.titel) : pre.nachtrag ? 'Eintrag nachtragen' : 'Arbeit eintragen') + '</h2></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
-      '<form class="form" id="workform" novalidate>' +
+      '<form class="form" id="workform" novalidate>' + blAusFormNote(w) +
       (pre.nachtrag ? '<p class="help">Aus dem alten Serviceheft oder von Rechnungen: Datum (ist nur Monat oder Jahr bekannt, die Genauigkeit umstellen), km-Stand, was gemacht wurde und von wem. Die Häkchen bei „Zählt im Wartungsplan“ bestimmen, welche Wartung damit erledigt ist.</p>' : '') +
       '<label class="f"><span>Was wurde gemacht?</span><input id="w-titel" value="' + esc(w.titel || '') + '" maxlength="80" placeholder="z. B. Bremsen vorne" autocomplete="off"></label>' +
       '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="w-datum" value="' + (isDay(w.datum) ? w.datum : '') + '"></label>' +
@@ -3507,6 +3619,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<label class="check"><input type="checkbox" id="w-kmca"' + (w.kmCa ? ' checked' : '') + '><span>Kilometerstand ist nur ungefähr</span></label>' +
       '<label class="f"><span>Durchgeführt von</span><input id="w-durch" list="w-durch-l" value="' + esc(w.durch || '') + '" maxlength="60" placeholder="z. B. selbst oder Name der Werkstatt" autocomplete="off"><datalist id="w-durch-l">' + durchOpts() + '</datalist></label>' +
       '<label class="check"><input type="checkbox" id="w-beleg"' + (w.beleg ? ' checked' : '') + '><span>Rechnung oder Stempel vorhanden</span></label>' +
+      blField(w.belege, 'Rechnung, Stempel oder Foto der Arbeit. Wird beim Speichern hochgeladen.') +
       wboxHtml(carId, w, pre, workId) +
       '<label class="f"><span>Notiz</span><textarea id="w-notiz" rows="2" maxlength="300" placeholder="z. B. Teilenummer, Werkstatt">' + esc(w.notiz || '') + '</textarea></label>' +
       '<p class="err" id="work-err" role="alert"></p>' +
@@ -5893,7 +6006,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var rank = { bad: 0, warn: 1 };
     items.sort(function (x, y) { return rank[x.lv] - rank[y.lv]; });
     var nBad = items.filter(function (x) { return x.lv === 'bad'; }).length, nWarn = items.length - nBad;
-    var nEnt = shEntries(carId, car).filter(function (e) { return e.k === 'work' || e.k === 'teile'; }).length;
+    var nEnt = shEntries(carId, car).filter(function (e) { return (e.k === 'work' && !blOffen(e.w)) || e.k === 'teile'; }).length;
     var lv = nBad ? 'bad' : nWarn ? 'warn' : nEnt ? 'ok' : 'leer';
     var since = start ? shWhen(start.d, start.g) : firstDoc ? shWhen(firstDoc, 'monat') : '';
     var sum = lv === 'bad' || lv === 'warn' ? (nBad ? nBad + (nBad === 1 ? ' Lücke' : ' Lücken') : '') + (nBad && nWarn ? ', ' : '') + (nWarn ? nWarn + (nWarn === 1 ? ' Hinweis' : ' Hinweise') : '')
@@ -5958,15 +6071,15 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var cost = w ? numOrNull(w.kosten) : e.parts.reduce(function (a, x) { var p = numOrNull(x.r.preis); return p === null ? a : (a || 0) + p * num(x.r.menge); }, null);
     var partTxt = e.parts.map(function (x) { return itemName(x.it) + (num(x.r.menge) !== 1 ? ' (' + fmt(x.r.menge) + ' ' + unitOf(x.it) + ')' : ''); }).join(', ');
     var who = shWho(w);
-    var inner = dcol + '<span class="she-m"><span class="she-t">' + esc(title) + '</span>' +
+    var inner = dcol + '<span class="she-m"><span class="she-t">' + esc(title) + '</span>' + blAusChip(w) +
       (e.names.length ? '<span class="she-cs">' + e.names.map(function (n) { return '<span class="she-c">' + esc(n) + '</span>'; }).join('') + '</span>' : '') +
       (partTxt ? '<span class="she-x">' + esc((w ? 'Teile: ' : '') + partTxt) + '</span>' : '') +
       (w && w.notiz ? '<span class="she-x">' + esc(w.notiz) + '</span>' : '') +
       (cost !== null || who || (w && w.beleg) ? '<span class="she-f"><span class="she-k">' + (cost !== null ? esc(eur(cost)) : '') + (w && w.beleg ? '<span class="she-bl">Beleg</span>' : '') + '</span>' +
         (who ? '<span class="stamp s-' + (who === 'Eigenleistung' ? 'self' : 'shop') + '" aria-hidden="true">' + esc(who) + '</span><span class="vh">' + esc('Durchgeführt von: ' + who) + '</span>' : '') + '</span>' : '') +
       '</span>';
-    if (w && can) return '<li class="she"><button type="button" class="she-b" data-act="work-edit" data-id="' + esc(carId) + '" data-work="' + esc(w.id) + '" data-back="sh">' + inner + '</button></li>';
-    return '<li class="she"><div class="she-b">' + inner + '</div></li>';
+    if (w && can) return '<li class="she"><button type="button" class="she-b" data-act="work-edit" data-id="' + esc(carId) + '" data-work="' + esc(w.id) + '" data-back="sh">' + inner + '</button>' + blEntryStrip(carId, w) + '</li>';
+    return '<li class="she"><div class="she-b">' + inner + '</div>' + blEntryStrip(carId, w) + '</li>';
   }
   function sheetServiceheft(carId, car) {
     var c = shCheck(carId, car), ent = shEntries(carId, car), can = canWrite(), det = carDetails(car, true);
@@ -5981,7 +6094,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (c.unknown.length) h += '<p class="shn">' + esc('Noch kein Eintrag: ' + c.unknown.join(', ') + '. Wann zuletzt gemacht? Aus dem alten Serviceheft oder von Rechnungen nachtragen.') + '</p>';
     h += '</div>';
     h += '<div class="sh-btns">' + (can ? '<button type="button" class="btn" data-act="sh-add" data-id="' + esc(carId) + '">Eintrag nachtragen</button>' : '') +
+      (can && BL ? '<label class="btn ghost bl-btn"><input type="file" accept="image/*,application/pdf" multiple data-bl-add="e:' + esc(carId) + '">Beleg fotografieren</label>' : '') +
       '<button type="button" class="btn ghost" data-act="sh-pdf" data-id="' + esc(carId) + '">Als PDF speichern</button></div>';
+    h += shBlPdfOpt(car) + (can && BL ? '<p class="help">Beleg fotografieren: eine Rechnung oder eine Seite aus dem alten Serviceheft. Claude liest sie beim nächsten geplanten Lauf aus und trägt Datum, km, Arbeiten und Kosten ein, du prüfst dann nur noch. Mehrere Fotos auf einmal zählen als ein Beleg.</p>' : '');
     h += shTimeline(carId, car);
     var body = '', year = null;
     ent.forEach(function (e) {
@@ -6003,7 +6118,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     loadJsPdf().catch(function () {});
   }
   /* ---------- PDF ---------- */
-  function shPdf(lib, carId, car) {
+  function shPdf(lib, carId, car, att) {
     var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
     var W = 210, H = 297, M = 16, X1 = W - M, BOT = H - 16, y = M;
     var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243], bad: [178, 58, 42], warn: [196, 92, 20], ok: [44, 122, 75], leer: [120, 130, 136], self: [31, 93, 166], shop: [92, 62, 160] };
@@ -6019,7 +6134,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
     var newPage = function () { doc.addPage(); y = M; };
     var need = function (hh) { if (y + hh > BOT) { newPage(); return true; } return false; };
-    var c = shCheck(carId, car), ent = shEntries(carId, car).slice().reverse(), rows = wartRows(carId).filter(function (r) { return r.status !== 'info'; }).sort(wartSort);
+    var c = shCheck(carId, car), ent = shEntries(carId, car).filter(function (e) { return !blOffen(e.w); }).slice().reverse(), rows = wartRows(carId).filter(function (r) { return r.status !== 'info'; }).sort(wartSort);
     var stamp = function (label, col, cx, cy, deg, sz) {
       f('bold', sz); var tw = doc.getTextWidth(T(label)), w = tw + 8, hh = sz * PT + 5.5, a = deg * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
       var rot = function (dx, dy) { return [cx + dx * co + dy * si, cy - dx * si + dy * co]; };
@@ -6126,13 +6241,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       if (e.parts.length) cell.push({ t: (w ? 'Teile: ' : '') + e.parts.map(function (x) { return itemName(x.it) + (num(x.r.menge) !== 1 ? ' (' + fmt(x.r.menge) + ' ' + unitOf(x.it) + ')' : ''); }).join(', '), z: 8, c: C.mut });
       if (w && w.notiz) cell.push({ t: w.notiz, z: 8, c: C.mut });
       var who = shWho(w);
-      return [when, km, cell, [{ t: who || '–', c: who ? (who === 'Eigenleistung' ? C.self : C.shop) : C.mut, b: !!who }].concat(w && w.beleg ? [{ t: 'Beleg vorhanden', z: 7.5, c: C.mut }] : []), cost === null ? '' : eur(cost)];
+      return [when, km, cell, [{ t: who || '–', c: who ? (who === 'Eigenleistung' ? C.self : C.shop) : C.mut, b: !!who }].concat(w && att && att.ids && att.ids[w.id] ? [{ t: 'Beleg im Anhang', z: 7.5, c: C.mut }] : w && w.beleg ? [{ t: 'Beleg vorhanden', z: 7.5, c: C.mut }] : []), cost === null ? '' : eur(cost)];
     });
     if (data.length) table([{ t: 'Datum', w: 22 }, { t: 'km', w: 20 }, { t: 'Arbeit', w: 82 }, { t: 'Durchgeführt von', w: 32 }, { t: 'Kosten', w: 22, r: true }], data);
     else { f('normal', 10); tc(C.mut); txt('Noch keine Einträge.', M, y + 4); y += 10; }
     need(14); f('normal', 8); tc(C.mut);
-    var note = split('Eigene Aufzeichnungen des Halters, erstellt mit der Werkstatt-App. „Beleg vorhanden“ heißt: Rechnung oder Stempel liegt beim Halter. Teile ohne Einbaudatum sind mit dem Kaufdatum der Teile als frühestem Termin angegeben.', X1 - M);
+    var note = split('Eigene Aufzeichnungen des Halters, erstellt mit der Werkstatt-App. „Beleg vorhanden“ heißt: Rechnung oder Stempel liegt beim Halter. „Beleg im Anhang“: Foto des Belegs am Ende dieses PDFs. Teile ohne Einbaudatum sind mit dem Kaufdatum der Teile als frühestem Termin angegeben.', X1 - M);
     txt(note, M, y + 3);
+    if (att && att.list && att.list.length) shPdfBelege(doc, att, { M: M, X1: X1, H: H, f: f, tc: tc, dc: dc, txt: txt, split: split, C: C });
     var n = doc.getNumberOfPages();
     for (var i = 1; i <= n; i++) {
       doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 11, X1, H - 11);
@@ -6147,8 +6263,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
     var lib;
     try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var att = null, chk = $('#sh-pdf-bl');
+    if (BL && chk && chk.checked) {
+      toast('Belege werden geladen …');
+      try { att = await shPdfAttachments(carId, car); } catch (e) { att = null; }
+      if (att && att.failed) toast(att.failed === 1 ? 'Ein Beleg ließ sich nicht laden und fehlt im PDF.' : att.failed + ' Belege ließen sich nicht laden und fehlen im PDF.');
+    }
     var blob;
-    try { blob = shPdf(lib, carId, car).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    try { blob = shPdf(lib, carId, car, att).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
     var name = 'Serviceheft ' + fileSafe(car.name || 'Auto') + ' ' + dayKey(new Date()) + '.pdf';
     try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); }
     catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
@@ -6424,7 +6546,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!car || !RSET[k]) return;
     var s = reifenSet(car, k) || {}, p = s.profil && typeof s.profil === 'object' ? s.profil : {};
     var nv = function (v) { return numOrNull(v) === null ? '' : nfIn.format(v).replace('.', ','); };
-    openSheet('reifenform', { id: carId, set: k },
+    openSheet('reifenform', { id: carId, set: k, bl: BL ? { keep: blList(s.fotos), pend: [] } : null },
       '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Reifen · ' + (car.name || 'Auto')) + '</p>' +
       '<h2 class="sh-title" id="sheet-title">' + RSET[k].n + '</h2></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
@@ -6438,6 +6560,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       }).join('') + '</div><small>' + esc(isDay(p.am) ? 'Zuletzt gemessen am ' + datum(p.am) + '. Geänderte Werte zählen ab heute.' : 'Geänderte Werte zählen als heute gemessen.') + '</small></fieldset>' +
       '<div class="row2"><label class="f"><span>Felgen</span><input id="r-fe" value="' + esc(s.felge || '') + '" maxlength="40" placeholder="z. B. Alu 7×16 ET47" autocomplete="off"></label>' +
       '<label class="f"><span>Lagerort</span><input id="r-la" value="' + esc(s.lager || '') + '" maxlength="40" placeholder="z. B. Reifenregal links" autocomplete="off"></label></div>' +
+      blField(s.fotos, 'z. B. DOT-Nummer, Profil oder Schäden.') +
       '<label class="f"><span>Notiz</span><textarea id="r-no" rows="2" maxlength="300" placeholder="z. B. hinten links Nagel repariert">' + esc(s.notiz || '') + '</textarea></label>' +
       '<label class="check"><input type="checkbox" id="r-mon"' + (reifenDoc(car).montiert === k ? ' checked' : '') + '><span>Diese Reifen sind gerade montiert</span></label>' +
       (car.fremd ? '' : '<p class="help">Dann erinnert die App rechtzeitig an den nächsten Wechsel.</p>') +
@@ -6465,8 +6588,17 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (bad) { showErr('Die Profiltiefe bitte in mm eintragen, z. B. 6,5.'); return; }
     var any = RPOS.some(function (x) { return prof[x[0]] !== null; });
     prof.am = any ? (changed || !isDay(op.am) ? dayKey(new Date()) : op.am) : null;
+    var fotos = null;
+    if (BL && s.bl) {
+      setBusy(true);
+      try { fotos = await blCommitForm(s.id, RSET[s.set].n); }
+      catch (e) { setBusy(false); showErr(blErrText(e)); return; }
+      setBusy(false);
+      car = S.cars.get(s.id) || car;
+    }
     var set = Object.assign({}, old, { groesse: g('r-gr').slice(0, 40) || null, marke: g('r-ma').slice(0, 40) || null, modell: g('r-mo').slice(0, 40) || null, dot: dot || null,
       profil: prof, felge: g('r-fe').slice(0, 40) || null, lager: g('r-la').slice(0, 40) || null, notiz: g('r-no').slice(0, 300) || null });
+    if (fotos) set.fotos = fotos;
     var rd = Object.assign({}, reifenDoc(car)), now = new Date().toISOString(), mon = !!(($('#r-mon') || {}).checked);
     rd[s.set] = set;
     if (mon) rd.montiert = s.set; else if (rd.montiert === s.set) rd.montiert = null;
@@ -6542,6 +6674,469 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       renderAll();
       toast(RSET[auf].n + ' montiert, im Serviceheft eingetragen.');
     } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Fotos und Belege: Dateien im privaten Daten-Repository (nur in der eigenständigen Version) ---------- */
+  var BL = null;
+  var blUrls = new Map(), blLoading = new Map(), blActive = 0, blWait = [];
+  var BL_MAX_PDF = 10 * 1024 * 1024;
+  var BL_PDF = '<svg class="bl-pdfi" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 2.8h8.2L18.4 7v14.2H6z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M14 2.8V7h4.4M8.8 12.5h6.4M8.8 15.6h6.4M8.8 18.6h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+  var BL_CLIP = '<svg class="bl-clip" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 12.6l6.1-6.1a3.1 3.1 0 0 1 4.4 4.4l-8.2 8.2a5.1 5.1 0 0 1-7.2-7.2l7.5-7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+  function blKey(r) { return r.sha || r.pfad; }
+  function blRefOk(r) { return !!r && typeof r === 'object' && typeof r.pfad === 'string' && /^belege\/[A-Za-z0-9_\-]+\/[A-Za-z0-9_\-.]+$/.test(r.pfad); }
+  function blList(x) { return arr(x).filter(blRefOk); }
+  function blAus(w) { var a = w && w.auslesen; return a && typeof a === 'object' ? a : null; }
+  function blOffen(w) { var a = blAus(w); return !!a && a.status === 'offen'; }
+  function blSafe(s) { return String(s || 'x').replace(/[^A-Za-z0-9_\-]/g, '_').slice(0, 60) || 'x'; }
+  function blSize(b) { b = num(b); return b >= 1048576 ? nf.format(round2(b / 1048576)) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' kB'; }
+  function blErr(m) { var e = new Error(m); e.code = 'bl_file'; return e; }
+  function blErrText(e, done) {
+    var c = e && e.code, m;
+    if (c === 'bl_file') m = e.message;
+    else if (c === 'unavailable') m = 'Keine Verbindung zu GitHub. Mit Internet nochmal versuchen.';
+    else if (c === 'resource_exhausted') m = 'GitHub-Limit erreicht, bitte kurz warten.';
+    else if (c === 'revoked') m = 'Der Zugangsschlüssel ist abgelaufen. Bitte neu eingeben.';
+    else if (c === 'invalid_argument') m = 'Hochladen abgelehnt: ' + ((e && e.message) || 'keine Schreibrechte') + '.';
+    else m = 'Hochladen hat nicht geklappt. Verbindung prüfen und nochmal versuchen.';
+    return m + (done ? ' ' + (done === 1 ? 'Eine Datei war schon oben.' : done + ' Dateien waren schon oben.') : '');
+  }
+  /* Laden mit höchstens drei gleichzeitigen Abrufen */
+  function blRun(fn) {
+    return new Promise(function (resolve, reject) {
+      var go = function () { blActive++; fn().then(resolve, reject).finally(function () { blActive--; var n = blWait.shift(); if (n) n(); }); };
+      if (blActive < 3) go(); else blWait.push(go);
+    });
+  }
+  function blLoad(r) {
+    var k = blKey(r);
+    if (r._url) return Promise.resolve(r._url);
+    if (blUrls.has(k)) return Promise.resolve(blUrls.get(k));
+    if (blLoading.has(k)) return blLoading.get(k);
+    if (!BL) return Promise.reject(blErr('Fotos gibt es nur in der Handy-App.'));
+    var p = blRun(function () { return BL.get(r); }).then(function (b) { var u = URL.createObjectURL(b); blUrls.set(k, u); blLoading.delete(k); return u; }, function (e) { blLoading.delete(k); throw e; });
+    blLoading.set(k, p);
+    return p;
+  }
+  function blBlob(r) {
+    if (r._blob) return Promise.resolve(r._blob);
+    return BL ? blRun(function () { return BL.get(r); }) : Promise.reject(blErr('Fotos gibt es nur in der Handy-App.'));
+  }
+  function blDecodeImg(file) {
+    return new Promise(function (resolve, reject) {
+      var u = URL.createObjectURL(file), im = new Image();
+      im.onload = function () { resolve({ src: im, width: im.naturalWidth, height: im.naturalHeight, close: function () { URL.revokeObjectURL(u); } }); };
+      im.onerror = function () { URL.revokeObjectURL(u); reject(blErr('Dieses Bildformat kann der Browser nicht lesen. Bitte als JPG oder PNG wählen.')); };
+      im.src = u;
+    });
+  }
+  function blDecode(file) {
+    if (typeof createImageBitmap !== 'function') return blDecodeImg(file);
+    var wrap = function (b) { return { src: b, width: b.width, height: b.height, close: function () { try { b.close(); } catch (_) {} } }; };
+    var p;
+    try { p = createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (_) { return blDecodeImg(file); }
+    return p.then(wrap, function () { return blDecodeImg(file); });
+  }
+  /* Fotos: lange Seite höchstens 1600 px; Belege zum Lesen 2000 px, damit auch Kleingedrucktes lesbar bleibt */
+  async function blPrepare(file, max) {
+    max = max || 1600;
+    var type = String(file.type || '').toLowerCase(), name = String(file.name || 'Beleg').replace(/[\u0000-\u001f]/g, '').slice(0, 80) || 'Beleg';
+    if (type === 'application/pdf' || /\.pdf$/i.test(name)) {
+      if (file.size > BL_MAX_PDF) throw blErr('Die PDF-Datei ist zu groß (höchstens 10 MB).');
+      if (!file.size) throw blErr('Die Datei ist leer.');
+      return { blob: file, typ: 'pdf', ext: 'pdf', name: name, w: null, h: null };
+    }
+    if (type && type.indexOf('image/') !== 0) throw blErr('Hier gehen nur Fotos und PDF-Dateien.');
+    var bmp = await blDecode(file);
+    if (!bmp.width || !bmp.height) { bmp.close(); throw blErr('Das Foto ist leer oder beschädigt.'); }
+    var sc = Math.min(1, max / Math.max(bmp.width, bmp.height)), w = Math.max(1, Math.round(bmp.width * sc)), h = Math.max(1, Math.round(bmp.height * sc));
+    var cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    var cx = cv.getContext('2d');
+    cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, h);
+    cx.imageSmoothingQuality = 'high';
+    cx.drawImage(bmp.src, 0, 0, w, h);
+    bmp.close();
+    var blob = await new Promise(function (res) { cv.toBlob(res, 'image/jpeg', 0.82); });
+    if (!blob) throw blErr('Das Foto ließ sich nicht verkleinern.');
+    return { blob: blob, typ: 'bild', ext: 'jpg', name: name.replace(/\.(heic|heif|png|webp|gif|bmp|jpe?g)$/i, '') + '.jpg', w: w, h: h };
+  }
+  async function blUpload(carId, p, label) {
+    var path = 'belege/' + blSafe(carId) + '/' + dayKey(new Date()) + '-' + rid(8) + '.' + p.ext;
+    var msg = ('App: ' + (p.typ === 'pdf' ? 'PDF' : 'Foto') + ' · ' + carName(carId) + (label ? ' · ' + label : '')).slice(0, 180);
+    var r = await track(function () { return BL.put(path, p.blob, msg); });
+    var ref = { id: rid(8), pfad: r.pfad, sha: r.sha || null, typ: p.typ, bytes: r.bytes || p.blob.size, name: p.name, am: new Date().toISOString() };
+    if (p.w) { ref.w = p.w; ref.h = p.h; }
+    if (p.url) blUrls.set(blKey(ref), p.url);
+    return ref;
+  }
+  /* ---------- Darstellung ---------- */
+  function blImg(r) {
+    var u = r._url || blUrls.get(blKey(r));
+    return '<img class="bl-img" alt="" draggable="false"' + (u ? ' src="' + esc(u) + '"' : ' data-blp="' + esc(r.pfad) + '" data-bls="' + esc(r.sha || '') + '"') + '>';
+  }
+  function blTile(r, ctx, i, rm) {
+    var pdf = r.typ === 'pdf', lab = (pdf ? 'PDF ' : 'Foto ') + (i + 1) + (r.name ? ' (' + r.name + ')' : '');
+    var t = '<button type="button" class="bl-t' + (pdf ? ' pdf' : '') + '" data-act="bl-view" data-ctx="' + esc(ctx) + '" data-i="' + i + '" aria-label="' + esc(lab + ' ansehen') + '">' +
+      (pdf ? BL_PDF + '<span class="bl-pn">PDF</span>' : blImg(r)) + '</button>';
+    return '<span class="bl-w">' + t + (rm ? '<button type="button" class="bl-x" data-act="bl-rm" data-i="' + i + '" aria-label="' + esc(lab + ' entfernen') + '">×</button>' : '') + '</span>';
+  }
+  function blAddTile(ctx, label) {
+    return '<label class="bl-add"><input type="file" accept="image/*,application/pdf" multiple data-bl-add="' + esc(ctx) + '">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5.5v13M5.5 12h13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg><span>' + esc(label) + '</span></label>';
+  }
+  function blClipCount(list) { var n = blList(list).length; return n ? ' <span class="bl-n">' + BL_CLIP + n + '<span class="vh">' + (n === 1 ? ' Datei' : ' Dateien') + '</span></span>' : ''; }
+  /* Feld im Formular (Arbeit, Reifen): neue Dateien werden erst beim Speichern hochgeladen */
+  function blFormList() {
+    var f = S.sheet && S.sheet.bl;
+    if (!f) return [];
+    return f.keep.concat(f.pend.map(function (p) { return { pfad: 'belege/neu/' + p.name, typ: p.typ, name: p.name, bytes: p.blob.size, w: p.w, h: p.h, _url: p.url, _blob: p.blob, _neu: true }; }));
+  }
+  function blFormTiles(list) {
+    return list.map(function (r, i) { return blTile(r, 'f', i, true); }).join('') + blAddTile('f', list.length ? 'Noch eins' : 'Foto oder PDF');
+  }
+  function blField(list, help) {
+    if (!BL) return '';
+    return '<div class="f"><span id="bl-l">Fotos und Belege</span><div class="bl-s" id="bl-form" role="group" aria-labelledby="bl-l">' + blFormTiles(blList(list)) + '</div>' +
+      (help ? '<small>' + esc(help) + '</small>' : '') + '</div>';
+  }
+  function blFormRefresh() { var box = $('#bl-form'); if (box) box.innerHTML = blFormTiles(blFormList()); }
+  function blFormRemove(i) {
+    var f = S.sheet && S.sheet.bl;
+    if (!f) return;
+    if (i < f.keep.length) f.keep.splice(i, 1);
+    else { var pi = i - f.keep.length, p = f.pend[pi]; if (p) f.pend.splice(pi, 1); }
+    blFormRefresh();
+  }
+  async function blCommitForm(carId, label) {
+    var f = S.sheet && S.sheet.bl;
+    if (!f) return null;
+    var out = f.keep.slice();
+    for (var i = 0; i < f.pend.length; i++) {
+      var p = f.pend[i];
+      if (!p.ref) {
+        if (f.pend.length > 1) toast('Lade hoch: ' + (i + 1) + ' von ' + f.pend.length + ' …');
+        p.ref = await blUpload(carId, p, label);
+      }
+      out.push(p.ref);
+    }
+    return out;
+  }
+  /* Dateien gewählt */
+  async function blAddFiles(input) {
+    var ctx = input.dataset.blAdd || '', files = Array.prototype.slice.call(input.files || []);
+    input.value = '';
+    if (!files.length || !BL) return;
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var prepared = [], errs = [], max = ctx.charAt(0) === 'e' || (ctx === 'f' && S.sheet && S.sheet.type === 'workform') ? 2000 : 1600;
+    if (files.length > 1 || /^image\//.test(files[0].type || '')) toast(files.length > 1 ? files.length + ' Dateien werden vorbereitet …' : 'Foto wird vorbereitet …');
+    for (var i = 0; i < files.length; i++) {
+      try { var p = await blPrepare(files[i], max); p.url = URL.createObjectURL(p.blob); prepared.push(p); }
+      catch (e) { errs.push(String(files[i].name || 'Datei') + ': ' + ((e && e.message) || 'nicht lesbar')); }
+    }
+    if (!prepared.length) { toast(errs[0] || 'Die Datei ließ sich nicht lesen.'); return; }
+    if (ctx === 'f') {
+      if (!S.sheet || !S.sheet.bl) return;
+      S.sheet.bl.pend = S.sheet.bl.pend.concat(prepared);
+      blFormRefresh();
+      var bc = $('#w-beleg');
+      if (bc) bc.checked = true;
+      toast(errs.length ? errs[0] : prepared.length === 1 ? 'Hinzugefügt. Wird beim Speichern hochgeladen.' : prepared.length + ' Dateien hinzugefügt. Werden beim Speichern hochgeladen.');
+      return;
+    }
+    await blDirect(ctx, prepared);
+    if (errs.length) setTimeout(function () { toast(errs[0]); }, 2600);
+  }
+  /* Direkt speichern: Fotos vom Auto (c:<auto>) oder Beleg zum Auslesen (e:<auto>) */
+  async function blDirect(ctx, prepared) {
+    var p = ctx.split(':'), carId = p[1], car = S.cars.get(carId), refs = [];
+    if (!car || (p[0] !== 'c' && p[0] !== 'e')) return;
+    if (S.busy) { toast('Bitte kurz warten, es wird noch gespeichert.'); return; }
+    setBusy(true);
+    try {
+      for (var i = 0; i < prepared.length; i++) {
+        toast(prepared.length > 1 ? 'Lade hoch: ' + (i + 1) + ' von ' + prepared.length + ' …' : 'Lade hoch …');
+        refs.push(await blUpload(carId, prepared[i], p[0] === 'e' ? 'Beleg zum Auslesen' : 'Foto vom Auto'));
+      }
+      car = S.cars.get(carId) || car;
+      var now = new Date().toISOString(), patch;
+      if (p[0] === 'c') patch = { fotos: blList(car.fotos).concat(refs), geaendert: now };
+      else patch = { arbeiten: arr(car.arbeiten).concat([{ id: rid(10), erstellt: now, titel: 'Beleg zum Auslesen', datum: null, datumGenau: null, kosten: null, km: null, kmCa: false, notiz: '', durch: null, beleg: true, wartung: [], belege: refs, auslesen: { status: 'offen', am: now } }]), geaendert: now };
+      await write(function () { return S.db.doc('fahrzeuge/' + carId).update(patch); });
+      S.cars.set(carId, Object.assign({}, car, patch));
+      setBusy(false);
+      refreshSheet(); renderAll();
+      toast(p[0] === 'c' ? (refs.length === 1 ? 'Foto gespeichert.' : refs.length + ' Fotos gespeichert.') : 'Beleg gespeichert. Claude liest ihn beim nächsten geplanten Lauf aus.');
+    } catch (e) {
+      setBusy(false);
+      if (refs.length && e && e.code !== 'bl_file' && !(e.code === 'unavailable' && e.network)) writeError(e);
+      else toast(blErrText(e, refs.length));
+    } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Fotos vom Auto (Auto-Blatt) und Belege im Serviceheft ---------- */
+  function carFotosSec(id, car) {
+    if (!BL || car.archiviert) return '';
+    var l = blList(car.fotos), can = canWrite();
+    if (!l.length && !can) return '';
+    return '<div class="sh-sec"><h3 class="sec">Fotos · ' + l.length + '</h3><div class="bl-s">' + l.map(function (r, i) { return blTile(r, 'c:' + id, i, false); }).join('') +
+      (can ? blAddTile('c:' + id, l.length ? 'Foto' : 'Foto machen') : '') + '</div>' +
+      (l.length ? '' : '<p class="help">Zustand, Schäden, Typenschild oder Zulassungsschein. Die Fotos liegen in deinem privaten Daten-Repository.</p>') + '</div>';
+  }
+  function blEntryStrip(carId, w) {
+    if (!BL || !w) return '';
+    var l = blList(w.belege);
+    return l.length ? '<div class="bl-s she-bls">' + l.map(function (r, i) { return blTile(r, 'w:' + carId + ':' + w.id, i, false); }).join('') + '</div>' : '';
+  }
+  function blAusChip(w) {
+    var a = blAus(w);
+    if (!a) return '';
+    if (a.status === 'offen') return '<span class="she-aus"><span class="wst plan">wird ausgelesen</span> Claude trägt Datum, km, Arbeiten und Kosten beim nächsten geplanten Lauf ein.</span>';
+    if (a.status === 'erledigt' && !a.geprueft) return '<span class="she-aus"><span class="wst bald">bitte prüfen</span> ' + esc('Von Claude aus dem Beleg eingetragen.' + (a.hinweis ? ' ' + a.hinweis : '') + ' Antippen, prüfen und speichern.') + '</span>';
+    if (a.status === 'unlesbar') return '<span class="she-aus"><span class="wst faellig">nicht lesbar</span> ' + esc((a.hinweis ? a.hinweis + ' ' : '') + 'Bitte selbst eintragen oder ein schärferes Foto machen.') + '</span>';
+    return '';
+  }
+  /* beim Speichern einer Arbeit: Auslesen gilt als geprüft bzw. selbst eingetragen */
+  function blAusSave(x, rec, now) {
+    var a = blAus(x);
+    if (!a) return {};
+    if (a.status === 'erledigt' && !a.geprueft) return { auslesen: Object.assign({}, a, { geprueft: now }) };
+    if ((a.status === 'offen' || a.status === 'unlesbar') && rec && rec.titel && rec.titel !== 'Beleg zum Auslesen') return { auslesen: Object.assign({}, a, { status: 'selbst', selbst: now }) };
+    return {};
+  }
+  function blCtxList(ctx) {
+    if (ctx === 'f') return blFormList();
+    var p = String(ctx || '').split(':'), car = S.cars.get(p[1]);
+    if (!car) return [];
+    if (p[0] === 'c') return blList(car.fotos);
+    if (p[0] === 'w') { var w = arr(car.arbeiten).filter(function (x) { return x && x.id === p[2]; })[0]; return w ? blList(w.belege) : []; }
+    return [];
+  }
+  /* ---------- Betrachter (Vollbild) ---------- */
+  var BV = null;
+  function blViewerOpen() { var el = $('#bv'); return !!(BV && el && !el.hidden); }
+  function blOpenViewer(ctx, i) {
+    var list = blCtxList(ctx);
+    if (!list.length) return;
+    BV = { ctx: ctx, list: list, i: Math.max(0, Math.min(list.length - 1, Number(i) || 0)), zoom: false, prev: document.activeElement, arm: 0 };
+    var el = $('#bv');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'bv'; el.className = 'bv'; el.tabIndex = -1;
+      el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Fotos und Belege');
+      var sx = 0, sy = 0;
+      el.addEventListener('touchstart', function (e) { var t = e.changedTouches && e.changedTouches[0]; if (t) { sx = t.clientX; sy = t.clientY; } }, { passive: true });
+      el.addEventListener('touchend', function (e) {
+        var t = e.changedTouches && e.changedTouches[0];
+        if (!t || !BV || BV.zoom || BV.list.length < 2) return;
+        var dx = t.clientX - sx, dy = t.clientY - sy;
+        if (Math.abs(dx) > 60 && Math.abs(dy) < 50) blViewStep(dx < 0 ? 1 : -1);
+      }, { passive: true });
+      document.body.appendChild(el);
+    }
+    el.hidden = false;
+    blViewRender();
+    try { el.focus({ preventScroll: true }); } catch (_) {}
+  }
+  function blCloseViewer() {
+    var el = $('#bv'), prev = BV && BV.prev;
+    BV = null;
+    if (el) { el.hidden = true; el.innerHTML = ''; }
+    if (prev && prev.isConnected) try { prev.focus({ preventScroll: true }); } catch (_) {}
+  }
+  function blViewStep(d) {
+    if (!BV || BV.list.length < 2) return;
+    BV.i = (BV.i + d + BV.list.length) % BV.list.length; BV.zoom = false; BV.arm = 0;
+    blViewRender();
+  }
+  function blViewRender() {
+    var el = $('#bv');
+    if (!el || !BV) return;
+    var r = BV.list[BV.i], n = BV.list.length, pdf = r.typ === 'pdf', u = r._url || blUrls.get(blKey(r));
+    var meta = [r.name || '', r.bytes ? blSize(r.bytes) : '', isDay(String(r.am || '').slice(0, 10)) ? 'hinzugefügt ' + datum(String(r.am).slice(0, 10)) : ''].filter(Boolean).join(' · ');
+    var stage = pdf ? '<div class="bv-pdf">' + BL_PDF + '<b>' + esc(r.name || 'PDF') + '</b><button type="button" class="btn" data-act="bv-open">PDF öffnen</button></div>'
+      : u ? '<img class="bv-img" src="' + esc(u) + '" alt="' + esc(r.name || 'Foto') + '" data-act="bv-zoom">'
+      : '<p class="bv-load">Lädt …</p>';
+    el.innerHTML = '<div class="bv-top"><span class="bv-n">' + (n > 1 ? (BV.i + 1) + ' von ' + n : '') + '</span>' +
+      '<button type="button" class="bv-b" data-act="bv-close" aria-label="Schließen">×</button></div>' +
+      '<div class="bv-st' + (BV.zoom ? ' z' : '') + '" id="bv-st">' + stage + '</div>' +
+      (n > 1 ? '<button type="button" class="bv-nav l" data-act="bv-prev" aria-label="Vorherige Datei">‹</button><button type="button" class="bv-nav r" data-act="bv-next" aria-label="Nächste Datei">›</button>' : '') +
+      '<div class="bv-bot"><span class="bv-m">' + esc(meta) + (pdf || BV.zoom ? '' : '<span class="bv-h">Zum Vergrößern aufs Bild tippen.</span>') + '</span><span class="bv-a">' +
+      (S.dl ? '<button type="button" class="btn ghost small" data-act="bv-save">Teilen</button>' : '') +
+      (canWrite() ? '<button type="button" class="btn ghost small" data-act="bv-rm">' + (BV.arm > Date.now() ? 'Wirklich entfernen?' : 'Entfernen') + '</button>' : '') + '</span></div>';
+    if (!pdf && !u) {
+      blLoad(r).then(function () { if (BV && BV.list[BV.i] === r) blViewRender(); }, function (e) {
+        var st2 = $('#bv-st');
+        if (st2 && BV && BV.list[BV.i] === r) st2.innerHTML = '<p class="bv-load">' + esc(e && e.code === 'bl_file' ? e.message : 'Konnte nicht geladen werden. Verbindung prüfen.') + '</p>';
+      });
+    }
+  }
+  function blViewZoom(img, ev) {
+    if (!BV) return;
+    var st = $('#bv-st');
+    if (!BV.zoom) {
+      var rect = img.getBoundingClientRect(), fx = ev && rect.width ? (ev.clientX - rect.left) / rect.width : 0.5, fy = ev && rect.height ? (ev.clientY - rect.top) / rect.height : 0.5;
+      BV.zoom = true;
+      if (st) st.classList.add('z');
+      var bh = $('.bv-h'); if (bh) bh.remove();
+      requestAnimationFrame(function () { if (!st) return; st.scrollLeft = Math.max(0, img.naturalWidth * fx - st.clientWidth / 2); st.scrollTop = Math.max(0, img.naturalHeight * fy - st.clientHeight / 2); });
+    } else { BV.zoom = false; if (st) { st.classList.remove('z'); st.scrollLeft = 0; st.scrollTop = 0; } }
+  }
+  async function blViewSave() {
+    if (!BV || !S.dl) return;
+    var r = BV.list[BV.i];
+    try {
+      var b = await blBlob(r);
+      await S.dl.save({ filename: r.name || ('Beleg.' + (r.typ === 'pdf' ? 'pdf' : 'jpg')), data: b });
+    } catch (e) { if (!e || e.code !== 'declined') toast(e && e.code === 'bl_file' ? e.message : 'Teilen ging gerade nicht.'); }
+  }
+  async function blViewOpenPdf() {
+    if (!BV) return;
+    var r = BV.list[BV.i];
+    try {
+      var u = await blLoad(r), w = window.open(u, '_blank', 'noopener');
+      if (!w) await blViewSave();
+    } catch (e) { toast(e && e.code === 'bl_file' ? e.message : 'Die PDF-Datei konnte nicht geladen werden.'); }
+  }
+  async function blViewRemove(btn) {
+    if (!BV || !canWrite()) return;
+    if (!(BV.arm > Date.now())) {
+      BV.arm = Date.now() + 4000;
+      btn.textContent = 'Wirklich entfernen?';
+      setTimeout(function () { if (BV && BV.arm && BV.arm <= Date.now() && btn.isConnected) { BV.arm = 0; btn.textContent = 'Entfernen'; } }, 4100);
+      return;
+    }
+    BV.arm = 0;
+    var ctx = BV.ctx, r = BV.list[BV.i];
+    if (ctx === 'f') { blFormRemove(BV.i); }
+    else {
+      var p = ctx.split(':'), carId = p[1], car = S.cars.get(carId);
+      if (!car || S.busy) return;
+      var drop = function (l) { return blList(l).filter(function (x) { return x.pfad !== r.pfad; }); }, now = new Date().toISOString(), patch = { geaendert: now };
+      if (p[0] === 'c') patch.fotos = drop(car.fotos);
+      else if (p[0] === 'w') patch.arbeiten = arr(car.arbeiten).map(function (w) { return w && w.id === p[2] ? Object.assign({}, w, { belege: drop(w.belege) }) : w; });
+      else return;
+      setBusy(true);
+      try {
+        await write(function () { return S.db.doc('fahrzeuge/' + carId).update(patch); });
+        S.cars.set(carId, Object.assign({}, car, patch));
+        setBusy(false);
+        refreshSheet(); renderAll();
+        toast('Entfernt. Die Datei selbst bleibt im Daten-Repository.');
+      } catch (e) { setBusy(false); writeError(e); return; } finally { if (S.busy) setBusy(false); }
+    }
+    if (!BV) return;
+    BV.list = blCtxList(ctx);
+    if (!BV.list.length) { blCloseViewer(); return; }
+    BV.i = Math.min(BV.i, BV.list.length - 1); BV.zoom = false;
+    blViewRender();
+  }
+  function blViewerKey(e) {
+    if (!blViewerOpen()) return false;
+    if (e.key === 'Escape') { e.preventDefault(); blCloseViewer(); return true; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); blViewStep(-1); return true; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); blViewStep(1); return true; }
+    if (e.key === 'Tab') {
+      var el = $('#bv'), f = $$('button, [href], input', el).filter(function (x) { return !x.disabled && x.offsetParent !== null; });
+      if (!f.length) return true;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === el)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      return true;
+    }
+    return true;
+  }
+  /* Vorschaubilder nachladen, sobald sie im Bild sind */
+  var blObs = null, blHydT = 0;
+  function blHydrate() {
+    if (!BL) return;
+    $$('img.bl-img[data-blp]').forEach(function (im) {
+      if (im._bl) return;
+      im._bl = 1;
+      var r = { pfad: im.getAttribute('data-blp'), sha: im.getAttribute('data-bls') || null };
+      blLoad(r).then(function (u) { if (im.isConnected) { im.src = u; im.removeAttribute('data-blp'); } }, function () { var w = im.closest('.bl-w'); if (w) w.classList.add('err'); });
+    });
+  }
+  function blStart(b) {
+    BL = b || null;
+    if (!BL) return;
+    if (!blObs && window.MutationObserver) {
+      blObs = new MutationObserver(function () { clearTimeout(blHydT); blHydT = setTimeout(blHydrate, 40); });
+      blObs.observe(document.body, { childList: true, subtree: true });
+    }
+    renderAll(); refreshSheet();
+    blHydrate();
+  }
+  /* ---------- Serviceheft-PDF: Belege als Anhang ---------- */
+  function blDataUrl(blob) {
+    return new Promise(function (resolve, reject) { var fr = new FileReader(); fr.onload = function () { resolve(String(fr.result || '')); }; fr.onerror = function () { reject(blErr('Datei nicht lesbar')); }; fr.readAsDataURL(blob); });
+  }
+  async function blDims(blob, r) {
+    if (r.w && r.h) return { w: r.w, h: r.h };
+    var b = await blDecode(blob), d = { w: b.width, h: b.height };
+    b.close();
+    return d;
+  }
+  async function shPdfAttachments(carId, car) {
+    var works = arr(car.arbeiten).filter(function (w) { return w && w.titel && !blOffen(w) && blList(w.belege).length; });
+    works.sort(function (a, b) { var x = isDay(a.datum) ? a.datum : '9999', y = isDay(b.datum) ? b.datum : '9999'; return x < y ? -1 : x > y ? 1 : 0; });
+    var out = { list: [], ids: {}, failed: 0 };
+    for (var i = 0; i < works.length; i++) {
+      var w = works[i], item = { id: w.id, title: w.titel, sub: [workDate(w) || 'ohne Datum', numOrNull(w.km) !== null ? (w.kmCa ? 'ca. ' : '') + nf.format(num(w.km)) + ' km' : '', shWho(w), numOrNull(w.kosten) !== null ? eur(w.kosten) : ''].filter(Boolean).join(' · '), imgs: [], pdfs: [] };
+      var refs = blList(w.belege);
+      for (var k = 0; k < refs.length; k++) {
+        var r = refs[k];
+        if (r.typ === 'pdf') { item.pdfs.push(r.name || 'PDF'); continue; }
+        try {
+          var b = await blBlob(r), d = await blDims(b, r);
+          item.imgs.push({ data: await blDataUrl(b), fmt: /png/i.test(b.type) ? 'PNG' : 'JPEG', w: d.w, h: d.h });
+        } catch (e) { out.failed++; }
+      }
+      if (item.imgs.length || item.pdfs.length) { out.list.push(item); out.ids[w.id] = true; }
+    }
+    return out;
+  }
+  function shPdfBelege(doc, att, o) {
+    var M = o.M, X1 = o.X1, H = o.H, BOT = H - 16;
+    var pdfOnly = [];
+    att.list.forEach(function (a) {
+      if (!a.imgs.length) { pdfOnly.push(a); return; }
+      a.imgs.forEach(function (im, k) {
+        doc.addPage();
+        var y = M;
+        o.f('bold', 8.5); o.tc(o.C.mut); o.txt('ANHANG: BELEGE', M, y + 3); y += 6;
+        o.f('bold', 13); o.tc(o.C.ink);
+        var tl = o.split(a.title + (a.imgs.length > 1 ? ' (Seite ' + (k + 1) + ' von ' + a.imgs.length + ')' : ''), X1 - M);
+        o.txt(tl, M, y + 5); y += 5 + tl.length * 6.1;
+        o.f('normal', 9); o.tc(o.C.mut);
+        var sl = o.split(a.sub + (a.pdfs.length ? ' · dazu als PDF-Datei: ' + a.pdfs.join(', ') : ''), X1 - M);
+        o.txt(sl, M, y + 2); y += 3 + sl.length * 4.2;
+        var maxW = X1 - M, maxH = BOT - y - 2, sc = Math.min(maxW / im.w, maxH / im.h), w = im.w * sc, h = im.h * sc;
+        o.dc(o.C.line); doc.setLineWidth(0.2);
+        doc.addImage(im.data, im.fmt, M + (maxW - w) / 2, y, w, h, undefined, 'FAST');
+        doc.rect(M + (maxW - w) / 2, y, w, h, 'S');
+      });
+    });
+    if (pdfOnly.length) {
+      doc.addPage();
+      var y = M;
+      o.f('bold', 8.5); o.tc(o.C.mut); o.txt('ANHANG: BELEGE', M, y + 3); y += 8;
+      o.f('normal', 10); o.tc(o.C.ink);
+      var l = o.split('Diese Belege liegen als eigene PDF-Dateien vor und sind hier nicht eingebettet:', X1 - M);
+      o.txt(l, M, y + 3); y += 4 + l.length * 4.7;
+      pdfOnly.forEach(function (a) { var t = o.split(a.title + ' (' + a.sub + '): ' + a.pdfs.join(', '), X1 - M - 4); o.txt('•', M, y + 3); o.txt(t, M + 4, y + 3); y += 1.5 + t.length * 4.7; });
+    }
+  }
+  function shBlPdfOpt(car) {
+    if (!BL) return '';
+    var n = 0;
+    arr(car.arbeiten).forEach(function (w) { if (w && w.titel && !blOffen(w)) n += blList(w.belege).filter(function (r) { return r.typ !== 'pdf'; }).length; });
+    return n ? '<label class="check sh-blopt"><input type="checkbox" id="sh-pdf-bl" checked><span>' + esc('Fotos der Belege ans PDF anhängen (' + n + ')') + '</span></label>' : '';
+  }
+  function blAusFormNote(w) {
+    var a = blAus(w);
+    if (!a) return '';
+    if (a.status === 'offen') return '<p class="note">Claude liest diesen Beleg beim nächsten geplanten Lauf aus. Trägst du ihn selbst ein, entfällt das Auslesen.</p>';
+    if (a.status === 'erledigt' && !a.geprueft) return '<p class="note">' + esc('Von Claude aus dem Beleg eingetragen' + (a.hinweis ? ': ' + a.hinweis : '.') + ' Bitte mit dem Foto vergleichen. Nach dem Speichern gilt der Eintrag als geprüft.') + '</p>';
+    if (a.status === 'unlesbar') return '<p class="note">' + esc('Claude konnte den Beleg nicht lesen' + (a.hinweis ? ': ' + a.hinweis : '.') + ' Bitte selbst eintragen.') + '</p>';
+    return '';
   }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
@@ -6760,6 +7355,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function triggerCam() { try { $('#cam').click(); } catch (_) {} }
   var kb = '', kbT = 0;
   function onKey(e) {
+    if (blViewerKey(e)) return;
     if (e.key === 'Escape' && S.sheet && !S.busy) { closeSheet(); return; }
     var el = e.target;
     if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
@@ -6878,6 +7474,15 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'pickerl-edit': openPickerlForm(t.dataset.id); break;
       case 'reifen-edit': openReifenForm(t.dataset.id, t.dataset.set); break;
       case 'reifen-wechsel': openReifenWechsel(t.dataset.id); break;
+      case 'bl-view': blOpenViewer(t.dataset.ctx, t.dataset.i); break;
+      case 'bl-rm': blFormRemove(Number(t.dataset.i)); break;
+      case 'bv-close': blCloseViewer(); break;
+      case 'bv-prev': blViewStep(-1); break;
+      case 'bv-next': blViewStep(1); break;
+      case 'bv-zoom': blViewZoom(t, e); break;
+      case 'bv-save': blViewSave(); break;
+      case 'bv-open': blViewOpenPdf(); break;
+      case 'bv-rm': blViewRemove(t); break;
       case 'pickerl-plus': var pm = $('#p-mon'); if (pm && isYm(t.dataset.val)) pm.value = t.dataset.val; break;
       case 'zeitplan': openZeitplan(); break;
       case 'zeitplan-csv': saveZeitplanCsv(); break;
@@ -6895,6 +7500,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var t = e.target;
     if (!t) return;
     if (t.name === 'rw-auf') { reifenWechselLabel(); return; }
+    if (t.dataset && t.dataset.blAdd !== undefined) { blAddFiles(t); return; }
     if (t.name === 'f-bereich') {
       var f = $('#editform');
       if (f) f.dataset.bereich = t.value;
@@ -6974,6 +7580,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     renderAll();
     setTimeout(function () { loadZX().catch(function () {}); }, 1800);
     use('mcp').then(function (m) { S.mcp = m; renderAnstehend(); });
+    use('belege').then(blStart, function () {});
     var caps = await Promise.all([use('db'), use('user'), use('downloads')]);
     S.user = caps[1]; S.dl = caps[2];
     if (!caps[0]) { S.conn = 'aus'; renderAll(); return; }
