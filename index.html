@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "22", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "23", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1902,14 +1902,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         renderAll(); refreshSheet();
       }, function () { S.repsReady = true; renderAll(); });
       S.db.collection('meta').onSnapshot(function (snap) {
-        var m = null, e = null;
+        var m = null, e = null, ri = null;
         snap.docs.forEach(function (d) {
           if (!d.exists) return;
           var v = d.data();
           if (!v || typeof v !== 'object') return;
-          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v;
+          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v;
         });
-        S.metaRecherche = m; S.einst = e; renderAll(); refreshSheet();
+        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.metaReady = true; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('wartung').onSnapshot(function (snap) {
         var m = new Map();
@@ -2719,7 +2719,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
 
   /* ---------- Darstellung ---------- */
-  function renderAll() { renderConn(); renderScan(); renderBestand(); renderKarte(); renderAutos(); renderAnstehend(); renderVerlauf(); }
+  function renderAll() { renderConn(); renderScan(); renderBestand(); renderKarte(); renderAutos(); renderAnstehend(); renderVerlauf(); syncErinnerungen(); }
   function renderConn() {
     var el = $('#sync'), st = S.conn;
     if (S.writing > 0 && st === 'ok') st = 'busy';
@@ -6258,6 +6258,33 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     o.f('normal', 7.5); o.tc(o.C.mut);
     var l = o.split('Grün: im Intervall · Orange: über deiner Vorgabe · Rot: überzogen · Grau: unbekannt · Punkt: Eintrag' + (t.via ? ' · offener Punkt: Teil gekauft, Einbau danach' : '') + (t.kauf !== null ? ' · gestrichelt: Kauf' : '') + ' · Strich: heute', X1 - M);
     o.need(l.length * 3.6 + 2); o.txt(l, M, o.y() + 3); o.sy(o.y() + l.length * 3.6 + 5);
+  }
+  /* ---------- Erinnerungen: anstehende Termine ablegen, der geplante Lauf schickt daraus eine Push-Nachricht ---------- */
+  var ERI = { t: null, last: null };
+  function erinnerungenData() {
+    var monEnd = function (d) { return addDays(addMonths(d.slice(0, 7) + '-01', 1), -1); };
+    return zeitplanData().ev.map(function (e) {
+      var key = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : 'rep-' + e.id;
+      /* Datum für die 14-Tage-Grenze. Geschätzte Termine nur auf den Monat genau, sonst ändert sich die Datei jeden Tag.
+         Arbeiten mit „bis Monat/Jahr“ zählen bis zum Ende des Monats bzw. Jahres. */
+      var datum = e.now ? null : e.est ? e.d.slice(0, 7) + '-01'
+        : e.kind === 'rep' && e.r.faelligGenau === 'jahr' ? e.d.slice(0, 4) + '-12-31' : e.kind === 'rep' && e.r.faelligGenau === 'monat' ? monEnd(e.d) : e.d;
+      var wann = e.now ? 'jetzt fällig' : e.kind === 'pickerl' ? 'fällig ' + ymTxt(e.pk.due) : e.kind === 'rep' ? 'bis ' + repDue(e.r) : (e.est ? 'ca. ' : 'bis ') + fmtGenau(e.d, 'monat') + (e.est ? ' (geschätzt)' : '');
+      return { key: key, art: e.kind, auto: e.carName, was: String(e.title || ''), jetzt: !!e.now, datum: datum, wann: wann, geschaetzt: !!e.est, info: zpSub(e) };
+    });
+  }
+  function syncErinnerungen() {
+    if (!S.db || !canWrite() || S.conn !== 'ok' || !S.carsReady || !S.repsReady || !S.wartReady || !S.itemsReady || !S.metaReady) return;
+    clearTimeout(ERI.t);
+    ERI.t = setTimeout(function () {
+      var list = erinnerungenData(), js = JSON.stringify(list);
+      var cur = S.metaErinnerungen && Array.isArray(S.metaErinnerungen.termine) ? JSON.stringify(S.metaErinnerungen.termine) : null;
+      if (js === cur || js === ERI.last) return;
+      ERI.last = js;
+      write(function () {
+        return S.db.doc('meta/erinnerungen').set({ stand: new Date().toISOString(), hinweis: 'Von der App geschrieben: anstehende Termine der nächsten 12 Monate. Der geplante Lauf meldet daraus Fälliges per Push.', termine: list });
+      }).catch(function () { ERI.last = null; });
+    }, 4000);
   }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
