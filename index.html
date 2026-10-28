@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "30", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "31", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1722,6 +1722,15 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .rr-src summary { padding: 10px 0 6px; font-weight: 700; cursor: pointer; }
 .car-s .rr-f b { color: var(--kaufen); }
 .rr-a { color: var(--wb); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+/* Winterpause: Oldtimer/Youngtimer und Kundenautos */
+.wp-klc { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.wp-klc > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wp-klc small { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.wp-kh { margin: 14px 0 0; padding-top: 10px; border-top: 2px solid var(--wb); font-size: 13px; font-weight: 700; color: var(--wb); }
+.wp-kh + .wpl .wpi:first-child { border-top: 0; }
+.wp-hier { margin-top: 4px; }
+.wp-hier > .help { margin: 0 0 8px; }
+.wpt-b .btn { flex: 1 1 auto; }
 </style>
 
 <div class="wrap">
@@ -9126,9 +9135,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
   /* ---------- Winterpause: Einmotten, Batterie laden, Ausmotten (nach ADAC-Oldtimer-Ratgeber) ---------- */
   var WP_Q = { quellen: [
-    { titel: 'ADAC Oldtimer-Ratgeber 2024/25: Pflege und Wartung, Einmotten und Ausmotten (S. 114–118)', url: 'https://res.cloudinary.com/adacmkv/image/upload/ADAC%20Klassik/%C3%9Cber%20uns/Oldtimer-Ratgeber/2024_2025/ADAC_Oldtimer_Ratgeber_2024_25_Kapitel_10_Pflege_und_Wartung_250dpi_ruv0dx.pdf' },
+    { titel: 'ADAC Oldtimer-Ratgeber 2024/25: Pflege und Wartung, Einmotten und Ausmotten, Räder- und Lackpflege (S. 114–120)', url: 'https://res.cloudinary.com/adacmkv/image/upload/ADAC%20Klassik/%C3%9Cber%20uns/Oldtimer-Ratgeber/2024_2025/ADAC_Oldtimer_Ratgeber_2024_25_Kapitel_10_Pflege_und_Wartung_250dpi_ruv0dx.pdf' },
     { titel: 'oesterreich.gv.at: Hinterlegung des Kennzeichens', url: 'https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/Seite.061000' },
-    { titel: 'Kfz-Meisterbetrieb Dietrich: Oldtimer-Unterboden, Zustand vorher und nachher', url: 'https://kfz-dietrich.com/blog/unterbodenversiegelung-oldtimer-vor-nach-zustand/' }
+    { titel: 'Kfz-Meisterbetrieb Dietrich: Oldtimer-Unterboden, Zustand vorher und nachher', url: 'https://kfz-dietrich.com/blog/unterbodenversiegelung-oldtimer-vor-nach-zustand/' },
+    { titel: 'ADAC: Reifen richtig lagern', url: 'https://www.adac.de/rund-ums-fahrzeug/reifen/sicherheit/reifen-lagern/' },
+    { titel: 'Kfz-Meisterbetrieb Dietrich: Oldtimer-Reifen, Alterung, Standplatten und Werterhalt', url: 'https://kfz-dietrich.com/blog/oldtimer-reifen-alterung-standplatten-werterhalt/' }
   ] };
   var WP_EIN = [
     { id: 'pickerl', t: 'Pickerl vorher erledigen', d: 'Prüfungen am besten noch vor dem Einmotten machen.', q: [1] },
@@ -9157,7 +9168,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   ];
   var WP_ICON = '<svg class="wpb-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"></path><path d="M9.4 4.3 12 6.6l2.6-2.3M9.4 19.7 12 17.4l2.6 2.3M4.2 10.4l3.3-1 .7-3.4M19.8 13.6l-3.3 1-.7 3.4M4.2 13.6l3.3 1 .7 3.4M19.8 10.4l-3.3-1-.7-3.4"></path></g></svg>';
   function wpDoc(car) { var w = car && car.winterpause; return w && typeof w === 'object' ? w : {}; }
-  function wpOn(car) { var w = wpDoc(car); return !!w.aktiv && !car.fremd && !car.archiviert; }
+  function wpOn(car) { var w = wpDoc(car); return !!w.aktiv && !car.archiviert; }
   function wpMap(x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; }
   function wpYm(s) { return typeof s === 'string' && /^\d{4}-\d{2}$/.test(s); }
   /* Monate addieren, Tag am Monatsende kappen (31.12. + 2 Monate = 28./29.2.) */
@@ -9184,20 +9195,21 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       info: (ld.geladen ? 'Zuletzt geladen am ' : 'Abgestellt am ') + datum(ld.last) + '. Ohne Erhaltungsladegerät spätestens alle zwei Monate einige Stunden laden.' });
     var aus = w.phase === 'aus', nowEnd = aus || (wpYm(w.bis) && w.bis <= today.slice(0, 7));
     if (nowEnd || (wpYm(w.bis) && w.bis < until)) ev.push({ kind: 'wp', sub: 'ende', car: cid, carName: name, title: 'Winterpause beenden', d: nowEnd ? today : w.bis + '-01', now: nowEnd,
-      info: aus ? 'Checkliste fürs Ausmotten läuft: ' + wpCount(w.aus, WP_AUS) + ' von ' + WP_AUS.length + ' erledigt.' : 'Geplant bis ' + ymTxt(w.bis) + '. In der App wartet die Checkliste fürs Ausmotten.' });
+      info: aus ? 'Checkliste fürs Ausmotten läuft: ' + wpCount(w.aus, wpItems(car, 'aus')) + ' von ' + wpItems(car, 'aus').length + ' erledigt.' : 'Geplant bis ' + ymTxt(w.bis) + '. In der App wartet die Checkliste fürs Ausmotten.' });
     return ev;
   }
   /* ---------- Auto-Blatt ---------- */
   function wpBanner(id, car) {
-    if (car.fremd || car.archiviert) return '';
+    if (car.archiviert) return '';
     var w = wpDoc(car);
     if (!w.aktiv) {
       return canWrite() ? '<button type="button" class="wpb off" data-act="wp-open" data-id="' + esc(id) + '">' + WP_ICON +
-        '<span class="wpb-t"><b>Winterpause</b><span>Auto über den Winter abstellen: Checkliste und Erinnerung ans Batterieladen</span></span></button>' : '';
+        '<span class="wpb-t"><b>Winterpause</b><span>' + esc(car.fremd ? (isDay(w.tipps) ? 'Tipps geteilt am ' + datum(w.tipps) + '. Steht das Auto bei dir, kannst du es hier einmotten.' : 'Tipps fürs Abstellen an den Kunden schicken oder das Auto hier einmotten') : 'Auto über den Winter abstellen: Checkliste und Erinnerung ans Batterieladen') + '</span></span></button>' : '';
     }
     var ld = wpLaden(car), aus = w.phase === 'aus', lines = [];
     lines.push((isDay(w.seit) ? 'seit ' + datum(w.seit) : 'abgestellt') + (wpYm(w.bis) ? ' · bis ' + ymTxt(w.bis) : ''));
-    lines.push(aus ? 'Ausmotten ' + wpCount(w.aus, WP_AUS) + ' von ' + WP_AUS.length : 'Einmotten ' + wpCount(w.ein, WP_EIN) + ' von ' + WP_EIN.length);
+    var IA = wpItems(car, 'aus'), IE = wpItems(car, 'ein');
+    lines.push(aus ? 'Ausmotten ' + wpCount(w.aus, IA) + ' von ' + IA.length : 'Einmotten ' + wpCount(w.ein, IE) + ' von ' + IE.length);
     var bat = w.erhalt ? 'Erhaltungsladegerät hängt dran' : ld ? 'Batterie laden bis ' + datum(ld.d) : '';
     var chip = ld && (ld.now || ld.bald) ? '<span class="wst ' + (ld.now ? 'faellig' : 'bald') + '">Batterie</span>' : '';
     return '<button type="button" class="wpb on" data-act="wp-open" data-id="' + esc(id) + '">' + WP_ICON +
@@ -9207,7 +9219,6 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function openWp(carId, back) {
     var car = carId ? S.cars.get(carId) : null;
     if (!car) { toast('Dieses Auto gibt es nicht mehr.'); return; }
-    if (car.fremd) return;
     openSheet('wp', { id: carId, back: back || null }, sheetWp(carId, car));
     try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
   }
@@ -9217,6 +9228,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var r = wartRows(carId).filter(function (x) { return x.p && x.p.art === 'oel'; })[0], l = r && r.last;
       return l && l.datum ? 'Letzter Ölwechsel laut Wartungsplan: ' + shWhen(l.datum, l.genau) + '.' : '';
     }
+    if (it.id === 'reifenalter') return wpReifenHint(car);
     if (it.id === 'unterboden') { var nx = ubNext(car); return nx ? 'Nächste Unterboden-Prüfung laut App: ' + ymTxt(nx.ym) + '.' : ''; }
     return '';
   }
@@ -9236,34 +9248,20 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function sheetWp(carId, car) {
     var w = wpDoc(car), can = canWrite(), today = dayKey(new Date());
     var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Winterpause · ' + (car.name || 'Auto')) + '</p>' +
-      '<h2 class="sh-title" id="sheet-title">' + (!w.aktiv ? 'Auto abstellen' : w.phase === 'aus' ? 'Winterpause beenden' : 'Winterpause') + '</h2></div>' +
+      '<h2 class="sh-title" id="sheet-title">' + (!w.aktiv ? (car.fremd ? 'Winterpause-Tipps' : 'Auto abstellen') : w.phase === 'aus' ? 'Winterpause beenden' : 'Winterpause') + '</h2></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
-    if (!w.aktiv) {
-      var y = Number(today.slice(0, 4)) + (today.slice(5, 7) >= '05' ? 1 : 0), ck = curKmEst(car);
-      h += '<p class="rtext">Die App führt dich durch das Einmotten, erinnert ans Batterieladen und hat im Frühjahr die Checkliste fürs Ausmotten. Grundlage ist der Oldtimer-Ratgeber des ADAC' + srcRefs(WP_Q, [1]) + '.</p>';
-      var past = arr(w.log).filter(function (x) { return x && isDay(x.seit); });
-      if (past.length) h += '<p class="note">' + esc('Zuletzt abgestellt ' + datum(past[past.length - 1].seit) + (isDay(past[past.length - 1].ende) ? ' bis ' + datum(past[past.length - 1].ende) : '') + '.') + '</p>';
-      if (!can) return h + '<p class="note">Du kannst dieses Inventar nur ansehen.</p>';
-      h += '<form class="form" id="wpstart" novalidate>' +
-        '<div class="row2"><label class="f"><span>Abgestellt ab</span><input type="date" id="wp-seit" value="' + today + '"></label>' +
-        '<label class="f"><span>Voraussichtlich bis</span><input type="month" id="wp-bis" value="' + y + '-04" placeholder="JJJJ-MM"></label></div>' +
-        '<label class="f"><span>Kilometerstand beim Abstellen</span><input id="wp-km" inputmode="numeric" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'optional') + '" autocomplete="off"><small>Hält die Fahrleistung richtig, wenn das Auto monatelang steht.</small></label>' +
-        '<label class="check"><input type="checkbox" id="wp-erhalt"><span>Erhaltungsladegerät hängt dran (dann keine Erinnerung ans Batterieladen)</span></label>' +
-        '<p class="help">Die Erinnerung zum Reifenwechsel ruht, solange das Auto steht.</p>' +
-        '<p class="err" id="wp-err" role="alert"></p>' +
-        '<div class="sh-foot"><button type="submit" class="btn">Winterpause beginnen</button><button type="button" class="btn ghost" data-act="wp-back">Zurück</button></div></form>';
-      return h;
-    }
-    var aus = w.phase === 'aus', ld = wpLaden(car), nE = wpCount(w.ein, WP_EIN), nA = wpCount(w.aus, WP_AUS);
+    if (!w.aktiv) return h + wpInactive(carId, car, w, can, today);
+    var aus = w.phase === 'aus', ld = wpLaden(car), IE = wpItems(car, 'ein'), IA = wpItems(car, 'aus'), nE = wpCount(w.ein, IE), nA = wpCount(w.aus, IA);
     h += '<div class="wpc"><div class="wpc-r"><span>Abgestellt seit</span><b>' + esc(isDay(w.seit) ? datum(w.seit) : '–') + '</b></div>' +
       '<div class="wpc-r"><span>Geplant bis</span><b>' + esc(wpYm(w.bis) ? ymTxt(w.bis) : 'offen') + '</b></div>' +
       '<div class="wpc-r"><span>Batterie</span><b>' + esc(w.erhalt ? 'am Erhaltungs\u00adladegerät' : ld ? 'laden bis ' + datum(ld.d) : '–') + '</b>' + (ld && ld.now ? ' <span class="wst faellig">fällig</span>' : ld && ld.bald ? ' <span class="wst bald">bald</span>' : '') + '</div></div>';
+    h += wpKlToggle(car, can);
     if (aus) {
-      h += '<div class="sh-sec"><h3 class="sec">Ausmotten · ' + nA + ' von ' + WP_AUS.length + '</h3>' + wpBar(nA, WP_AUS.length) + wpList(carId, car, WP_AUS, 'aus', can) + '</div>';
+      h += '<div class="sh-sec"><h3 class="sec">Ausmotten · ' + nA + ' von ' + IA.length + '</h3>' + wpBar(nA, IA.length) + wpListKl(carId, car, 'aus', can) + '</div>';
       if (can) h += '<div class="sh-foot"><button type="button" class="btn" data-act="wp-fertig">Fertig, das Auto fährt wieder</button><button type="button" class="btn ghost" data-act="wp-phase" data-p="ein">Doch noch nicht</button></div>';
       return h;
     }
-    h += '<div class="sh-sec"><h3 class="sec">Einmotten · ' + nE + ' von ' + WP_EIN.length + '</h3>' + wpBar(nE, WP_EIN.length) + wpList(carId, car, WP_EIN, 'ein', can) +
+    h += '<div class="sh-sec"><h3 class="sec">Einmotten · ' + nE + ' von ' + IE.length + '</h3>' + wpBar(nE, IE.length) + wpListKl(carId, car, 'ein', can) +
       '<p class="help">Den Motor zwischendurch kurz laufen zu lassen, empfiehlt der ADAC nicht.' + srcRefs(WP_Q, [1]) + '</p></div>';
     var l = arr(w.laden).filter(isDay).sort().reverse();
     h += '<div class="sh-sec"><h3 class="sec">Batterie</h3>' +
@@ -9272,8 +9270,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         : '<p class="note">' + esc(ld ? (ld.geladen ? 'Zuletzt geladen am ' + datum(ld.last) : 'Seit dem Abstellen noch nicht geladen') + '. Nächstes Laden bis ' + datum(ld.d) + '.' : '') + '</p>' +
           (can ? '<div class="wp-act"><button type="button" class="btn small" data-act="wp-laden">Heute geladen</button></div>' : '')) +
       (l.length ? '<p class="help">' + esc('Geladen: ' + l.slice(0, 6).map(datum).join(', ') + (l.length > 6 ? ' …' : '')) + '</p>' : '') + '</div>';
-    h += '<details class="wp-more" data-k="wp-aus"><summary>Checkliste fürs Ausmotten im Frühjahr · ' + WP_AUS.length + '</summary><ul class="wp-prev">' +
-      WP_AUS.map(function (it) { return '<li>' + esc(it.t) + '</li>'; }).join('') + '</ul></details>';
+    h += '<details class="wp-more" data-k="wp-aus"><summary>Checkliste fürs Ausmotten im Frühjahr · ' + IA.length + '</summary><ul class="wp-prev">' +
+      IA.map(function (it) { return '<li>' + esc(it.t) + '</li>'; }).join('') + '</ul></details>';
     if (can) h += '<div class="sh-foot"><button type="button" class="btn" data-act="wp-phase" data-p="aus">Winterpause beenden</button>' +
       '<button type="button" class="btn ghost" data-act="wp-edit">Termin ändern</button><button type="button" class="btn ghost" data-act="wp-back">Zurück</button></div>';
     return h;
@@ -9335,7 +9333,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (bis && !wpYm(bis)) { err('„Voraussichtlich bis“ bitte als Monat eintragen, z. B. 2027-04.'); return; }
     if (wpYm(bis) && bis < seit.slice(0, 7)) { err('„Voraussichtlich bis“ liegt vor dem Abstellen.'); return; }
     if (km !== null && (isNaN(km) || km < 0)) { err('Den Kilometerstand bitte als Zahl eintragen.'); return; }
-    var old = wpDoc(car), w = { aktiv: true, phase: 'ein', seit: seit, bis: wpYm(bis) ? bis : null, erhalt: !!(($('#wp-erhalt') || {}).checked), ein: {}, aus: {}, laden: [], log: arr(old.log).slice(-20) };
+    var old = wpDoc(car), w = { aktiv: true, phase: 'ein', seit: seit, bis: wpYm(bis) ? bis : null, erhalt: !!(($('#wp-erhalt') || {}).checked), ein: {}, aus: {}, laden: [], log: arr(old.log).slice(-20), tipps: old.tipps || null };
     var now = new Date().toISOString(), patch = { winterpause: w, reifen: Object.assign({}, reifenDoc(car), { winterAbgestellt: true }), geaendert: now };
     if (km !== null && (numOrNull(car.km) === null || km >= num(car.km)) && (!isDay(car.kmDatum) || seit >= car.kmDatum)) { patch.km = Math.round(km); patch.kmDatum = seit; patch.kmLog = kmLogWith(car, seit, Math.round(km)); }
     setBusy(true);
@@ -9359,8 +9357,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     else if (kind === 'erhalt') { w.erhalt = !!arg; msg = arg ? 'Erhaltungsladegerät: keine Erinnerung ans Laden.' : 'Erinnerung ans Batterieladen ist wieder an.'; }
     else if (kind === 'phase') { w.phase = arg === 'aus' ? 'aus' : 'ein'; msg = arg === 'aus' ? 'Checkliste fürs Ausmotten.' : ''; }
     else if (kind === 'fertig') {
-      w.log = arr(w.log).concat([{ seit: w.seit || null, ende: today, ein: wpCount(w.ein, WP_EIN), aus: wpCount(w.aus, WP_AUS) }]).slice(-20);
-      w = { aktiv: false, phase: null, seit: null, bis: null, erhalt: !!w.erhalt, ein: {}, aus: {}, laden: [], log: w.log };
+      w.log = arr(w.log).concat([{ seit: w.seit || null, ende: today, ein: wpCount(w.ein, wpItems(car, 'ein')), aus: wpCount(w.aus, wpItems(car, 'aus')) }]).slice(-20);
+      w = { aktiv: false, phase: null, seit: null, bis: null, erhalt: !!w.erhalt, ein: {}, aus: {}, laden: [], log: w.log, tipps: w.tipps || null };
       extra.reifen = Object.assign({}, reifenDoc(car), { winterAbgestellt: false });
       msg = 'Winterpause beendet. Gute Fahrt!';
     }
@@ -9831,6 +9829,249 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     openRepForm(null, { fahrzeug: carId, titel: ('Rückruf prüfen: ' + t.titel).slice(0, 80), rueckruf: String(t.titel).slice(0, 200),
       notiz: [t.betroffen ? 'Betroffen: ' + t.betroffen : '', t.problem || '', t.massnahme ? 'Maßnahme: ' + t.massnahme : '', 'Mit der FIN beim Hersteller oder Händler klären, ob dieses Auto betroffen ist.'].filter(Boolean).join(' · ').slice(0, 500) });
   }
+  /* ---------- Winterpause: Oldtimer/Youngtimer und Tipps für Kunden ---------- */
+  var WP_KL_EIN = [
+    { id: 'felgen', t: 'Felgen mit säurefreiem Reiniger säubern', d: 'Säurehaltige Reiniger greifen Radbolzen und andere Metallteile an. Hartnäckigen Schmutz mit einer Bürste lösen.', q: [1] },
+    { id: 'raeder', t: 'Abgenommene Räder richtig lagern', d: 'Gründlich reinigen und ganz trocknen lassen. Kompletträder flach liegend oder hängend lagern, kühl, dunkel und trocken, mit etwa 0,5 bar mehr Luftdruck als vorgegeben.', q: [4] },
+    { id: 'reifenalter', t: 'Reifenalter prüfen', d: 'Unabhängig vom Profil ist nach acht bis zehn Jahren Schluss. Die DOT-Nummer auf der Flanke zeigt Woche und Jahr der Herstellung.', q: [4] },
+    { id: 'gummi', t: 'Gummidichtungen pflegen', d: 'Gummiprofile mit einem Pflegemittel wie Silikon-Spray behandeln.', q: [1] },
+    { id: 'leder', t: 'Leder pflegen', d: 'Mit dem Mittel, das der Hersteller in der Bedienungsanleitung empfiehlt.', q: [1] },
+    { id: 'kraftstoff', t: 'Kraftstoff stabilisieren', d: 'Zusätze aus dem Handel stabilisieren den Kraftstoff und beugen seiner Zersetzung vor.', q: [1] },
+    { id: 'lack', t: 'Lack mit Hartwachs versiegeln', d: 'Vorher mit Autoshampoo waschen, keine Haushaltsreiniger. Ein Eimer mit Siebeinsatz hält Schmutz vom Lack fern.', q: [1] },
+    { id: 'unterboden', t: 'Unterboden und Radhäuser prüfen', d: 'Schutzschichten auf Beschädigungen, Ablösungen und Rost darunter ansehen. Schadhafte Stellen entrosten und ausbessern.', q: [1] }
+  ];
+  var WP_KL_AUS = [
+    { id: 'wuchten', t: 'Wuchtung prüfen lassen', d: 'Nach langer Standzeit. Bei empfindlichen historischen Felgen rät die Quelle zu Klebegewichten und schonender Montage.', q: [5] },
+    { id: 'verdeck', t: 'Nur Cabrio: Verdeck imprägnieren', d: 'Vor Saisonbeginn, bei Baumwollgewebe unbedingt. Das Verdeck nie mit dem Hochdruckreiniger reinigen.', q: [1] }
+  ];
+  var WP_MOTOR = { t: 'Motor zwischendurch nicht kurz laufen lassen', d: 'Das empfiehlt der ADAC nicht.', q: [1] };
+  function carJahr(car) {
+    var y = numOrNull(car && car.baujahr);
+    if (y === null && car && car.erstzulassung) { var m = /^(\d{4})/.exec(String(car.erstzulassung)); y = m ? Number(m[1]) : null; }
+    return y;
+  }
+  function carAlter(car) { var y = carJahr(car); return y === null ? null : Number(dayKey(new Date()).slice(0, 4)) - y; }
+  function wpKlOk(car) { var a = carAlter(car); return a !== null && a >= 20; }
+  function wpKl(car) { return !!(car && car.klassik) && wpKlOk(car); }
+  function wpItems(car, phase) { return phase === 'aus' ? WP_AUS.concat(wpKl(car) ? WP_KL_AUS : []) : WP_EIN.concat(wpKl(car) ? WP_KL_EIN : []); }
+  function wpListKl(carId, car, phase, can) {
+    return wpList(carId, car, phase === 'aus' ? WP_AUS : WP_EIN, phase, can) +
+      (wpKl(car) ? '<p class="wp-kh">Für Oldtimer und Youngtimer</p>' + wpList(carId, car, phase === 'aus' ? WP_KL_AUS : WP_KL_EIN, phase, can) : '');
+  }
+  function wpKlToggle(car, can) {
+    if (!wpKlOk(car) && !car.klassik) return '';
+    var a = carAlter(car);
+    return '<label class="check wp-klc"><input type="checkbox" id="wp-kl"' + (car.klassik ? ' checked' : '') + (can ? '' : ' disabled') + '><span><b>Oldtimer/Youngtimer</b><small>' +
+      esc((a !== null ? 'Das Auto ist ' + a + ' Jahre alt. ' : '') + 'Dann kommen ' + WP_KL_EIN.length + ' Punkte fürs Einmotten und ' + WP_KL_AUS.length + ' fürs Frühjahr dazu, zum Beispiel Felgen, Reifenalter und Gummidichtungen.') + '</small></span></label>';
+  }
+  function wpReifenHint(car) {
+    var out = [];
+    Object.keys(RSET).forEach(function (k) { var s = reifenSet(car, k), d = s && dotInfo(s.dot); if (d) out.push(RSET[k].n + ' DOT ' + s.dot + ': ' + ageTxt(d.age) + (d.age >= 10 ? ', über der Grenze' : d.age >= 8 ? ', an der Grenze' : '')); });
+    return out.length ? out.join(' · ') + '.' : 'Noch kein DOT eingetragen. Das geht im Auto unter Reifen.';
+  }
+  function wpRerender(s) {
+    if (!s) return;
+    var sh = $('#sheet'), car = S.cars.get(s.id);
+    if (!sh || !car) return;
+    var top = sh.scrollTop;
+    if (s.type === 'wp') setHTML(sh, sheetWp(s.id, car));
+    else if (s.type === 'wptipps') setHTML(sh, sheetWpTipps(s.id, car));
+    sh.scrollTop = top;
+    var el = $('#wp-kl');
+    if (el) { try { el.focus({ preventScroll: true }); } catch (_) {} }
+  }
+  async function wpSetKl(on) {
+    var s = S.sheet;
+    if (!s || (s.type !== 'wp' && s.type !== 'wptipps') || S.busy || !canWrite()) return;
+    wpFlush();
+    var car = S.cars.get(s.id);
+    if (!car) return;
+    var before = !!car.klassik, patch = { klassik: !!on, geaendert: new Date().toISOString() };
+    S.cars.set(s.id, Object.assign({}, car, patch));
+    wpRerender(s); renderAll();
+    var ok = await wpWrite(s.id, patch, on ? 'Oldtimer/Youngtimer: zusätzliche Punkte sind dabei.' : null);
+    if (!ok && S.cars.has(s.id)) { S.cars.set(s.id, Object.assign({}, S.cars.get(s.id), { klassik: before })); if (S.sheet && S.sheet.id === s.id) wpRerender(S.sheet); renderAll(); }
+  }
+  /* Kundenauto ohne laufende Winterpause: Tipps schicken oder hier einmotten */
+  function wpInactive(carId, car, w, can, today) {
+    var y = Number(today.slice(0, 4)) + (today.slice(5, 7) >= '05' ? 1 : 0), ck = curKmEst(car), h = '', k = kundeOf(car);
+    var past = arr(w.log).filter(function (x) { return x && isDay(x.seit); });
+    var form = '<form class="form" id="wpstart" novalidate>' +
+      '<div class="row2"><label class="f"><span>Abgestellt ab</span><input type="date" id="wp-seit" value="' + today + '"></label>' +
+      '<label class="f"><span>Voraussichtlich bis</span><input type="month" id="wp-bis" value="' + y + '-04" placeholder="JJJJ-MM"></label></div>' +
+      '<label class="f"><span>Kilometerstand beim Abstellen</span><input id="wp-km" inputmode="numeric" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'optional') + '" autocomplete="off"><small>Hält die Fahrleistung richtig, wenn das Auto monatelang steht.</small></label>' +
+      '<label class="check"><input type="checkbox" id="wp-erhalt"><span>Erhaltungsladegerät hängt dran (dann keine Erinnerung ans Batterieladen)</span></label>' +
+      '<p class="help">Die Erinnerung zum Reifenwechsel ruht, solange das Auto steht.</p>' +
+      '<p class="err" id="wp-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Winterpause beginnen</button><button type="button" class="btn ghost" data-act="wp-back">Zurück</button></div></form>';
+    if (car.fremd) {
+      h += '<p class="rtext">Schick dem Kunden die Tipps fürs Abstellen und fürs Frühjahr, als Nachricht oder PDF. Grundlage ist der Oldtimer-Ratgeber des ADAC' + srcRefs(WP_Q, [1]) + '.</p>';
+      h += wpKlToggle(car, can);
+      if (isDay(w.tipps)) h += '<p class="note">' + esc('Zuletzt geteilt am ' + datum(w.tipps) + '.') + '</p>';
+      h += '<div class="wp-act"><button type="button" class="btn" data-act="wpt-open" data-id="' + esc(carId) + '">' + esc(k ? 'Tipps an ' + wpVorname(k) + ' schicken' : 'Tipps schicken') + '</button></div>';
+      if (past.length) h += '<p class="note">' + esc('Zuletzt bei dir abgestellt ' + datum(past[past.length - 1].seit) + (isDay(past[past.length - 1].ende) ? ' bis ' + datum(past[past.length - 1].ende) : '') + '.') + '</p>';
+      if (!can) return h;
+      return h + '<details class="wp-more wp-hier"><summary>Steht das Auto über den Winter bei dir?</summary>' +
+        '<p class="help">Dann führst du es wie ein eigenes Auto: Checkliste, Erinnerung ans Batterieladen und im Frühjahr die Liste fürs Ausmotten.</p>' + form + '</details>';
+    }
+    h += '<p class="rtext">Die App führt dich durch das Einmotten, erinnert ans Batterieladen und hat im Frühjahr die Checkliste fürs Ausmotten. Grundlage ist der Oldtimer-Ratgeber des ADAC' + srcRefs(WP_Q, [1]) + '.</p>';
+    if (past.length) h += '<p class="note">' + esc('Zuletzt abgestellt ' + datum(past[past.length - 1].seit) + (isDay(past[past.length - 1].ende) ? ' bis ' + datum(past[past.length - 1].ende) : '') + '.') + '</p>';
+    if (!can) return h + '<p class="note">Du kannst dieses Inventar nur ansehen.</p>';
+    return h + wpKlToggle(car, can) + form;
+  }
+  /* ---------- Tipps für den Kunden: Nachricht und PDF ---------- */
+  function wpVorname(k) { return k && k.name ? String(k.name).trim().split(/\s+/)[0] : ''; }
+  function wpSender() { var c = kvaConf(), k = klConf(); return { name: c.name || k.name || '', telefon: c.telefon || '', email: c.email || k.mail || '' }; }
+  function wpTippsLists(car) {
+    var kl = wpKl(car);
+    return [
+      { h: 'Vor dem Abstellen', items: WP_EIN.concat([WP_MOTOR]) },
+      kl ? { h: 'Für ältere Autos (Oldtimer und Youngtimer) zusätzlich', items: WP_KL_EIN } : null,
+      { h: 'Im Frühjahr vor der ersten Fahrt', items: wpItems(car, 'aus') }
+    ].filter(Boolean);
+  }
+  function wpTippsUsed(lists) {
+    var used = {};
+    lists.forEach(function (g) { g.items.forEach(function (it) { arr(it.q).forEach(function (n) { used[n] = 1; }); }); });
+    return Object.keys(used).map(Number).sort(function (a, b) { return a - b; }).filter(function (n) { return WP_Q.quellen[n - 1]; });
+  }
+  function wpTippsText(car, kunde, snd) {
+    var lists = wpTippsLists(car), L = [], vn = wpVorname(kunde);
+    L.push('Hallo' + (vn ? ' ' + vn : '') + ', damit ' + (car.name ? 'dein ' + car.name : 'dein Auto') + ' gut über den Winter kommt, hier die wichtigsten Punkte:');
+    lists.forEach(function (g) { L.push(''); L.push(g.h + ':'); g.items.forEach(function (it) { L.push('• ' + it.t + (it.d ? (/[?!.]$/.test(it.t) ? ' ' : '. ') + it.d : '')); }); });
+    L.push('');
+    L.push('Quellen:');
+    wpTippsUsed(lists).forEach(function (n) { var q = WP_Q.quellen[n - 1]; L.push(q.titel + ': ' + q.url); });
+    L.push('');
+    L.push('Bei Fragen melde dich gern.' + (snd.name ? '\nViele Grüße\n' + snd.name : ''));
+    return L.join('\n');
+  }
+  function wpTippsSubject(car) { return 'Winterpause: Tipps für ' + (car.name || 'dein Auto'); }
+  function wpTippsLinks(car, kunde, text) {
+    var tk = kunde ? telKey(kunde.telefon) : '', mail = kunde && kunde.email ? String(kunde.email).trim() : '';
+    return { wa: 'https://wa.me/' + tk + '?text=' + encodeURIComponent(text), mail: 'mailto:' + (mail ? encodeURIComponent(mail) : '') + '?subject=' + encodeURIComponent(wpTippsSubject(car)) + '&body=' + encodeURIComponent(text), tel: tk, hasMail: !!mail };
+  }
+  function openWpTipps(carId) {
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car) { toast('Dieses Auto gibt es nicht mehr.'); return; }
+    wpFlush();
+    openSheet('wptipps', { id: carId }, sheetWpTipps(carId, car));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function sheetWpTipps(carId, car) {
+    var k = kundeOf(car), can = canWrite(), text = wpTippsText(car, k, wpSender()), ln = wpTippsLinks(car, k, text), vn = wpVorname(k);
+    return '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Winterpause · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + esc(k ? 'Tipps für ' + k.name : 'Tipps für den Kunden') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<div class="form">' + wpKlToggle(car, can) +
+      '<label class="f"><span>Nachricht</span><textarea id="wpt-text" rows="10" maxlength="6000">' + esc(text) + '</textarea><small>Du kannst den Text noch ändern, bevor du ihn schickst.</small></label>' +
+      '<div class="sh-btns kl-b wpt-b">' +
+      '<a class="btn" id="wpt-wa" data-act="wpt-mark" data-id="' + esc(carId) + '" href="' + esc(ln.wa) + '" target="_blank" rel="noopener noreferrer">' + esc(ln.tel && vn ? 'Per WhatsApp an ' + vn : 'Per WhatsApp') + '</a>' +
+      '<a class="btn ghost" id="wpt-mail" data-act="wpt-mark" data-id="' + esc(carId) + '" href="' + esc(ln.mail) + '">' + (ln.hasMail ? 'Als E-Mail-Entwurf' : 'Als E-Mail-Entwurf (ohne Empfänger)') + '</a>' +
+      (S.dl ? '<button type="button" class="btn ghost" data-act="wpt-pdf" data-id="' + esc(carId) + '">Als PDF</button>' : '') +
+      (navigator.share ? '<button type="button" class="btn ghost" data-act="wpt-share" data-id="' + esc(carId) + '">Teilen …</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="wpt-copy">Text kopieren</button></div>' +
+      (k ? (ln.tel ? '' : '<p class="help">Beim Kunden ist keine Telefonnummer eingetragen. WhatsApp fragt dann, an wen die Nachricht geht.</p>')
+        : '<p class="help">Diesem Auto ist noch kein Kunde zugeordnet. Im Auto unter „Bearbeiten“ einen Kunden wählen, dann stehen Name und Nummer schon drin.</p>') +
+      '<p class="err" id="wpt-err" role="alert"></p></div>' +
+      '<div class="sh-foot"><button type="button" class="btn ghost" data-act="wp-open" data-id="' + esc(carId) + '">Zurück</button></div>';
+  }
+  function wpTippsCur() { var t = $('#wpt-text'); return t ? t.value : ''; }
+  function wpTippsInput(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'wptipps' || !t || t.id !== 'wpt-text') return false;
+    var car = S.cars.get(s.id);
+    if (!car) return true;
+    var ln = wpTippsLinks(car, kundeOf(car), t.value), a = $('#wpt-wa'), m = $('#wpt-mail');
+    if (a) a.href = ln.wa;
+    if (m) m.href = ln.mail;
+    return true;
+  }
+  /* „Geteilt am“ merken, damit man im Auto sieht, dass der Kunde die Tipps hat */
+  function wpTippsMark(carId) {
+    var car = S.cars.get(carId), today = dayKey(new Date());
+    if (!car || !canWrite() || wpDoc(car).tipps === today) return;
+    var w = Object.assign({}, wpDoc(car), { tipps: today }), patch = wpPatchLocal(carId, w);
+    if (patch) wpWrite(carId, patch);
+  }
+  async function wpTippsShare(carId) {
+    var car = S.cars.get(carId);
+    if (!car) return;
+    try { await navigator.share({ title: wpTippsSubject(car), text: wpTippsCur() }); wpTippsMark(carId); }
+    catch (e) { if (!e || e.name !== 'AbortError') klCopy(wpTippsCur(), 'Kopiert. Jetzt in WhatsApp oder in eine E-Mail einfügen.'); }
+  }
+  function wpTippsPdf(lib, car, kunde, snd) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, M = 18, X1 = W - M, BOT = H - 22, y = M, PT = 0.3528;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], acc: [31, 79, 135] };
+    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/[^\u0000-ÿ€„“”‘’–—…•]/g, '?'); };
+    var txt = function (s, x, yy, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), x, yy, o); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.3; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    var need = function (hh) { if (y + hh > BOT) { doc.addPage(); y = M; return true; } return false; };
+    var lists = wpTippsLists(car), used = wpTippsUsed(lists), refs = function (q) { return arr(q).filter(function (n) { return WP_Q.quellen[n - 1]; }).map(function (n) { return '[' + n + ']'; }).join(''); };
+    doc.setLineHeightFactor(1.3);
+    doc.setProperties({ title: wpTippsSubject(car), creator: 'Werkstatt-Inventar' });
+    f('bold', 21); tc(C.ink); txt('Gut über den Winter', M, y + 7.5); y += 12;
+    f('normal', 11); tc(C.ink);
+    txt(split([car.name || 'Auto', car.kennzeichen ? 'Kennzeichen ' + car.kennzeichen : ''].filter(Boolean).join(' · '), X1 - M)[0], M, y + 4); y += 6;
+    if (kunde && kunde.name) { f('normal', 9.5); tc(C.mut); txt('Für ' + kunde.name, M, y + 3.6); y += 5; }
+    y += 3;
+    f('normal', 10); tc(C.ink);
+    var intro = split('Diese Punkte helfen, damit das Auto die Standzeit gut übersteht. Zum Abhaken: links die Kästchen. Die Zahlen in Klammern verweisen auf die Quellen am Ende.', X1 - M);
+    txt(intro, M, y + 3.8); y += intro.length * lh(10) + 5;
+    var itemH = function (it) {
+      f('bold', 10); var tl = split(it.t + (it.d ? '' : ' ' + refs(it.q)), X1 - M - 8);
+      f('normal', 9.3); var dl = it.d ? split(it.d + ' ' + refs(it.q), X1 - M - 8) : [];
+      return { tl: tl, dl: dl, h: tl.length * lh(10) + dl.length * lh(9.3) + 3.4 };
+    };
+    lists.forEach(function (g) {
+      need(10 + (g.items.length ? itemH(g.items[0]).h : 0) + (g.items.length > 1 ? itemH(g.items[1]).h : 0));
+      f('bold', 12.5); tc(C.acc); txt(g.h, M, y + 4.6); y += 7.5;
+      dc(C.line); doc.setLineWidth(0.2); doc.line(M, y, X1, y); y += 2.2;
+      g.items.forEach(function (it) {
+        var ih = itemH(it), tl = ih.tl, dl = ih.dl, hh = ih.h;
+        need(hh);
+        dc(C.ink); doc.setLineWidth(0.3); doc.rect(M, y + 1.1, 3.6, 3.6, 'S');
+        f('bold', 10); tc(C.ink); txt(tl, M + 7, y + 4.1); var yy = y + tl.length * lh(10);
+        if (dl.length) { f('normal', 9.3); tc(C.mut); txt(dl, M + 7, yy + 3.6); }
+        y += hh;
+      });
+      y += 3;
+    });
+    need(14);
+    f('bold', 10.5); tc(C.ink); txt('Quellen', M, y + 4); y += 6.5;
+    used.forEach(function (n) {
+      var q = WP_Q.quellen[n - 1];
+      f('normal', 8.8); var l1 = split('[' + n + '] ' + q.titel, X1 - M); f('normal', 7.8); var l2 = split(q.url, X1 - M - 6);
+      need(l1.length * lh(8.8) + l2.length * lh(7.8) + 2);
+      f('normal', 8.8); tc(C.ink); txt(l1, M, y + 3.4); y += l1.length * lh(8.8);
+      f('normal', 7.8); tc(C.mut); txt(l2, M + 6, y + 3); y += l2.length * lh(7.8) + 1.6;
+    });
+    var foot = [snd.name, snd.telefon ? 'Tel. ' + snd.telefon : '', snd.email].filter(Boolean).join(' · ');
+    var n = doc.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 13, X1, H - 13);
+      txt(foot ? split(foot, 140)[0] : 'Tipps zur Winterpause', M, H - 9);
+      txt('Seite ' + i + ' von ' + n, X1, H - 9, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveWpTippsPdf(carId) {
+    var car = S.cars.get(carId), err = function (m) { var el = $('#wpt-err'); if (el) el.textContent = m; else toast(m); };
+    if (!car) return;
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var blob;
+    try { blob = wpTippsPdf(lib, car, kundeOf(car), wpSender()).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    var name = 'Winterpause-Tipps ' + fileSafe(car.name || 'Auto') + '.pdf';
+    try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); wpTippsMark(carId); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -10173,6 +10414,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'wp-phase': wpSimple('phase', t.dataset.p); break;
       case 'wp-fertig': wpSimple('fertig'); break;
       case 'wp-edit': openWpEdit(); break;
+      case 'wpt-open': openWpTipps(t.dataset.id); break;
+      case 'wpt-mark': wpTippsMark(t.dataset.id); break;
+      case 'wpt-pdf': saveWpTippsPdf(t.dataset.id); break;
+      case 'wpt-share': wpTippsShare(t.dataset.id); break;
+      case 'wpt-copy': klCopy(wpTippsCur(), 'Kopiert. Jetzt in WhatsApp oder in eine E-Mail einfügen.'); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
@@ -10237,6 +10483,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (t.dataset && t.dataset.blAdd !== undefined) { blAddFiles(t); return; }
     if (etChange(t)) return;
     if (ubChange(t)) return;
+    if (t.id === 'wp-kl') { wpSetKl(t.checked); return; }
     if (wpChange(t)) return;
     if (kvaChange(t)) return;
     if (t.id === 'ka-kunde') { var kn = $('#ka-neu'); if (kn) kn.hidden = t.value !== '__neu'; return; }
@@ -10309,6 +10556,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       if (etInput(e.target)) return;
       if (ubInput(e.target)) return;
       if (kvaInput(e.target)) return;
+      if (wpTippsInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
       if (e.target && e.target.classList && e.target.classList.contains('invq')) e.target.classList.toggle('diff', String(e.target.value).trim() !== e.target.dataset.orig);
       if (e.target && e.target.classList && e.target.classList.contains('kmq')) e.target.classList.remove('diff');
