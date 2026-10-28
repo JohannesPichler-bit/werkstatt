@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "21"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "22", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1279,6 +1279,85 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .rep.lvl-faellig .rep-d { color: var(--kaufen); font-weight: 700; }
 /* Eingebaute Teile: ohne leere Datumsspalte */
 .inst li { grid-template-columns: minmax(0, 1fr) auto; }
+/* Serviceheft: Heftchen im Auto-Blatt, Stempel, Prüfung, Einträge */
+.shb { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 11px 16px 11px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); text-align: left; color: inherit; font: inherit; }
+.shb-i { width: 34px; height: 44px; filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.28)); }
+.shb-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.shb-t b { font-family: var(--f-display); font-weight: 800; font-size: 23px; line-height: 1.05; }
+.shb-t span { font-size: 13px; line-height: 1.3; color: var(--muted); overflow-wrap: anywhere; }
+.stamp { flex: none; display: inline-block; padding: 3px 9px 2px; border: 4px double currentColor; border-radius: 6px; font-family: var(--f-stencil); font-weight: 800; font-size: 15px; line-height: 1.1; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; transform: rotate(-5deg); opacity: 0.9; }
+.stamp.sm { padding: 2px 7px 1px; border-width: 3px; font-size: 12px; }
+.stamp.s-bad { color: var(--kaufen); }
+.stamp.s-warn { color: var(--ro-text); }
+.stamp.s-ok { color: var(--in-text); }
+.stamp.s-leer { color: var(--muted); }
+.stamp.s-self { color: var(--wb); }
+.stamp.s-shop { color: var(--z-werkzeug-ink); }
+.shc { display: flex; flex-direction: column; gap: 10px; padding: 14px 14px 13px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); }
+.shc.lv-bad { border-left: 5px solid var(--kaufen); }
+.shc.lv-warn { border-left: 5px solid var(--ro); }
+.shc.lv-ok { border-left: 5px solid var(--in); }
+.shc-h { display: flex; align-items: center; gap: 14px; }
+.shc-h .stamp { font-size: 17px; padding: 4px 10px 3px; border-width: 5px; transform: rotate(-6deg); }
+.shc-s { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.shc-s b { font-size: 16px; line-height: 1.3; }
+.shc-s span { font-size: 13px; line-height: 1.35; color: var(--muted); }
+.shf { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.shf li { position: relative; padding-left: 17px; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.shf li::before { content: ""; position: absolute; left: 0; top: 0.42em; width: 9px; height: 9px; border-radius: 50%; background: var(--kaufen); }
+.shf li.lv-warn::before { background: var(--ro); }
+.shn { margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.sh-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.shl { list-style: none; margin: 0; padding: 0; }
+.she-y h3 { margin: 16px 0 2px; font-family: var(--f-display); font-weight: 800; font-size: 25px; line-height: 1; }
+.she-y:first-child h3 { margin-top: 4px; }
+.she-b { width: 100%; display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 4px 12px; align-items: start; padding: 11px 0; border: 0; border-top: 1px solid var(--line); background: none; text-align: left; color: inherit; font: inherit; }
+.she-y + .she .she-b { border-top: 0; }
+.she-d { display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; }
+.she-d b { font-family: var(--f-mono); font-size: 13px; font-weight: 700; }
+.she-d span { font-size: 12px; color: var(--muted); }
+.she-m { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.she-t { font-weight: 700; font-size: 16px; line-height: 1.3; overflow-wrap: anywhere; }
+.she-cs { display: flex; flex-wrap: wrap; gap: 4px; }
+.she-c { font-size: 12px; font-weight: 700; line-height: 1.6; padding: 0 7px; border-radius: 4px; background: var(--in-soft); color: var(--in-text); }
+.she-x { font-size: 13px; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
+.she-f { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin-top: 3px; }
+.she-k { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.she-bl { font-size: 11px; font-weight: 700; line-height: 1.6; padding: 0 6px; border-radius: 4px; background: var(--surface-2); color: var(--muted); }
+.she-f .stamp { margin-right: 4px; font-size: 13px; padding: 2px 8px 1px; border-width: 3px; transform: rotate(-4deg); }
+.she-s .she-b { padding: 8px 0; }
+.she-s .she-t { font-size: 14px; }
+.she-kauf .she-t::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: var(--ink); vertical-align: 1px; }
+/* Serviceheft: Zeitstrahl je Wartungspunkt */
+.shtl { display: flex; flex-direction: column; gap: 6px; }
+.shtl-ax { position: relative; height: 18px; border-bottom: 1px solid var(--line); }
+.shtl-y { position: absolute; bottom: 0; height: 18px; padding: 2px 0 0 4px; border-left: 1px solid var(--line); font: 700 11px/1.2 var(--f-mono); color: var(--muted); white-space: nowrap; }
+.shtl-l { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.shtl-r { display: flex; flex-direction: column; gap: 5px; }
+.shtl-n { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 13px; line-height: 1.25; }
+.shtl-n span { min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.shtl-n b { flex: none; font-size: 12px; color: var(--muted); }
+.shtl-r.lv-bad .shtl-n b { color: var(--kaufen); }
+.shtl-r.lv-warn .shtl-n b { color: var(--ro-text); }
+.shtl-r.lv-ok .shtl-n b { color: var(--in-text); }
+.shtl-t { position: relative; display: block; height: 10px; border-radius: 3px; background: var(--surface-2); }
+.shtl-t .sg { position: absolute; top: 0; bottom: 0; }
+.sg-ok { background: var(--in); }
+.sg-warn { background: var(--ro); }
+.sg-bad { background: var(--kaufen); }
+.sg-unk { background: repeating-linear-gradient(135deg, var(--muted) 0 1.5px, transparent 1.5px 5px); opacity: 0.55; }
+.sg-next { background: var(--in); opacity: 0.3; }
+.shtl-t .mk { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 2px solid var(--ink); }
+.shtl-t .mk-k { border-left-style: dotted; border-left-color: var(--muted); }
+.shtl-t .dt { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 2px var(--surface); }
+.shtl-t .dt.via { background: var(--surface); box-shadow: inset 0 0 0 2px var(--ink), 0 0 0 2px var(--surface); }
+.shtl-lg { margin: 6px 0 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+.shtl-lg span { display: inline-flex; align-items: center; gap: 6px; }
+.shtl-lg .sw { display: inline-block; width: 14px; height: 8px; border-radius: 2px; }
+.shtl-lg .sw-dt, .shtl-lg .sw-via { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); }
+.shtl-lg .sw-via { background: transparent; box-shadow: inset 0 0 0 2px var(--ink); }
+.shtl-lg .sw-k, .shtl-lg .sw-h { width: 0; height: 13px; border-radius: 0; border-left: 2px solid var(--ink); }
+.shtl-lg .sw-k { border-left-style: dotted; border-left-color: var(--muted); }
 </style>
 
 <div class="wrap">
@@ -1769,8 +1848,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
   function carStats(carId) {
     var car = S.cars.get(carId) || {};
-    var s = { waitN: 0, waitV: 0, noPrice: 0, instN: 0, instV: 0, items: [], inst: [], works: arr(car.arbeiten).filter(function (w) { return w && typeof w === 'object' && w.titel; }), workV: 0, workOpen: 0, kauf: numOrNull(car.kaufpreis) };
-    s.works.forEach(function (w) { if (numOrNull(w.kosten) === null) s.workOpen++; else s.workV += num(w.kosten); });
+    var s = { waitN: 0, waitV: 0, noPrice: 0, instN: 0, instV: 0, items: [], inst: [], works: arr(car.arbeiten).filter(function (w) { return w && typeof w === 'object' && w.titel; }), workV: 0, workOpen: 0, preN: 0, kauf: numOrNull(car.kaufpreis) };
+    s.works.forEach(function (w) { if (workVorKauf(car, w)) { s.preN++; return; } if (numOrNull(w.kosten) === null) s.workOpen++; else s.workV += num(w.kosten); });
     S.items.forEach(function (it, iid) {
       if (it.bereich === 'einbau' && it.fahrzeug === carId && !it.archiviert && stockOf(it) > 0) {
         s.waitN++; s.items.push([iid, it]);
@@ -2481,6 +2560,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (isDay(d) && gen === 'jahr') d = d.slice(0, 5) + '01-01';
     var kmCa = !!(($('#w-kmca') || {}).checked) && km !== null;
     var rec = { titel: titel.slice(0, 80), datum: isDay(d) ? d : null, datumGenau: isDay(d) ? (gen === 'monat' || gen === 'jahr' ? gen : 'tag') : null, kosten: k === null ? null : round2(k), km: km === null ? null : Math.round(km), kmCa: kmCa, notiz: g('w-notiz').slice(0, 300) };
+    rec.durch = g('w-durch').slice(0, 60) || null;
+    rec.beleg = !!(($('#w-beleg') || {}).checked);
     var wbox = $('#w-wart');
     if (wbox) rec.wartung = $$('input[name="w-wart"]', wbox).filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
     else if (!s.work && s.wartung) rec.wartung = s.wartung;
@@ -2502,7 +2583,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         catch (e2) { repWarn += ' Der Punkt unter „Anstehend“ ist aber noch offen.'; }
       }
       setBusy(false);
-      if (s.back === 'wart') openWart(s.car); else openCar(s.car);
+      if (s.back === 'wart') openWart(s.car); else if (s.back === 'sh') openServiceheft(s.car); else openCar(s.car);
       renderAll();
       toast((s.work ? 'Arbeit gespeichert.' : 'Eingetragen: ' + rec.titel) + repWarn);
     } catch (e) {
@@ -2529,7 +2610,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       await write(function () { return S.db.doc('fahrzeuge/' + s.car).update({ arbeiten: list, geaendert: now }); });
       S.cars.set(s.car, Object.assign({}, car, { arbeiten: list }));
       setBusy(false);
-      openCar(s.car);
+      if (s.back === 'sh') openServiceheft(s.car); else openCar(s.car);
       toast('Eintrag entfernt.');
     } catch (e) {
       writeError(e, function (m) { var el = $('#work-err'); if (el) el.textContent = m; });
@@ -2622,6 +2703,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var rows = [];
     if (st.kauf !== null) rows.push(['Kauf', 'Fahrzeug ' + (car.name || ''), '', '', '', kaufDate(car), '', csvMoney(st.kauf), '', carDetails(car, true)]);
     st.works.forEach(function (w) {
+      if (workVorKauf(car, w)) return;
       rows.push(['Arbeit', w.titel, '', '', '', '', '', csvMoney(numOrNull(w.kosten)), workDate(w), [numOrNull(w.km) !== null ? 'bei ' + (w.kmCa ? 'ca. ' : '') + nf.format(num(w.km)) + ' km' : '', w.notiz || ''].filter(Boolean).join(' · ')]);
     });
     st.items.sort(byName).forEach(function (p) {
@@ -3120,6 +3202,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     }
     else if (S.sheet.type === 'einkauf') { setHTML(sh, sheetEinkauf()); sh.scrollTop = top; }
     else if (S.sheet.type === 'zeitplan') { setHTML(sh, sheetZeitplan()); sh.scrollTop = top; }
+    else if (S.sheet.type === 'serviceheft' && S.cars.has(S.sheet.id)) { setHTML(sh, sheetServiceheft(S.sheet.id, S.cars.get(S.sheet.id))); sh.scrollTop = top; }
     else if (S.sheet.type === 'invoverview') {
       var io = !!$('details[data-k="inv-free"][open]', sh);
       setHTML(sh, sheetInvOverview());
@@ -3280,7 +3363,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var sub = [numOrNull(w.km) !== null ? 'bei ' + (w.kmCa ? 'ca. ' : '') + nf.format(num(w.km)) + ' km' : '', w.notiz || ''].filter(Boolean).join(' · ');
       return '<li><button type="button" class="wbtn" data-act="work-edit" data-id="' + esc(id) + '" data-work="' + esc(w.id) + '"' + dis + '>' +
         '<span class="i-n">' + esc(w.titel) + '<small><span class="i-d">' + esc(workDate(w) || 'Datum offen') + '</span>' + (sub ? ' · ' + esc(sub) : '') + '</small></span>' +
-        '<span class="i-p">' + (k === null ? '<span class="muted">Kosten offen</span>' : esc(eur(k))) + '</span></button></li>';
+        '<span class="i-p">' + (workVorKauf(car, w) ? '<span class="muted">vor dem Kauf</span>' : k === null ? '<span class="muted">Kosten offen</span>' : esc(eur(k))) + '</span></button></li>';
     }).join('');
     var open = [];
     if (st.workOpen) open.push(st.workOpen + (st.workOpen === 1 ? ' Arbeit' : ' Arbeiten') + ' ohne Kosten');
@@ -3301,6 +3384,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       carCosts(car, st) +
       (open.length ? '<p class="note">' + esc(open.join(', ')) + ', zählen noch nicht in die Summe.</p>' : '') +
       (!cellId ? '<p class="note">Noch kein Fach auf der Karte: im Tab „Karte“ ein Fach antippen, „Fach einstellen“ und dieses Auto wählen.</p>' : '') +
+      shBanner(id, car) +
       carWartSec(id, car) +
       '<div class="sh-sec"><div class="vhead"><h3 class="sec">Anstehend · ' + reps.length + '</h3>' +
       (canWrite() ? '<button type="button" class="linkbtn" data-act="rep-new" data-car="' + esc(id) + '">+ Eintragen</button>' : '') + '</div>' +
@@ -3375,22 +3459,25 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     pre = pre || {};
     w = w || { titel: pre.titel || '', datum: pre.datum || null, kosten: null, km: null, notiz: '' };
     openSheet('workform', { car: carId, work: workId || null, repair: pre.repair || null, wartung: pre.wartung || null, back: pre.back || null },
-      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Arbeit · ' + carName(carId)) + '</p>' +
-      '<h2 class="sh-title' + (workId && String(w.titel || '').length > 26 ? ' long' : '') + '" id="sheet-title">' + (workId ? esc(w.titel) : 'Arbeit eintragen') + '</h2></div>' +
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc((pre.back === 'sh' ? 'Serviceheft · ' : 'Arbeit · ') + carName(carId)) + '</p>' +
+      '<h2 class="sh-title' + (workId && String(w.titel || '').length > 26 ? ' long' : '') + '" id="sheet-title">' + (workId ? esc(w.titel) : pre.nachtrag ? 'Eintrag nachtragen' : 'Arbeit eintragen') + '</h2></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
       '<form class="form" id="workform" novalidate>' +
+      (pre.nachtrag ? '<p class="help">Aus dem alten Serviceheft oder von Rechnungen: Datum (ist nur Monat oder Jahr bekannt, die Genauigkeit umstellen), km-Stand, was gemacht wurde und von wem. Die Häkchen bei „Zählt im Wartungsplan“ bestimmen, welche Wartung damit erledigt ist.</p>' : '') +
       '<label class="f"><span>Was wurde gemacht?</span><input id="w-titel" value="' + esc(w.titel || '') + '" maxlength="80" placeholder="z. B. Bremsen vorne" autocomplete="off"></label>' +
       '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="w-datum" value="' + (isDay(w.datum) ? w.datum : '') + '"></label>' +
       '<label class="f"><span>Genauigkeit</span><select id="w-gen">' + genOpts(w.datumGenau, true) + '</select></label></div>' +
       '<div class="row2"><label class="f"><span>Kosten (€)</span><input id="w-kosten" inputmode="decimal" value="' + (numOrNull(w.kosten) === null ? '' : nfPrice.format(w.kosten)) + '" placeholder="leer = offen" autocomplete="off">' + (pre.estimate ? '<small>' + esc('Recherche: Teile ' + pre.estimate) + '</small>' : '') + '</label>' +
       '<label class="f"><span>Kilometerstand dabei</span><input id="w-km" inputmode="numeric" value="' + (numOrNull(w.km) === null ? '' : String(w.km)) + '" placeholder="optional" autocomplete="off"></label></div>' +
       '<label class="check"><input type="checkbox" id="w-kmca"' + (w.kmCa ? ' checked' : '') + '><span>Kilometerstand ist nur ungefähr</span></label>' +
+      '<label class="f"><span>Durchgeführt von</span><input id="w-durch" list="w-durch-l" value="' + esc(w.durch || '') + '" maxlength="60" placeholder="z. B. selbst oder Name der Werkstatt" autocomplete="off"><datalist id="w-durch-l">' + durchOpts() + '</datalist></label>' +
+      '<label class="check"><input type="checkbox" id="w-beleg"' + (w.beleg ? ' checked' : '') + '><span>Rechnung oder Stempel vorhanden</span></label>' +
       wboxHtml(carId, w, pre, workId) +
       '<label class="f"><span>Notiz</span><textarea id="w-notiz" rows="2" maxlength="300" placeholder="z. B. Teilenummer, Werkstatt">' + esc(w.notiz || '') + '</textarea></label>' +
       '<p class="err" id="work-err" role="alert"></p>' +
       '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
       (pre.repair ? '<button type="button" class="btn ghost" data-act="open-rep" data-id="' + esc(pre.repair) + '">Zurück</button>'
-        : '<button type="button" class="btn ghost" data-act="' + (pre.back === 'wart' ? 'wart-open' : 'back-car') + '" data-id="' + esc(carId) + '">Zurück</button>') +
+        : '<button type="button" class="btn ghost" data-act="' + (pre.back === 'wart' ? 'wart-open' : pre.back === 'sh' ? 'sh-open' : 'back-car') + '" data-id="' + esc(carId) + '">Zurück</button>') +
       (workId ? '<button type="button" class="btn ghost" data-act="work-del">Entfernen</button>' : '') +
       '</div></form>');
     setTimeout(function () { var f = $('#w-titel'); if (f && !workId) { try { f.focus(); } catch (_) {} } }, 80);
@@ -4223,7 +4310,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var on = Array.isArray(w.wartung) ? w.wartung : pre.wartung ? pre.wartung : workId ? wartMatch(w.titel, true, wp) : [];
     var sel = wp.filter(function (p) { return on.indexOf(p.id) >= 0 || on.indexOf(p.art) >= 0; });
     var fixed = function (p) { return Array.isArray(w.wartung) || (!!pre.wartung && sel.indexOf(p) >= 0); };
-    return '<details class="wbox" id="w-wart"' + (sel.length ? ' open' : '') + '><summary>Zählt im Wartungsplan: <span id="w-wart-s">' + esc(sel.length ? sel.map(function (p) { return p.name; }).join(', ') : 'nichts') + '</span></summary>' +
+    return '<details class="wbox" id="w-wart"' + (sel.length || pre.nachtrag ? ' open' : '') + '><summary>Zählt im Wartungsplan: <span id="w-wart-s">' + esc(sel.length ? sel.map(function (p) { return p.name; }).join(', ') : 'nichts') + '</span></summary>' +
       '<div class="wbox-g">' + wp.map(function (p) {
         return '<label class="check"><input type="checkbox" name="w-wart" value="' + esc(p.id) + '"' + (sel.indexOf(p) >= 0 ? ' checked' : '') + (fixed(p) ? ' data-manual="1"' : '') + '><span>' + esc(p.name) + '</span></label>';
       }).join('') + '</div><small>Häkchen werden beim Tippen des Titels vorgeschlagen.</small></details>';
@@ -4874,6 +4961,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var v = String((($('#p-mon') || {}).value) || '').trim();
     if (v && !isYm(v)) { showErr('Bitte Monat und Jahr wählen, z. B. 2027-03.'); return; }
     var patch = { pickerl: v || null, geaendert: new Date().toISOString() };
+    if (v && v !== car.pickerl) patch.pickerlLog = arr(car.pickerlLog).concat([{ d: dayKey(new Date()), bis: v, vorher: isYm(car.pickerl) ? car.pickerl : null }]).slice(-40);
     setBusy(true);
     try {
       await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
@@ -5627,7 +5715,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     }
     var foot = [];
     if (ab) foot.push('<span class="car-f">Fach ' + esc(ab) + '</span>');
-    if (st.works.length) foot.push('<span>Arbeiten <b>' + st.works.length + '</b></span>');
+    if (st.works.length - st.preN) foot.push('<span>Arbeiten <b>' + (st.works.length - st.preN) + '</b></span>');
     if (nRep) foot.push('<span>Anstehend <b>' + nRep + '</b></span>');
     if (st.waitN) foot.push('<span>Teile wartend <b>' + st.waitN + '</b></span>');
     if (arch) foot.push('<span>archiviert</span>');
@@ -5666,6 +5754,510 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var g = r.faelligGenau, end = g === 'jahr' ? r.faellig.slice(0, 4) + '-12-31' : g === 'monat' ? addDays(addMonths(r.faellig.slice(0, 7) + '-01', 1), -1) : r.faellig;
     var left = dayNum(end) - dayNum(dayKey(new Date()));
     return left < 0 ? 'faellig' : left <= 45 ? 'bald' : 'plan';
+  }
+  /* ---------- Digitales Serviceheft: Historie je Auto, Prüfung auf verabsäumte Wartung, PDF ---------- */
+  var JSPDF_SRC = (window.WERKSTATT_CONF && window.WERKSTATT_CONF.jspdf) || 'https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js';
+  var JSPDF_SRI = 'sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3';
+  var jsPdfP = null;
+  function loadJsPdf() {
+    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf);
+    if (jsPdfP) return jsPdfP;
+    jsPdfP = new Promise(function (res, rej) {
+      var s = document.createElement('script');
+      s.src = JSPDF_SRC; s.async = true; s.crossOrigin = 'anonymous'; s.integrity = JSPDF_SRI;
+      s.onload = function () { if (window.jspdf && window.jspdf.jsPDF) res(window.jspdf); else { jsPdfP = null; rej(new Error('jsPDF fehlt')); } };
+      s.onerror = function () { jsPdfP = null; s.remove(); rej(new Error('jsPDF nicht geladen')); };
+      document.head.appendChild(s);
+    });
+    return jsPdfP;
+  }
+  var SH_STAMP = { bad: 'Lücken', warn: 'Prüfen', ok: 'In Ordnung', leer: 'Leer' };
+  function shMonths(a, b) { return (dayNum(b) - dayNum(a)) / 30.44; }
+  function shErr(g) { return g === 'jahr' ? 12 : g === 'monat' ? 1 : 0; }
+  function shWhen(d, g) { return !isDay(d) ? 'ohne Datum' : g === 'jahr' ? d.slice(0, 4) : g === 'monat' ? ymTxt(d.slice(0, 7)) : datum(d); }
+  function shMo(m, dat) { m = Math.max(1, Math.round(m)); return m + (m === 1 ? ' Monat' : dat ? ' Monaten' : ' Monate'); }
+  /* Liegt eine Lücke über dem Intervall? Zuerst Herstellerangabe (rot), dann deine strengere Vorgabe (orange) */
+  function shOver(iv, mo, km) {
+    var man = iv.own ? iv.man : { km: iv.km, monate: iv.monate };
+    var hasMan = !!man && (man.km !== null || man.monate !== null);
+    var ex = function (lim, val, tol) { return lim !== null && lim !== undefined && val !== null && val !== undefined && val > lim + tol; };
+    var kt = function (lim) { return lim ? Math.max(500, lim * 0.1) : 0; };
+    if (hasMan) {
+      var mMo = ex(man.monate, mo, 1), mKm = ex(man.km, km, kt(man.km));
+      if (mMo || mKm) return { lv: 'bad', who: iv.own ? 'Hersteller' : '', mo: mMo ? man.monate : null, km: mKm ? man.km : null };
+    }
+    if (iv.own) {
+      var oMo = ex(iv.monate, mo, 1), oMax = ex(iv.kmMax, km, 0), oKm = ex(iv.km, km, kt(iv.km));
+      if (oMo || oMax || oKm) return { lv: !hasMan || oMax ? 'bad' : 'warn', who: 'deine Vorgabe', mo: oMo ? iv.monate : null, km: oMax ? iv.kmMax : oKm ? iv.km : null };
+    }
+    return null;
+  }
+  function shLimTxt(o) { var t = ivText(o.km, o.mo, null); return (o.who ? o.who + ': ' : 'Vorgabe: ') + t; }
+  function shKmPts(car) {
+    var pts = [];
+    if (isDay(car.kaufdatum) && numOrNull(car.kaufKm) !== null) pts.push({ d: car.kaufdatum, g: car.kaufdatumGenau || 'tag', km: num(car.kaufKm), t: 'Kauf', ca: !!car.kaufKmCa });
+    arr(car.kmLog).forEach(function (p) { if (p && isDay(p.d) && numOrNull(p.km) !== null) pts.push({ d: p.d, g: 'tag', km: num(p.km), t: 'km-Stand' }); });
+    arr(car.arbeiten).forEach(function (w) { if (w && w.titel && isDay(w.datum) && numOrNull(w.km) !== null) pts.push({ d: w.datum, g: w.datumGenau || 'tag', km: num(w.km), t: String(w.titel), ca: !!w.kmCa }); });
+    if (isDay(car.kmDatum) && numOrNull(car.km) !== null) pts.push({ d: car.kmDatum, g: 'tag', km: num(car.km), t: 'aktueller Stand' });
+    pts.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : a.km - b.km; });
+    return pts;
+  }
+  function shCheck(carId, car) {
+    var rows = wartRows(carId), posten = wartPostenFor(carId), facts = wartFacts(carId, posten), today = dayKey(new Date());
+    var items = [], unknown = [], undated = [];
+    var start = isDay(car.kaufdatum) ? { d: car.kaufdatum, g: car.kaufdatumGenau || 'tag', km: numOrNull(car.kaufKm), kmReal: numOrNull(car.kaufKm) !== null && !car.kaufKmCa, kauf: true } : null;
+    var firstDoc = null;
+    facts.forEach(function (f) { if (f.datum && !f.via && (!firstDoc || f.datum < firstDoc)) firstDoc = f.datum; });
+    rows.forEach(function (r) {
+      if (r.status === 'info') return;
+      var p = r.p, iv = r.iv, ev = facts.filter(function (f) { return f.ids.indexOf(p.id) >= 0; });
+      var dated = ev.filter(function (f) { return f.datum; }).sort(function (a, b) { return a.datum < b.datum ? -1 : a.datum > b.datum ? 1 : 0; });
+      if (ev.length && !dated.length) undated.push(p.name);
+      var seq = [];
+      if (start && (!dated.length || start.d < dated[0].datum)) seq.push(start);
+      dated.forEach(function (f) { seq.push({ d: f.datum, g: f.genau || 'tag', km: f.km, kmReal: f.km !== null && !f.kmCa, via: !!f.via }); });
+      for (var i = 1; i < seq.length; i++) {
+        var A = seq[i - 1], B = seq[i];
+        if (A.via) continue;
+        var raw = shMonths(A.d, B.d), kmGap = A.kmReal && B.kmReal ? B.km - A.km : null;
+        var o = shOver(iv, raw - shErr(A.g), kmGap);
+        if (!o) continue;
+        var how = [];
+        if (o.mo) how.push(A.kauf ? shMo(raw, true) : shMo(raw));
+        if (o.km) how.push(nf.format(kmGap) + ' km');
+        items.push({ lv: o.lv, t: p.name, x: A.kauf
+          ? 'Erst ' + shWhen(B.d, B.g) + ' eingetragen, ' + how.join(' und ') + ' nach dem Kauf (' + shWhen(A.d, A.g) + ') · ' + shLimTxt(o)
+          : how.join(' und ') + ' zwischen ' + shWhen(A.d, A.g) + ' und ' + shWhen(B.d, B.g) + ' · ' + shLimTxt(o) });
+      }
+      if (!ev.length) {
+        var o2 = null;
+        if (start) {
+          var cur = numOrNull(car.km);
+          o2 = shOver(iv, shMonths(start.d, today) - shErr(start.g), start.kmReal && cur !== null ? cur - start.km : null);
+        }
+        if (o2) items.push({ lv: o2.lv, t: p.name, x: 'Seit dem Kauf (' + shWhen(start.d, start.g) + ') kein Eintrag · ' + shLimTxt(o2) + '. Gemacht, aber nicht eingetragen? Dann nachtragen.' });
+        else unknown.push(p.name);
+      }
+      if (r.over || r.status === 'faellig') items.push({ lv: r.plan ? 'warn' : 'bad', t: p.name, x: (r.over ? 'Über deinem Maximum: ' : 'Jetzt fällig: ') + (shortNext(r) || 'laut Wartungsplan') + (r.plan ? ' · schon eingeplant' : '') });
+    });
+    var kp = shKmPts(car);
+    for (var j = 1; j < kp.length; j++) {
+      var a = kp[j - 1], b = kp[j], tol = a.ca || b.ca ? 2000 : 50;
+      if (a.g !== 'tag' || b.g !== 'tag') { if (a.d.slice(0, a.g === 'jahr' || b.g === 'jahr' ? 4 : 7) === b.d.slice(0, a.g === 'jahr' || b.g === 'jahr' ? 4 : 7)) continue; }
+      if (b.km < a.km - tol) items.push({ lv: 'warn', t: 'km-Stand gesunken', x: nf.format(a.km) + ' km (' + shWhen(a.d, a.g) + ', ' + a.t + '), danach ' + nf.format(b.km) + ' km (' + shWhen(b.d, b.g) + ', ' + b.t + '). Tippfehler oder Tacho getauscht?' });
+    }
+    var pk = pickerlInfo(car);
+    if (pk && pk.status === 'ueber') items.push({ lv: 'bad', t: 'Pickerl (§57a)', x: 'Überfällig: fällig war ' + ymTxt(pk.due) + (pk.neu ? '' : ', Begutachtung möglich bis ' + ymTxt(pk.to)) });
+    else if (pk && pk.status === 'faellig') items.push({ lv: 'warn', t: 'Pickerl (§57a)', x: 'Jetzt fällig: ' + ymTxt(pk.due) + (pk.neu ? '' : ', möglich bis ' + ymTxt(pk.to)) });
+    var rank = { bad: 0, warn: 1 };
+    items.sort(function (x, y) { return rank[x.lv] - rank[y.lv]; });
+    var nBad = items.filter(function (x) { return x.lv === 'bad'; }).length, nWarn = items.length - nBad;
+    var nEnt = shEntries(carId, car).filter(function (e) { return e.k === 'work' || e.k === 'teile'; }).length;
+    var lv = nBad ? 'bad' : nWarn ? 'warn' : nEnt ? 'ok' : 'leer';
+    var since = start ? shWhen(start.d, start.g) : firstDoc ? shWhen(firstDoc, 'monat') : '';
+    var sum = lv === 'bad' || lv === 'warn' ? (nBad ? nBad + (nBad === 1 ? ' Lücke' : ' Lücken') : '') + (nBad && nWarn ? ', ' : '') + (nWarn ? nWarn + (nWarn === 1 ? ' Hinweis' : ' Hinweise') : '')
+      : lv === 'ok' ? 'Keine verabsäumte Wartung' + (since ? (start ? ' seit dem Kauf ' : ' seit ') + since : '') : 'Noch keine Einträge';
+    return { items: items, unknown: unknown, undated: undated, lv: lv, sum: sum, since: since, start: start, nEnt: nEnt };
+  }
+  /* Alle Einträge je Auto: Arbeiten (mit Teilen vom selben Tag), sonstige eingebaute Teile, Kauf, km-Stände, Pickerl */
+  function shEntries(carId, car) {
+    var posten = wartPostenFor(carId), pmap = {}, list = [], parts = [], used = [];
+    posten.forEach(function (p) { pmap[p.id] = p; if (p.art && !pmap[p.art]) pmap[p.art] = p; });
+    var names = function (ids) { var out = []; ids.forEach(function (id) { var p = pmap[id]; if (p && out.indexOf(p.name) < 0) out.push(p.name); }); return out; };
+    S.items.forEach(function (it, iid) { installedList(it).forEach(function (r) { if (r.fahrzeug === carId) parts.push({ it: it, id: iid, r: r }); }); });
+    var workKm = {};
+    arr(car.arbeiten).forEach(function (w) {
+      if (!w || typeof w !== 'object' || !w.titel) return;
+      var ids = Array.isArray(w.wartung) ? w.wartung : wartMatch(w.titel, true, posten);
+      var pp = isDay(w.datum) ? parts.filter(function (x) { return x.r.datum === w.datum && used.indexOf(x) < 0; }) : [];
+      pp.forEach(function (x) { used.push(x); });
+      if (isDay(w.datum) && numOrNull(w.km) !== null) workKm[w.datum + ':' + num(w.km)] = true;
+      list.push({ k: 'work', d: isDay(w.datum) ? w.datum : null, g: w.datumGenau || 'tag', km: numOrNull(w.km), kmCa: !!w.kmCa, w: w, names: names(ids), parts: pp });
+    });
+    var byD = {};
+    parts.forEach(function (x) { if (used.indexOf(x) >= 0) return; var d = isDay(x.r.datum) ? x.r.datum : ''; (byD[d] = byD[d] || []).push(x); });
+    Object.keys(byD).forEach(function (d) {
+      var g = byD[d], ids = [];
+      g.forEach(function (x) { wartMatch(itemName(x.it), false, posten).forEach(function (id) { if (ids.indexOf(id) < 0) ids.push(id); }); });
+      var late = null;
+      g.forEach(function (x) { if (isDay(x.it.kaufdatum) && (!late || x.it.kaufdatum > late.it.kaufdatum)) late = x; });
+      list.push({ k: 'teile', d: d || null, g: 'tag', parts: g, names: names(ids), ab: !d && late ? itemKauf(late.it) : null });
+    });
+    if (isDay(car.kaufdatum)) list.push({ k: 'kauf', d: car.kaufdatum, g: car.kaufdatumGenau || 'tag', km: numOrNull(car.kaufKm), kmCa: !!car.kaufKmCa });
+    arr(car.kmLog).forEach(function (p) { if (p && isDay(p.d) && numOrNull(p.km) !== null && !workKm[p.d + ':' + num(p.km)]) list.push({ k: 'km', d: p.d, g: 'tag', km: num(p.km) }); });
+    arr(car.pickerlLog).forEach(function (p) { if (p && isDay(p.d) && isYm(p.bis)) list.push({ k: 'pickerl', d: p.d, g: 'tag', bis: p.bis, vorher: isYm(p.vorher) ? p.vorher : null }); });
+    var ord = { work: 0, teile: 1, pickerl: 2, km: 3, kauf: 4 };
+    list.sort(function (a, b) {
+      if (!a.d || !b.d) return a.d ? -1 : b.d ? 1 : ord[a.k] - ord[b.k];
+      return a.d < b.d ? 1 : a.d > b.d ? -1 : ord[a.k] - ord[b.k];
+    });
+    return list;
+  }
+  function shStamp(lv, txt, small) { return '<span class="stamp s-' + lv + (small ? ' sm' : '') + '" aria-hidden="true">' + esc(txt) + '</span>'; }
+  function shWho(w) {
+    var d = String((w && w.durch) || '').trim();
+    if (!d) return '';
+    return /^(selbst|ich|eigen(leistung)?)$/i.test(d) ? 'Eigenleistung' : d;
+  }
+  var SH_ICON = '<svg class="shb-i" viewBox="0 0 40 52" aria-hidden="true" focusable="false"><rect x="1" y="1" width="38" height="50" rx="4" fill="#24496f"></rect><rect x="1" y="1" width="7" height="50" rx="3" fill="#183452"></rect><rect x="12" y="8" width="22" height="36" rx="2" fill="none" stroke="#d9c58c" stroke-width="1.3"></rect><path d="M16 16h14M16 20.5h10" stroke="#d9c58c" stroke-width="1.7" stroke-linecap="round"></path><circle cx="23" cy="33" r="5" fill="none" stroke="#d9c58c" stroke-width="1.5"></circle></svg>';
+  function shBanner(carId, car) {
+    var c = shCheck(carId, car);
+    return '<button type="button" class="shb" data-act="sh-open" data-id="' + esc(carId) + '">' + SH_ICON +
+      '<span class="shb-t"><b>Serviceheft</b><span>' + esc(c.nEnt + (c.nEnt === 1 ? ' Eintrag' : ' Einträge') + ' · ' + c.sum) + '</span></span>' +
+      shStamp(c.lv, SH_STAMP[c.lv], true) + '</button>';
+  }
+  function shEntryHtml(carId, e, can) {
+    var when = e.k === 'teile' && !e.d ? (e.ab ? 'nach ' + e.ab : 'ohne Datum') : shWhen(e.d, e.g);
+    var km = e.km !== null && e.km !== undefined ? (e.kmCa ? 'ca. ' : '') + nf.format(e.km) + ' km' : '';
+    var dcol = '<span class="she-d"><b>' + esc(when) + '</b>' + (km ? '<span>' + esc(km) + '</span>' : '') + '</span>';
+    if (e.k === 'km') return '<li class="she she-s"><div class="she-b">' + dcol + '<span class="she-m"><span class="she-x">km-Stand abgelesen</span></span></div></li>';
+    if (e.k === 'kauf') return '<li class="she she-s she-kauf"><div class="she-b">' + dcol + '<span class="she-m"><span class="she-t">Kauf</span><span class="she-x">Ab hier beginnt die eigene Historie.</span></span></div></li>';
+    if (e.k === 'pickerl') return '<li class="she she-s"><div class="she-b">' + dcol + '<span class="she-m"><span class="she-t">' + (e.vorher ? 'Pickerl erneuert' : 'Pickerl eingetragen') + '</span><span class="she-x">' + esc('Nächste Begutachtung ' + ymTxt(e.bis) + (e.vorher ? ' (vorher ' + ymTxt(e.vorher) + ')' : '')) + '</span></span></div></li>';
+    var w = e.w || null, title = w ? w.titel : 'Teile eingebaut';
+    var cost = w ? numOrNull(w.kosten) : e.parts.reduce(function (a, x) { var p = numOrNull(x.r.preis); return p === null ? a : (a || 0) + p * num(x.r.menge); }, null);
+    var partTxt = e.parts.map(function (x) { return itemName(x.it) + (num(x.r.menge) !== 1 ? ' (' + fmt(x.r.menge) + ' ' + unitOf(x.it) + ')' : ''); }).join(', ');
+    var who = shWho(w);
+    var inner = dcol + '<span class="she-m"><span class="she-t">' + esc(title) + '</span>' +
+      (e.names.length ? '<span class="she-cs">' + e.names.map(function (n) { return '<span class="she-c">' + esc(n) + '</span>'; }).join('') + '</span>' : '') +
+      (partTxt ? '<span class="she-x">' + esc((w ? 'Teile: ' : '') + partTxt) + '</span>' : '') +
+      (w && w.notiz ? '<span class="she-x">' + esc(w.notiz) + '</span>' : '') +
+      (cost !== null || who || (w && w.beleg) ? '<span class="she-f"><span class="she-k">' + (cost !== null ? esc(eur(cost)) : '') + (w && w.beleg ? '<span class="she-bl">Beleg</span>' : '') + '</span>' +
+        (who ? '<span class="stamp s-' + (who === 'Eigenleistung' ? 'self' : 'shop') + '" aria-hidden="true">' + esc(who) + '</span><span class="vh">' + esc('Durchgeführt von: ' + who) + '</span>' : '') + '</span>' : '') +
+      '</span>';
+    if (w && can) return '<li class="she"><button type="button" class="she-b" data-act="work-edit" data-id="' + esc(carId) + '" data-work="' + esc(w.id) + '" data-back="sh">' + inner + '</button></li>';
+    return '<li class="she"><div class="she-b">' + inner + '</div></li>';
+  }
+  function sheetServiceheft(carId, car) {
+    var c = shCheck(carId, car), ent = shEntries(carId, car), can = canWrite(), det = carDetails(car, true);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Serviceheft · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">Serviceheft</h2>' +
+      (det ? '<p class="buy">' + esc(det) + '</p>' : '') + (car.fin ? '<p class="buy">FIN <span class="vin">' + esc(car.fin) + '</span></p>' : '') + '</div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    h += '<div class="shc lv-' + c.lv + '"><div class="shc-h">' + shStamp(c.lv, SH_STAMP[c.lv]) + '<div class="shc-s"><b>' + esc(c.sum) + '</b><span>' +
+      esc(c.lv === 'leer' ? 'Trag erledigte Arbeiten ein oder übernimm alte Einträge aus dem Papier-Serviceheft.' : 'Geprüft mit den Intervallen aus dem Wartungsplan' + (c.since ? ', ' + (c.start ? 'ab dem Kauf ' : 'ab ') + c.since : '') + '.') + '</span></div></div>';
+    if (c.items.length) h += '<ul class="shf">' + c.items.map(function (x) { return '<li class="lv-' + x.lv + '"><b>' + esc(x.t) + '</b> ' + esc(x.x) + '</li>'; }).join('') + '</ul>';
+    if (c.undated.length) h += '<p class="shn">' + esc('Ohne Datum, zählt nicht für die Prüfung: ' + c.undated.join(', ') + '. Datum ergänzen.') + '</p>';
+    if (c.unknown.length) h += '<p class="shn">' + esc('Noch kein Eintrag: ' + c.unknown.join(', ') + '. Wann zuletzt gemacht? Aus dem alten Serviceheft oder von Rechnungen nachtragen.') + '</p>';
+    h += '</div>';
+    h += '<div class="sh-btns">' + (can ? '<button type="button" class="btn" data-act="sh-add" data-id="' + esc(carId) + '">Eintrag nachtragen</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="sh-pdf" data-id="' + esc(carId) + '">Als PDF speichern</button></div>';
+    h += shTimeline(carId, car);
+    var body = '', year = null;
+    ent.forEach(function (e) {
+      var y = e.d ? e.d.slice(0, 4) : 'Ohne Datum';
+      if (y !== year) { body += '<li class="she-y"><h3>' + esc(y) + '</h3></li>'; year = y; }
+      body += shEntryHtml(carId, e, can);
+    });
+    h += '<div class="sh-sec"><h3 class="sec">Einträge · ' + c.nEnt + '</h3>' + (body ? '<ol class="shl">' + body + '</ol>' : '<p class="note">Noch nichts eingetragen.</p>') + '</div>';
+    h += '<p class="help">„Lücke“ heißt: Zwischen zwei Einträgen (oder seit dem Kauf) lag mehr als das Intervall, mit einem Monat bzw. 10 % Spielraum. Rot: über der Herstellerangabe oder deinem Maximum. Orange: nur über deiner strengeren Vorgabe. Ein Stempel zeigt, wer die Arbeit gemacht hat.</p>';
+    h += '<p class="err" id="sh-err" role="alert"></p><div class="sh-foot"><button type="button" class="btn ghost" data-act="wart-open" data-id="' + esc(carId) + '">Wartungsplan</button>' +
+      '<button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Zum Auto</button></div>';
+    return h;
+  }
+  function openServiceheft(carId) {
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car) { toast('Dieses Auto gibt es nicht mehr.'); return; }
+    openSheet('serviceheft', { id: carId }, sheetServiceheft(carId, car));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+    loadJsPdf().catch(function () {});
+  }
+  /* ---------- PDF ---------- */
+  function shPdf(lib, carId, car) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, M = 16, X1 = W - M, BOT = H - 16, y = M;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243], bad: [178, 58, 42], warn: [196, 92, 20], ok: [44, 122, 75], leer: [120, 130, 136], self: [31, 93, 166], shop: [92, 62, 160] };
+    var PT = 0.3528;
+    var T = function (s) { return String(s == null ? '' : s).replace(/[\u00a0\u2007\u2009\u202f]/g, ' ').replace(/\u2212/g, '-').replace(/\u2192/g, '->').replace(/[^\u0000-\u00ff\u20ac\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0160\u2039\u0152\u017d\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\u0161\u203a\u0153\u017e\u0178]/g, '?'); };
+    var txt = function (s, x, yy, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), x, yy, o); };
+    doc.setLineHeightFactor(1.32);
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.32; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    var newPage = function () { doc.addPage(); y = M; };
+    var need = function (hh) { if (y + hh > BOT) { newPage(); return true; } return false; };
+    var c = shCheck(carId, car), ent = shEntries(carId, car).slice().reverse(), rows = wartRows(carId).filter(function (r) { return r.status !== 'info'; }).sort(wartSort);
+    var stamp = function (label, col, cx, cy, deg, sz) {
+      f('bold', sz); var tw = doc.getTextWidth(T(label)), w = tw + 8, hh = sz * PT + 5.5, a = deg * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
+      var rot = function (dx, dy) { return [cx + dx * co + dy * si, cy - dx * si + dy * co]; };
+      dc(col); tc(col);
+      [0, 1.3].forEach(function (inset) {
+        doc.setLineWidth(inset ? 0.35 : 0.7);
+        var p = [rot(-w / 2 + inset, -hh / 2 + inset), rot(w / 2 - inset, -hh / 2 + inset), rot(w / 2 - inset, hh / 2 - inset), rot(-w / 2 + inset, hh / 2 - inset)];
+        doc.lines([[p[1][0] - p[0][0], p[1][1] - p[0][1]], [p[2][0] - p[1][0], p[2][1] - p[1][1]], [p[3][0] - p[2][0], p[3][1] - p[2][1]]], p[0][0], p[0][1], [1, 1], 'S', true);
+      });
+      var s0 = rot(-tw / 2, sz * PT * 0.35);
+      txt(label, s0[0], s0[1], { angle: deg });
+    };
+    doc.setProperties({ title: 'Serviceheft ' + (car.name || 'Auto'), subject: 'Wartungshistorie', creator: 'Werkstatt-Inventar' });
+    // Kopf
+    f('bold', 9); tc(C.mut); txt('SERVICEHEFT', M, y + 3);
+    f('bold', 22); tc(C.ink); var nm = split(car.name || 'Auto', 120); txt(nm, M, y + 12); y += 12 + (nm.length - 1) * lh(22);
+    f('normal', 10); tc(C.mut);
+    var det = carDetails(car, true), meta = [det, car.fin ? 'FIN ' + car.fin : '', 'Stand ' + datum(dayKey(new Date()))].filter(Boolean);
+    meta.forEach(function (t) { var l = split(t, 125); txt(l, M, y + 6); y += l.length * lh(10); });
+    stamp(SH_STAMP[c.lv].toUpperCase(), C[c.lv], X1 - 26, M + 12, 7, 15);
+    y += 8;
+    // Kennzahlen
+    var ck = curKmEst(car), pk = pickerlInfo(car);
+    var facts = [['Kilometerstand', ck ? nf.format(ck.km) + ' km' + (ck.est ? ' (zuletzt bekannt)' : isDay(car.kmDatum) ? ' (' + datum(car.kmDatum) + ')' : '') : 'nicht eingetragen'],
+      ['Kauf', isDay(car.kaufdatum) ? kaufDate(car) + (numOrNull(car.kaufKm) !== null ? ', ' + nf.format(car.kaufKm) + ' km' : '') : 'nicht eingetragen'],
+      ['Pickerl', pk ? 'fällig ' + ymTxt(pk.due) : 'nicht eingetragen'],
+      ['Einträge', String(c.nEnt)]];
+    var cw = (X1 - M) / 4;
+    fc(C.soft); doc.roundedRect(M, y, X1 - M, 15, 2, 2, 'F');
+    facts.forEach(function (p, i) {
+      f('normal', 7.5); tc(C.mut); txt(p[0], M + 4 + i * cw, y + 5.5);
+      f('bold', 9.5); tc(C.ink); txt(split(p[1], cw - 6)[0], M + 4 + i * cw, y + 11);
+    });
+    y += 23;
+    // Prüfung
+    var head = function (t) { need(14); f('bold', 12); tc(C.ink); txt(t, M, y + 4); y += 6; dc(C.ink); doc.setLineWidth(0.5); doc.line(M, y, X1, y); y += 5; };
+    head('Prüfung auf verabsäumte Wartung');
+    f('bold', 10); tc(C[c.lv]); txt(c.sum, M, y + 3.5); y += lh(10) + 1;
+    f('normal', 8.5); tc(C.mut);
+    var basis = split('Grundlage: Intervalle aus dem Wartungsplan (Herstellerangaben laut Recherche und eigene Vorgaben). Als Lücke gilt mehr als das Intervall zwischen zwei Einträgen oder seit dem Kauf, mit einem Monat bzw. 10 % Spielraum.', X1 - M);
+    txt(basis, M, y + 3); y += basis.length * lh(8.5) + 3;
+    c.items.forEach(function (it) {
+      f('normal', 9.5); var l = split(it.t + ': ' + it.x, X1 - M - 6);
+      need(l.length * lh(9.5) + 2);
+      fc(C[it.lv]); doc.circle(M + 1.5, y + 2.2, 1.3, 'F');
+      tc(C.ink); txt(l, M + 6, y + 3.2); y += l.length * lh(9.5) + 1.6;
+    });
+    [[c.undated, 'Ohne Datum, zählt nicht: '], [c.unknown, 'Noch kein Eintrag: ']].forEach(function (u) {
+      if (!u[0].length) return;
+      f('normal', 9); var l = split(u[1] + u[0].join(', '), X1 - M - 6);
+      need(l.length * lh(9) + 2);
+      fc(C.leer); doc.circle(M + 1.5, y + 2.2, 1.3, 'F');
+      tc(C.mut); txt(l, M + 6, y + 3.2); y += l.length * lh(9) + 1.6;
+    });
+    y += 5;
+    var tl = shTimelineData(carId, car);
+    if (tl) { head('Verlauf je Wartungspunkt'); shPdfTimeline(tl, M, X1, { doc: doc, f: f, tc: tc, fc: fc, dc: dc, txt: txt, split: split, need: need, C: C, y: function () { return y; }, sy: function (v) { y = v; } }); }
+    // Tabellen
+    var table = function (cols, data) {
+      var pad = 1.6, hdr = function () {
+        f('bold', 8); tc(C.mut); var xx = M;
+        cols.forEach(function (cl) { txt(cl.t, cl.r ? xx + cl.w - pad : xx + pad, y + 4, cl.r ? { align: 'right' } : undefined); xx += cl.w; });
+        y += 6; dc(C.line); doc.setLineWidth(0.3); doc.line(M, y, X1, y); y += 1;
+      };
+      hdr();
+      data.forEach(function (row) {
+        var cells = row.map(function (cell, i) {
+          var parts = Array.isArray(cell) ? cell : [{ t: cell }], out = [];
+          parts.forEach(function (p) { if (p.t === '' || p.t === null || p.t === undefined) return; f(p.b ? 'bold' : 'normal', p.z || 9); split(p.t, cols[i].w - 2 * pad).forEach(function (ln) { out.push({ t: ln, b: p.b, z: p.z || 9, c: p.c }); }); });
+          return out;
+        });
+        var rh = Math.max.apply(null, cells.map(function (ls) { return ls.reduce(function (a, ln) { return a + lh(ln.z); }, 0); })) + 2 * pad;
+        if (need(rh)) hdr();
+        var xx = M;
+        cells.forEach(function (ls, i) {
+          var yy = y + pad;
+          ls.forEach(function (ln) { f(ln.b ? 'bold' : 'normal', ln.z); tc(ln.c || C.ink); yy += lh(ln.z); txt(ln.t, cols[i].r ? xx + cols[i].w - pad : xx + pad, yy - lh(ln.z) * 0.28, cols[i].r ? { align: 'right' } : undefined); });
+          xx += cols[i].w;
+        });
+        y += rh; dc(C.line); doc.setLineWidth(0.2); doc.line(M, y, X1, y);
+      });
+      y += 6;
+    };
+    if (rows.length) {
+      head('Wechselintervalle');
+      table([{ t: 'Wartung', w: 44 }, { t: 'Intervall', w: 40 }, { t: 'Zuletzt', w: 42 }, { t: 'Nächster', w: 32 }, { t: 'Stand', w: 20 }],
+        rows.map(function (r) {
+          var l = r.last, lastT = l ? (l.datum ? (l.via ? 'frühestens ' : '') + shWhen(l.datum, l.genau) : 'ohne Datum') + (r.lastKm ? ', ' + kmTxt(r.lastKm.km, r.lastKm.ca, r.lastKm.min) : '') : 'unbekannt';
+          var nx = [r.nextKm !== null ? kmTxt(r.nextKm, r.kmCa) : '', r.nextD ? fmtGenau(r.nextD, 'monat') : ''].filter(Boolean).join(' oder ');
+          var st = r.plan ? 'eingeplant' : r.over ? 'überfällig' : WST[r.status];
+          return [[{ t: r.p.name, b: true }], ivText(r.iv.km, r.iv.monate, r.iv.kmMax) + (r.iv.own ? ' (eigene Vorgabe)' : ''), lastT, nx || '–', [{ t: st, b: true, c: r.over || r.status === 'faellig' ? C.bad : r.status === 'bald' ? C.warn : r.status === 'ok' ? C.ok : C.mut }]];
+        }));
+    }
+    head('Einträge');
+    var data = ent.map(function (e) {
+      var when = e.k === 'teile' && !e.d ? (e.ab ? 'nach ' + e.ab : 'ohne Datum') : shWhen(e.d, e.g);
+      var km = e.km !== null && e.km !== undefined ? (e.kmCa ? 'ca. ' : '') + nf.format(e.km) : '';
+      if (e.k === 'km') return [when, km, [{ t: 'km-Stand abgelesen', c: C.mut }], '', ''];
+      if (e.k === 'kauf') return [when, km, [{ t: 'Kauf', b: true }], '', ''];
+      if (e.k === 'pickerl') return [when, '', [{ t: e.vorher ? 'Pickerl erneuert' : 'Pickerl eingetragen', b: true }, { t: 'Nächste Begutachtung ' + ymTxt(e.bis), z: 8, c: C.mut }], '', ''];
+      var w = e.w || null, cost = w ? numOrNull(w.kosten) : e.parts.reduce(function (a, x) { var p = numOrNull(x.r.preis); return p === null ? a : (a || 0) + p * num(x.r.menge); }, null);
+      var cell = [{ t: w ? w.titel : 'Teile eingebaut', b: true }];
+      if (e.names.length) cell.push({ t: 'Wartung: ' + e.names.join(', '), z: 8, c: C.ok });
+      if (e.parts.length) cell.push({ t: (w ? 'Teile: ' : '') + e.parts.map(function (x) { return itemName(x.it) + (num(x.r.menge) !== 1 ? ' (' + fmt(x.r.menge) + ' ' + unitOf(x.it) + ')' : ''); }).join(', '), z: 8, c: C.mut });
+      if (w && w.notiz) cell.push({ t: w.notiz, z: 8, c: C.mut });
+      var who = shWho(w);
+      return [when, km, cell, [{ t: who || '–', c: who ? (who === 'Eigenleistung' ? C.self : C.shop) : C.mut, b: !!who }].concat(w && w.beleg ? [{ t: 'Beleg vorhanden', z: 7.5, c: C.mut }] : []), cost === null ? '' : eur(cost)];
+    });
+    if (data.length) table([{ t: 'Datum', w: 22 }, { t: 'km', w: 20 }, { t: 'Arbeit', w: 82 }, { t: 'Durchgeführt von', w: 32 }, { t: 'Kosten', w: 22, r: true }], data);
+    else { f('normal', 10); tc(C.mut); txt('Noch keine Einträge.', M, y + 4); y += 10; }
+    need(14); f('normal', 8); tc(C.mut);
+    var note = split('Eigene Aufzeichnungen des Halters, erstellt mit der Werkstatt-App. „Beleg vorhanden“ heißt: Rechnung oder Stempel liegt beim Halter. Teile ohne Einbaudatum sind mit dem Kaufdatum der Teile als frühestem Termin angegeben.', X1 - M);
+    txt(note, M, y + 3);
+    var n = doc.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 11, X1, H - 11);
+      txt('Serviceheft ' + (car.name || 'Auto') + ' · Stand ' + datum(dayKey(new Date())), M, H - 7);
+      txt('Seite ' + i + ' von ' + n, X1, H - 7, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveServiceheftPdf(carId) {
+    var car = carId ? S.cars.get(carId) : null, err = function (m) { var el = $('#sh-err'); if (el) el.textContent = m; else toast(m); };
+    if (!car) return;
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var blob;
+    try { blob = shPdf(lib, carId, car).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    var name = 'Serviceheft ' + fileSafe(car.name || 'Auto') + ' ' + dayKey(new Date()) + '.pdf';
+    try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
+  function durchOpts() {
+    var seen = ['selbst'];
+    S.cars.forEach(function (c) { arr(c && c.arbeiten).forEach(function (w) { var d = w && String(w.durch || '').trim(); if (d && seen.indexOf(d) < 0) seen.push(d); }); });
+    return seen.map(function (d) { return '<option value="' + esc(d) + '"></option>'; }).join('');
+  }
+  /* ---------- Serviceheft: Arbeiten vor dem Kauf, Zeitstrahl je Wartungspunkt ---------- */
+  function workVorKauf(car, w) {
+    if (!car || !w || !isDay(car.kaufdatum) || !isDay(w.datum)) return false;
+    var g1 = car.kaufdatumGenau || 'tag', g2 = w.datumGenau || 'tag';
+    var n = g1 === 'jahr' || g2 === 'jahr' ? 4 : g1 === 'monat' || g2 === 'monat' ? 7 : 10;
+    return w.datum.slice(0, n) < car.kaufdatum.slice(0, n);
+  }
+  /* Wann war ein km-Stand erreicht? Aus den bekannten Ständen, danach mit der bisherigen Fahrleistung */
+  function shDateAtKm(pts, rate, x) {
+    if (!pts.length || x === null || x <= pts[0].km) return null;
+    for (var i = 1; i < pts.length; i++) {
+      var a = pts[i - 1], b = pts[i];
+      if (b.km >= x && b.km > a.km) return addDays(a.d, Math.round((x - a.km) / (b.km - a.km) * (dayNum(b.d) - dayNum(a.d))));
+    }
+    var last = pts[pts.length - 1];
+    return rate ? addDays(last.d, Math.round((x - last.km) / rate)) : null;
+  }
+  /* Dieselben Grenzen wie bei der Prüfung (shOver): rot über Hersteller bzw. Maximum, orange nur über deiner strengeren Vorgabe */
+  function shLimits(iv) {
+    var man = iv.own ? iv.man : { km: iv.km, monate: iv.monate }, hasMan = !!man && (man.km !== null || man.monate !== null);
+    var kt = function (lim) { return lim ? Math.max(500, lim * 0.1) : 0; };
+    var mk = function (mo, km) { return { mo: mo !== null && mo !== undefined ? mo + 1 : null, km: km !== null && km !== undefined ? km + kt(km) : null }; };
+    var bad = hasMan ? mk(man.monate, man.km) : null, warn = null;
+    if (iv.own) {
+      var o = mk(iv.monate, iv.km);
+      if (!hasMan) bad = o; else warn = o;
+      if (iv.kmMax !== null && iv.kmMax !== undefined) bad = { mo: bad ? bad.mo : null, km: bad && bad.km !== null ? Math.min(bad.km, iv.kmMax) : iv.kmMax };
+    }
+    return { warn: warn, bad: bad };
+  }
+  function shDueAt(e, L, pts, rate) {
+    if (!L) return null;
+    var c = [];
+    if (L.mo !== null) c.push(addMonths(e.d, L.mo + shErr(e.g)));
+    if (L.km !== null && e.km !== null) { var d = shDateAtKm(pts, rate, e.km + L.km); if (d) c.push(d); }
+    c.sort();
+    return c[0] || null;
+  }
+  /* Zeitstrahl als Daten (für die Ansicht und das PDF): je Wartungspunkt Abschnitte im Intervall, darüber, unbekannt */
+  function shTimelineData(carId, car) {
+    var rows = wartRows(carId).filter(function (r) { return r.status !== 'info'; });
+    if (!rows.length) return null;
+    var facts = wartFacts(carId, wartPostenFor(carId)), today = dayKey(new Date()), pts = kmPoints(car), rate = kmRate(pts);
+    var K = isDay(car.kaufdatum) ? { d: car.kaufdatum, g: car.kaufdatumGenau || 'tag', km: numOrNull(car.kaufKm) !== null && !car.kaufKmCa ? num(car.kaufKm) : null } : null;
+    var t0 = K ? K.d : null, lines = [];
+    rows.forEach(function (r) {
+      var ev = [], undated = false;
+      facts.forEach(function (f) {
+        if (f.ids.indexOf(r.p.id) < 0) return;
+        if (!f.datum) { undated = true; return; }
+        var e = { d: f.datum, g: f.genau || 'tag', km: f.km !== null && !f.kmCa ? f.km : null, via: !!f.via };
+        var same = ev.filter(function (x) { return Math.abs(dayNum(x.d) - dayNum(e.d)) <= 14; })[0];
+        if (same) { if (same.km === null && e.km !== null) same.km = e.km; if (!e.via) same.via = false; return; }
+        ev.push(e);
+      });
+      ev.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+      if (ev.length && (!t0 || ev[0].d < t0)) t0 = ev[0].d;
+      lines.push({ r: r, ev: ev, L: shLimits(r.iv), undated: undated });
+    });
+    if (!t0) return null;
+    var ty = Number(today.slice(0, 4)), y0 = Math.min(Number(t0.slice(0, 4)), ty - 2);
+    var A = dayNum(y0 + '-01-01'), B = dayNum(ymAdd(today.slice(0, 7), 12) + '-01'), span = B - A;
+    var X = function (d) { return Math.max(0, Math.min(1, (dayNum(d) - A) / span)); };
+    var min = function (a, b) { return !a ? b : !b ? a : a < b ? a : b; };
+    var out = lines.map(function (ln) {
+      var L = ln.L, ev = ln.ev, segs = [], gaps = 0, gapBad = false, nowLv = '', lastUnk = false, first = ev[0] || null;
+      var seg = function (k, a, b) { if (a && b && b > a && X(b) - X(a) > 0.0005) segs.push({ k: k, x: X(a), w: X(b) - X(a) }); };
+      if (K && (!first || K.d < first.d)) {
+        var end0 = first ? first.d : today, kw = shDueAt(K, L.warn, pts, rate), kb = shDueAt(K, L.bad, pts, rate), k1 = min(kw, kb);
+        seg('unk', K.d, min(k1, end0));
+        if (kw && kw < end0 && (!kb || kw < kb)) seg('warn', kw, min(kb, end0));
+        if (kb && kb < end0) seg('bad', kb, end0);
+        if ((kw && kw < end0) || (kb && kb < end0)) { if (first) { gaps++; if (kb && kb < end0) gapBad = true; } else nowLv = kb && kb < end0 ? 'bad' : 'warn'; }
+      }
+      ev.forEach(function (e, i) {
+        var next = ev[i + 1] || null, end = next ? next.d : today;
+        if (end <= e.d) return;
+        var ka = !next && e.km === null ? kmAt(pts, e.d) : null, ee = ka ? { d: e.d, g: e.g, km: ka.km } : e;
+        var dw = shDueAt(ee, L.warn, pts, rate), db = shDueAt(ee, L.bad, pts, rate), d1 = min(dw, db);
+        if (!d1) { seg('unk', e.d, end); if (!next) lastUnk = true; return; }
+        seg('ok', e.d, min(d1, end));
+        if (e.via && next) { seg('unk', d1, end); return; }
+        if (dw && dw < end && (!db || dw < db)) seg('warn', dw, min(db, end));
+        if (db && db < end) seg('bad', db, end);
+        if ((dw && dw < end) || (db && db < end)) { if (next) { gaps++; if (db && db < end) gapBad = true; } else nowLv = db && db < end ? 'bad' : 'warn'; }
+        if (!next && d1 > today) seg('next', today, d1);
+      });
+      var lv = nowLv === 'bad' || gapBad ? 'bad' : nowLv || (gaps ? 'warn' : !ev.length || lastUnk ? 'unk' : 'ok');
+      var txt = nowLv ? (nowLv === 'bad' ? 'überfällig' : 'über deiner Vorgabe') : gaps ? (gaps === 1 ? '1 Lücke' : gaps + ' Lücken') : !ev.length ? (ln.undated ? 'Eintrag ohne Datum' : 'kein Eintrag') : lastUnk ? 'unklar' : 'im Intervall';
+      return { name: ln.r.p.name, i: ln.r.i, lv: lv, txt: txt, segs: segs, dots: ev.map(function (e) { return { x: X(e.d), via: e.via }; }) };
+    });
+    var rk = { bad: 0, warn: 1, unk: 2, ok: 3 };
+    out.sort(function (a, b) { return rk[a.lv] - rk[b.lv] || a.i - b.i; });
+    var years = [], step = span / 365.25 > 16 ? 5 : span / 365.25 > 8 ? 2 : 1;
+    for (var y = y0; y <= ty + 1; y++) { var x = X(y + '-01-01'); if (x >= 1) break; years.push({ y: y, x: x, label: (y - y0) % step === 0 && x <= 0.91 }); }
+    return { rows: out, years: years, kauf: K ? X(K.d) : null, heute: X(today), via: out.some(function (r) { return r.dots.some(function (d) { return d.via; }); }) };
+  }
+  function shTimeline(carId, car) {
+    var t = shTimelineData(carId, car);
+    if (!t) return '';
+    var pct = function (v) { return (v * 100).toFixed(2) + '%'; };
+    var rows = t.rows.map(function (r) {
+      var s = r.segs.map(function (g) { return '<i class="sg sg-' + g.k + '" style="left:' + pct(g.x) + ';width:' + pct(g.w) + '"></i>'; }).join('');
+      if (t.kauf !== null) s += '<i class="mk mk-k" style="left:' + pct(t.kauf) + '"></i>';
+      s += '<i class="mk mk-h" style="left:' + pct(t.heute) + '"></i>';
+      s += r.dots.map(function (d) { return '<i class="dt' + (d.via ? ' via' : '') + '" style="left:' + pct(d.x) + '"></i>'; }).join('');
+      return '<li class="shtl-r lv-' + r.lv + '"><span class="shtl-n"><span>' + esc(r.name) + '</span><b>' + esc(r.txt) + '</b></span><span class="shtl-t">' + s + '</span></li>';
+    }).join('');
+    var yrs = t.years.filter(function (y) { return y.label; }).map(function (y) { return '<span class="shtl-y" style="left:' + pct(y.x) + '">' + y.y + '</span>'; }).join('');
+    return '<div class="sh-sec shtl-s"><h3 class="sec">Verlauf je Wartungspunkt</h3>' +
+      '<p class="vh">Die Lücken stehen oben in der Prüfung als Text.</p>' +
+      '<div class="shtl" aria-hidden="true"><div class="shtl-ax">' + yrs + '</div><ul class="shtl-l">' + rows + '</ul></div>' +
+      '<p class="shtl-lg" aria-hidden="true"><span><i class="sw sg-ok"></i>im Intervall</span><span><i class="sw sg-warn"></i>über deiner Vorgabe</span><span><i class="sw sg-bad"></i>überzogen</span><span><i class="sw sg-unk"></i>unbekannt</span><span><i class="sw sw-dt"></i>Eintrag</span>' +
+      (t.via ? '<span><i class="sw sw-via"></i>Teil gekauft, Einbau danach</span>' : '') + (t.kauf !== null ? '<span><i class="sw sw-k"></i>Kauf</span>' : '') + '<span><i class="sw sw-h"></i>heute</span></p></div>';
+  }
+  /* Zeitstrahl im PDF; o.y()/o.sy() lesen und setzen die Schreibposition, o.need() bricht bei Bedarf die Seite um */
+  function shPdfTimeline(t, M, X1, o) {
+    var labW = 46, x0 = M + labW, tw = X1 - x0, rowH = 7.4, trH = 2.6, doc = o.doc;
+    var col = { ok: [44, 122, 75], warn: [217, 102, 31], bad: [178, 58, 42], next: [178, 211, 190], unk: [214, 219, 222] };
+    var axis = function () {
+      var y = o.y();
+      o.f('normal', 7.5); o.tc(o.C.mut); o.dc(o.C.line); doc.setLineWidth(0.2);
+      t.years.forEach(function (yy) { var xx = x0 + yy.x * tw; doc.line(xx, y, xx, y + 3.2); if (yy.label) o.txt(String(yy.y), xx + 0.8, y + 2.6); });
+      o.sy(y + 4.6);
+    };
+    o.need(4.6 + rowH); axis();
+    t.rows.forEach(function (r) {
+      if (o.need(rowH)) axis();
+      var y = o.y(), ty = y + 1.6;
+      o.f('bold', 8.5); o.tc(o.C.ink); o.txt(o.split(r.name, labW - 3)[0], M, y + 3.4);
+      o.f('normal', 7); o.tc(r.lv === 'bad' ? o.C.bad : r.lv === 'warn' ? o.C.warn : r.lv === 'ok' ? o.C.ok : o.C.mut); o.txt(r.txt, M, y + 6.3);
+      o.fc([226, 231, 233]); doc.rect(x0, ty, tw, trH, 'F');
+      r.segs.forEach(function (g) { o.fc(col[g.k] || col.unk); doc.rect(x0 + g.x * tw, ty, Math.max(0.2, g.w * tw), trH, 'F'); });
+      if (t.kauf !== null) { o.dc(o.C.mut); doc.setLineWidth(0.3); doc.setLineDashPattern([0.6, 0.6], 0); doc.line(x0 + t.kauf * tw, ty - 0.9, x0 + t.kauf * tw, ty + trH + 0.9); doc.setLineDashPattern([], 0); }
+      o.dc(o.C.ink); doc.setLineWidth(0.45); doc.line(x0 + t.heute * tw, ty - 0.9, x0 + t.heute * tw, ty + trH + 0.9);
+      r.dots.forEach(function (d) { o.fc(d.via ? [255, 255, 255] : o.C.ink); o.dc(o.C.ink); doc.setLineWidth(0.35); doc.circle(x0 + d.x * tw, ty + trH / 2, 1.15, d.via ? 'FD' : 'F'); });
+      o.sy(y + rowH);
+    });
+    o.f('normal', 7.5); o.tc(o.C.mut);
+    var l = o.split('Grün: im Intervall · Orange: über deiner Vorgabe · Rot: überzogen · Grau: unbekannt · Punkt: Eintrag' + (t.via ? ' · offener Punkt: Teil gekauft, Einbau danach' : '') + (t.kauf !== null ? ' · gestrichelt: Kauf' : '') + ' · Strich: heute', X1 - M);
+    o.need(l.length * 3.6 + 2); o.txt(l, M, o.y() + 3); o.sy(o.y() + l.length * 3.6 + 5);
   }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
@@ -5951,7 +6543,10 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'rep-research-all': startResearch(repList(null).filter(function (p) { return repPending(p[1]); }).sort(function (a, b) { return repSort(a, b); }).map(function (p) { return p[0]; })); break;
       case 'rep-drop': repStatusAction(t, 'verworfen', 'Als nicht mehr nötig markiert. Steht weiter unter „Erledigt oder nicht mehr nötig“.'); break;
       case 'rep-reopen': repStatusAction(t, 'offen', 'Wieder offen.'); break;
-      case 'work-edit': openWorkForm(t.dataset.id, t.dataset.work); break;
+      case 'work-edit': openWorkForm(t.dataset.id, t.dataset.work, t.dataset.back ? { back: t.dataset.back } : null); break;
+      case 'sh-open': openServiceheft(t.dataset.id); break;
+      case 'sh-add': openWorkForm(t.dataset.id, null, { back: 'sh', nachtrag: true }); break;
+      case 'sh-pdf': saveServiceheftPdf(t.dataset.id); break;
       case 'wart-open': openWart(t.dataset.id); break;
       case 'wart-research': startWartResearch(t.dataset.id); break;
       case 'wart-plan': planWart(t.dataset.car, t.dataset.posten); break;
