@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "25", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "26", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1496,6 +1496,28 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .bv-a { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .bv .btn.ghost { background: transparent; color: #eef2f3; border-color: rgba(255, 255, 255, 0.4); }
 .bv .btn:focus-visible, .bv-b:focus-visible, .bv-nav:focus-visible { outline: 3px solid #8ab4ff; outline-offset: 2px; }
+/* Kundenbereich */
+.kz { display: inline-block; padding: 1px 6px 0; border: 1.5px solid #1b1f22; border-top: 4px solid #c8102e; border-bottom: 4px solid #c8102e; border-radius: 3px; background: #ffffff; color: #111417; font-family: var(--f-mono); font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.35; white-space: nowrap; vertical-align: 1px; }
+.car-k { font-weight: 700; color: var(--ink); }
+.kl .i-p { align-self: center; }
+.kl-n { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 13px; background: var(--surface-2); font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+.kl-o { display: flex; align-items: center; gap: 10px; }
+.kl-o .wbtn { flex: 1; min-width: 0; }
+.kl-o .linkbtn { flex: none; }
+.kl-as { margin-top: 8px; }
+.kc a, .sh-head .buy a { color: var(--wb); font-weight: 700; }
+.kl-b { flex-wrap: wrap; }
+.kl-b a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.ki { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; }
+.ki-r { padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
+.ki-r:first-child { border-top: 0; }
+.ki-r .check { font-size: 15px; }
+.ki-r b { display: inline-block; min-width: 8.5em; margin-right: 6px; font-weight: 700; color: var(--muted); }
+.ki-r small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; }
+.ki-r.diff small { color: var(--ro-text); }
+.ki-s { display: block; padding-left: 32px; }
+.ki-a { margin: 6px 0 10px; white-space: pre-line; overflow-wrap: anywhere; font-size: 15px; }
+@media (max-width: 380px) { .ki-r b { display: block; min-width: 0; } }
 </style>
 
 <div class="wrap">
@@ -1557,7 +1579,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 
   <section class="view" id="view-autos" aria-label="Autos" hidden>
     <div class="vhead"><h2 class="sec">Autos und ihre Teile</h2><button type="button" class="linkbtn" data-act="car-new">+ Auto anlegen</button></div>
-    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button></div>
+    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button></div>
     <ul class="cars" id="cars"></ul>
     <p class="hint">Jedes Auto bekommt ein eigenes Fach im Regal: auf der Karte das Fach antippen, „Fach einstellen“ und das Auto wählen. Im Auto trägst du Kaufpreis und erledigte Arbeiten ein, Einbauteile brauchen Kaufdatum und Preis. Der Wartungsplan im Auto zeigt, welche Wechsel fällig sind, und typische Probleme je km-Stand. Der Zeitplan sammelt die Termine aller Autos für die nächsten 12 Monate.</p>
   </section>
@@ -1656,7 +1678,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     db: null, user: null, dl: null,
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
-    carsReady: false, cars: new Map(),
+    carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2031,8 +2053,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         var m = new Map();
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.cars = m; S.carsReady = true;
-        renderAll(); refreshSheet();
+        renderAll(); refreshSheet(); kdTryOpen();
       }, function () { S.carsReady = true; renderAll(); });
+      S.db.collection('kunden').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.kunden = m; S.kundenReady = true;
+        renderAll(); refreshSheet(); kdTryOpen();
+      }, function () { S.kundenReady = true; renderAll(); });
       S.db.collection('reparaturen').onSnapshot(function (snap) {
         var m = new Map();
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
@@ -2040,14 +2068,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         renderAll(); refreshSheet();
       }, function () { S.repsReady = true; renderAll(); });
       S.db.collection('meta').onSnapshot(function (snap) {
-        var m = null, e = null, ri = null;
+        var m = null, e = null, ri = null, kl = null;
         snap.docs.forEach(function (d) {
           if (!d.exists) return;
           var v = d.data();
           if (!v || typeof v !== 'object') return;
-          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v;
+          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v;
         });
-        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.metaReady = true; renderAll(); refreshSheet();
+        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.metaReady = true; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('wartung').onSnapshot(function (snap) {
         var m = new Map();
@@ -2641,6 +2669,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       geaendert: now
     };
     var old = id ? S.cars.get(id) : null;
+    data.kennzeichen = g('c-kz').toUpperCase().replace(/\s+/g, ' ').slice(0, 15) || null;
+    if ($('#c-kunde')) data.kunde = data.fremd ? g('c-kunde') || null : null;
     if (!old || numOrNull(old.km) !== data.km) data.kmDatum = data.km === null ? null : dayKey(new Date());
     if (data.km !== null && (!old || numOrNull(old.km) !== data.km)) data.kmLog = kmLogWith(old, dayKey(new Date()), data.km);
     setBusy(true);
@@ -3347,6 +3377,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     }
     else if (S.sheet.type === 'einkauf') { setHTML(sh, sheetEinkauf()); sh.scrollTop = top; }
     else if (S.sheet.type === 'zeitplan') { setHTML(sh, sheetZeitplan()); sh.scrollTop = top; }
+    else if (S.sheet.type === 'kunden') { setHTML(sh, sheetKunden()); sh.scrollTop = top; }
+    else if (S.sheet.type === 'kunde' && S.kunden.has(S.sheet.id)) { setHTML(sh, sheetKunde(S.sheet.id, S.kunden.get(S.sheet.id))); sh.scrollTop = top; }
     else if (S.sheet.type === 'serviceheft' && S.cars.has(S.sheet.id)) { setHTML(sh, sheetServiceheft(S.sheet.id, S.cars.get(S.sheet.id))); sh.scrollTop = top; }
     else if (S.sheet.type === 'invoverview') {
       var io = !!$('details[data-k="inv-free"][open]', sh);
@@ -3485,6 +3517,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         '<span class="i-p">' + (ps ? esc((ps.all ? 'ca. ' : 'ab ') + eur(ps.sum)) : '') + '</span></button></li>';
     }).join('');
     var ids = [];
+    if (car.kennzeichen) ids.push(kzHtml(car.kennzeichen));
     if (car.fin) ids.push('FIN <span class="vin">' + esc(car.fin) + '</span>');
     if (car.typenschein === true) ids.push('Typenschein vorhanden');
     else if (car.typenschein === false) ids.push('<span class="warn">Typenschein fehlt</span>');
@@ -3518,7 +3551,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<h2 class="sh-title" id="sheet-title">' + esc(car.name || 'Auto ohne Namen') + '</h2>' +
       (det ? '<p class="buy">' + esc(det) + '</p>' : '') +
       (ids.length ? '<p class="buy">' + ids.join(' · ') + '</p>' : '') +
-      (car.notiz ? '<p class="buy">' + esc(car.notiz) + '</p>' : '') + '</div>' +
+      (car.notiz ? '<p class="buy">' + esc(car.notiz) + '</p>' : '') + kundeLine(car) + '</div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
       (car.archiviert ? '' : '<div class="car-gauges">' + odoHtml(car, true, canWrite() ? id : null) + (pickerlInfo(car) || !car.fremd ? pkBadge(car, canWrite() ? id : null) : '') + '</div>') +
       '<div class="tot' + (car.fremd && st.kauf === null ? '' : ' four') + '">' +
@@ -3558,10 +3591,10 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
   }
   var KRAFTSTOFFE = ['Benzin', 'Diesel', 'Autogas (LPG)', 'Erdgas (CNG)', 'Hybrid', 'Elektro', 'Sonstiges'];
-  function openCarForm(id) {
+  function openCarForm(id, pre) {
     var car = id ? S.cars.get(id) : null;
     if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
-    car = car || { name: '', abteil: '', notiz: '' };
+    car = car || Object.assign({ name: '', abteil: '', notiz: '' }, pre || {});
     var mapCell = id ? carCellId(id) : null;
     var nv = function (v) { return numOrNull(v) === null ? '' : String(v); };
     var kraft = '<option value=""' + (car.kraftstoff ? '' : ' selected') + '>–</option>' + opts(KRAFTSTOFFE, car.kraftstoff || '').replace('<option value=""></option>', '');
@@ -3572,7 +3605,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<form class="form" id="carform" novalidate>' +
       '<label class="f"><span>Name</span><input id="c-name" value="' + esc(car.name || '') + '" maxlength="60" placeholder="z. B. Opel Astra F" autocomplete="off"></label>' +
       '<label class="check"><input type="checkbox" id="c-fremd"' + (car.fremd ? ' checked' : '') + '><span>Nicht mein Auto (Fremdfahrzeug)</span></label>' +
+      kundeSelect(car.kunde || '') +
       '<label class="f"><span>Fahrgestellnummer (FIN)</span><input id="c-vin" class="mono" value="' + esc(car.fin || '') + '" maxlength="24" placeholder="17 Zeichen" autocomplete="off" autocapitalize="characters" spellcheck="false"><small>Steht z. B. im Zulassungsschein unter E.</small></label>' +
+      '<label class="f"><span>Kennzeichen</span><input id="c-kz" class="mono" value="' + esc(car.kennzeichen || '') + '" maxlength="15" placeholder="z. B. BR-123AB" autocomplete="off" autocapitalize="characters" spellcheck="false"><small>Zulassungsschein Feld A.</small></label>' +
       '<label class="f"><span>Typenschein</span><select id="c-ts">' +
       '<option value=""' + (car.typenschein === true || car.typenschein === false ? '' : ' selected') + '>Nicht angegeben</option>' +
       '<option value="ja"' + (car.typenschein === true ? ' selected' : '') + '>Vorhanden</option>' +
@@ -5875,7 +5910,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (arch) foot.push('<span>archiviert</span>');
     foot.push('<span class="car-sum">Gesamt <b>' + esc(eur(st.total)) + '</b></span>');
     return '<li><button type="button" class="car lvl-' + (arch ? 'none' : carLevel(id, car)) + (arch ? ' arch' : '') + '" data-act="open-car" data-id="' + esc(id) + '">' +
-      '<span class="car-top"><span class="car-tt"><span class="car-n">' + esc(car.name || 'Auto ohne Namen') + '</span>' + (det ? '<span class="car-d">' + esc(det) + '</span>' : '') + '</span>' +
+      '<span class="car-top"><span class="car-tt"><span class="car-n">' + esc(car.name || 'Auto ohne Namen') + '</span>' + (det ? '<span class="car-d">' + esc(det) + '</span>' : '') + (car.fremd && (kundeOf(car) || car.kennzeichen) ? '<span class="car-d car-k">' + esc([kundeOf(car) ? 'Kunde: ' + kundeOf(car).name : '', car.kennzeichen || ''].filter(Boolean).join(' · ')) + '</span>' : '') + '</span>' +
       (showPk ? pkBadge(car, null) : '') + '</span>' +
       (arch ? '' : odoHtml(car, false, null)) + w +
       '<span class="car-s">' + foot.join('') + '</span></button></li>';
@@ -7138,6 +7173,524 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (a.status === 'unlesbar') return '<p class="note">' + esc('Claude konnte den Beleg nicht lesen' + (a.hinweis ? ': ' + a.hinweis : '.') + ' Bitte selbst eintragen.') + '</p>';
     return '';
   }
+  /* ---------- Kunden: Kontaktdaten, ihre Autos, Link zum Selbst-Eintragen ---------- */
+  var KL_ON = !!window.WERKSTATT_CONF; /* das Kunden-Formular (kunde.html) gibt es nur in der eigenständigen Version */
+  var KW_PS = 1.35962; /* 1 kW = 1,35962 PS */
+  var RT_NAME = { sommer: 'Sommerreifen', winter: 'Winterreifen', ganzjahr: 'Ganzjahresreifen' };
+  function kStr(x, n) { return typeof x === 'string' ? x.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, ' ').trim().slice(0, n) : ''; }
+  function kOne(x, n) { return kStr(x, n).replace(/\s*\n\s*/g, ' '); }
+  function telKey(t) { var d = String(t || '').replace(/\D/g, ''); if (d.indexOf('00') === 0) d = d.slice(2); else if (d.charAt(0) === '0') d = '43' + d.slice(1); return d.length >= 8 && d.length <= 15 ? d : ''; }
+  function kzKey(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9ÄÖÜ]/g, ''); }
+  function kundenList() {
+    var a = [];
+    S.kunden.forEach(function (k, id) { if (k && typeof k === 'object' && k.name) a.push([id, k]); });
+    return a.sort(function (x, y) { return coll.compare(String(x[1].name), String(y[1].name)); });
+  }
+  function kundeOf(car) { return car && car.kunde && S.kunden.has(car.kunde) ? S.kunden.get(car.kunde) : null; }
+  function kundeCars(kid) {
+    var a = [];
+    S.cars.forEach(function (c, id) { if (c && c.kunde === kid) a.push([id, c]); });
+    return a.sort(function (x, y) { return (x[1].archiviert ? 1 : 0) - (y[1].archiviert ? 1 : 0) || coll.compare(String(x[1].name || ''), String(y[1].name || '')); });
+  }
+  function carsOhneKunde() { return activeCars().filter(function (p) { return p[1].fremd && !kundeOf(p[1]); }); }
+  function kzHtml(kz) { return kz ? '<span class="kz">' + esc(kz) + '</span>' : ''; }
+  function b64urlStr(s) {
+    var bytes = new TextEncoder().encode(s), bin = '';
+    for (var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function b64urlBytes(s) {
+    s = String(s).replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function kErr(m) { var e = new Error(m); e.code = 'kd'; return e; }
+  /* ---------- Kundenliste und Kunde ---------- */
+  function sheetKunden() {
+    var list = kundenList(), can = canWrite(), ohne = carsOhneKunde(), nCars = 0;
+    list.forEach(function (p) { nCars += kundeCars(p[0]).filter(function (c) { return !c[1].archiviert; }).length; });
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundenbereich</p><h2 class="sh-title" id="sheet-title">Kunden</h2>' +
+      '<p class="buy">' + esc(list.length ? list.length + (list.length === 1 ? ' Kunde' : ' Kunden') + ' mit ' + nCars + (nCars === 1 ? ' Auto' : ' Autos') : 'Noch keine Kunden eingetragen.') + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    if (can) {
+      h += '<div class="sh-btns">' + (KL_ON ? '<button type="button" class="btn" data-act="kl-share">Link an neuen Kunden</button>' : '') +
+        '<button type="button" class="btn ghost" data-act="kunde-new">Kunde anlegen</button>' +
+        (KL_ON ? '<button type="button" class="btn ghost" data-act="kd-paste">Daten aus Nachricht</button>' : '') + '</div>';
+      if (KL_ON) h += '<p class="help">Mit dem Link trägt der Kunde seine Daten und die seines Autos selbst ein und schickt sie dir per WhatsApp oder E-Mail. Tippst du in seiner Nachricht auf den Link, übernimmt die App alles nach deiner Kontrolle.</p>';
+    }
+    h += '<div class="sh-sec"><h3 class="sec">Kunden · ' + list.length + '</h3>' + (list.length ? '<ul class="works kl">' + list.map(function (p) {
+      var k = p[1], cars = kundeCars(p[0]).filter(function (c) { return !c[1].archiviert; });
+      var sub = cars.map(function (c) { return String(c[1].name || 'Auto') + (c[1].kennzeichen ? ' (' + c[1].kennzeichen + ')' : ''); }).join(', ');
+      return '<li><button type="button" class="wbtn" data-act="kunde-open" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(k.name) +
+        '<small>' + esc([sub || 'noch kein Auto', k.telefon || k.email || ''].filter(Boolean).join(' · ')) + '</small></span><span class="i-p">' + (cars.length ? '<span class="kl-n">' + cars.length + '</span>' : '') + '</span></button></li>';
+    }).join('') + '</ul>' : '<p class="note">' + (can ? 'Leg einen Kunden an oder schick einem Kunden den Link.' : 'Noch keine Kunden eingetragen.') + '</p>') + '</div>';
+    if (ohne.length) {
+      h += '<div class="sh-sec"><h3 class="sec">Fahrzeuge ohne Kunde · ' + ohne.length + '</h3><ul class="works">' + ohne.map(function (p) {
+        return '<li class="kl-o"><button type="button" class="wbtn" data-act="open-car" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(p[1].name || 'Auto') + '<small>' + esc(carDetails(p[1], false) || 'Fremdfahrzeug') + '</small></span></button>' +
+          (can ? '<button type="button" class="linkbtn" data-act="kunde-assign" data-car="' + esc(p[0]) + '">Kunde zuordnen</button>' : '') + '</li>';
+      }).join('') + '</ul><p class="help">Diese Autos sind als Fremdfahrzeug eingetragen, aber noch keinem Kunden zugeordnet. Beim Zuordnen bleibt alles am Auto erhalten.</p></div>';
+    }
+    h += '<div class="sh-foot">' + (KL_ON && can ? '<button type="button" class="btn ghost" data-act="kl-settings">Einstellungen für den Link</button>' : '') + '<button type="button" class="btn ghost" data-act="close">Schließen</button></div>';
+    return h;
+  }
+  function openKunden() { openSheet('kunden', {}, sheetKunden()); try { $('#sheet').focus({ preventScroll: true }); } catch (_) {} }
+  function kundeContact(k) {
+    var out = [], tk = telKey(k.telefon);
+    if (k.telefon) out.push('<a href="tel:' + esc(tk ? '+' + tk : String(k.telefon).replace(/[^\d+]/g, '')) + '">' + esc(k.telefon) + '</a>');
+    if (tk) out.push('<a href="https://wa.me/' + tk + '" target="_blank" rel="noopener noreferrer">WhatsApp</a>');
+    if (k.email) out.push('<a href="mailto:' + esc(k.email) + '">' + esc(k.email) + '</a>');
+    return out;
+  }
+  function sheetKunde(id, k) {
+    var can = canWrite(), cars = kundeCars(id), ids = cars.map(function (c) { return c[0]; });
+    var reps = [];
+    S.reps.forEach(function (r, rid2) { if (r && r.titel && ids.indexOf(r.fahrzeug) >= 0 && repOpen(r)) reps.push([rid2, r]); });
+    reps.sort(repSort);
+    var nWork = 0, sum = 0;
+    cars.forEach(function (c) { var st = carStats(c[0]); nWork += st.works.length - st.preN; sum += st.workV; });
+    var con = kundeContact(k);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kunde</p><h2 class="sh-title" id="sheet-title">' + esc(k.name) + '</h2>' +
+      (con.length ? '<p class="buy kc">' + con.join(' · ') + '</p>' : '') + (k.adresse ? '<p class="buy">' + esc(k.adresse) + '</p>' : '') +
+      (k.notiz ? '<p class="buy">' + esc(k.notiz) + '</p>' : '') + '</div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    if (can && KL_ON) h += '<div class="sh-btns"><button type="button" class="btn" data-act="kl-share" data-id="' + esc(id) + '">Daten-Link schicken</button>' +
+      '<button type="button" class="btn ghost" data-act="kd-paste">Daten aus Nachricht</button></div>';
+    h += '<div class="sh-sec"><div class="vhead"><h3 class="sec">Autos · ' + cars.filter(function (c) { return !c[1].archiviert; }).length + '</h3>' +
+      (can ? '<button type="button" class="linkbtn" data-act="kunde-car-new" data-id="' + esc(id) + '">+ Auto</button>' : '') + '</div>' +
+      (cars.length ? '<ul class="works">' + cars.map(function (c) {
+        var car = c[1], sub = [car.kennzeichen || '', carDetails(car, false)].filter(Boolean).join(' · ');
+        return '<li><button type="button" class="wbtn" data-act="open-car" data-id="' + esc(c[0]) + '"><span class="i-n">' + esc(car.name || 'Auto') + (car.archiviert ? ' <span class="muted">(archiviert)</span>' : '') +
+          (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span><span class="i-p">' + (pickerlInfo(car) ? pkChip(pickerlInfo(car)) : '') + '</span></button></li>';
+      }).join('') + '</ul>' : '<p class="note">Noch kein Auto zugeordnet.</p>') +
+      (can && carsOhneKunde().length ? '<button type="button" class="linkbtn kl-as" data-act="kunde-assign" data-kunde="' + esc(id) + '">Vorhandenes Fahrzeug zuordnen</button>' : '') + '</div>';
+    h += '<div class="sh-sec"><h3 class="sec">Anstehend · ' + reps.length + '</h3>' + (reps.length ? '<ul class="works">' + reps.map(function (p) {
+      var r = p[1], due = repDue(r);
+      return '<li><button type="button" class="wbtn" data-act="open-rep" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(r.titel) + '<small>' + esc(carName(r.fahrzeug) + (due ? ' · fällig bis ' + due : '')) + '</small></span></button></li>';
+    }).join('') + '</ul>' : '<p class="note">Nichts offen.</p>') + '</div>';
+    h += '<div class="tot"><div><span>Erledigte Arbeiten</span><b>' + nWork + '</b></div><div><span>Summe</span><b>' + esc(eur(sum)) + '</b></div></div>';
+    if (k.einwilligung && isDay(String(k.einwilligung.am || '').slice(0, 10))) h += '<p class="help">' + esc('Einverständnis zur Speicherung über das Formular am ' + datum(String(k.einwilligung.am).slice(0, 10)) + '.') + '</p>';
+    h += '<p class="err" id="sh-err" role="alert"></p><div class="sh-foot">' + (can ? '<button type="button" class="btn ghost" data-act="kunde-edit" data-id="' + esc(id) + '">Bearbeiten</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="kunden">Alle Kunden</button></div>';
+    return h;
+  }
+  function openKunde(id) {
+    var k = id ? S.kunden.get(id) : null;
+    if (!k) { toast('Diesen Kunden gibt es nicht mehr.'); return; }
+    openSheet('kunde', { id: id }, sheetKunde(id, k));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function kundeLine(car) {
+    var k = kundeOf(car);
+    if (!k) return '';
+    return '<p class="buy">Kunde: <button type="button" class="linkbtn" data-act="kunde-open" data-id="' + esc(car.kunde) + '">' + esc(k.name) + '</button>' + (k.telefon ? ' · ' + kundeContact(k)[0] : '') + '</p>';
+  }
+  function kundeSelect(cur) {
+    var list = kundenList();
+    if (!list.length && !cur) return '';
+    return '<label class="f"><span>Kunde</span><select id="c-kunde"><option value="">Kein Kunde</option>' + list.map(function (p) { return '<option value="' + esc(p[0]) + '"' + (p[0] === cur ? ' selected' : '') + '>' + esc(p[1].name) + '</option>'; }).join('') + '</select><small>Nur bei Fremdfahrzeugen.</small></label>';
+  }
+  /* ---------- Kunde anlegen / bearbeiten ---------- */
+  function openKundeForm(id, pre) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var k = id ? S.kunden.get(id) : null;
+    if (id && !k) return;
+    k = k || {};
+    pre = pre || {};
+    openSheet('kundeform', { id: id || null, car: pre.car || null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kunde</p><h2 class="sh-title" id="sheet-title">' + (id ? esc(k.name) : 'Kunde anlegen') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="kundeform" novalidate>' +
+      '<label class="f"><span>Name</span><input id="k-name" value="' + esc(k.name || '') + '" maxlength="80" autocomplete="off" placeholder="Vor- und Nachname"></label>' +
+      '<div class="row2"><label class="f"><span>Telefon</span><input id="k-tel" type="tel" inputmode="tel" value="' + esc(k.telefon || '') + '" maxlength="30" autocomplete="off" placeholder="z. B. 0664 1234567"></label>' +
+      '<label class="f"><span>E-Mail</span><input id="k-mail" type="email" inputmode="email" value="' + esc(k.email || '') + '" maxlength="120" autocomplete="off"></label></div>' +
+      '<label class="f"><span>Adresse</span><input id="k-adr" value="' + esc(k.adresse || '') + '" maxlength="160" autocomplete="off" placeholder="Straße, PLZ Ort"></label>' +
+      '<label class="f"><span>Notiz</span><textarea id="k-notiz" rows="2" maxlength="500" placeholder="z. B. kommt meist samstags">' + esc(k.notiz || '') + '</textarea></label>' +
+      '<p class="help">Nummern ohne Ländervorwahl gelten als österreichische Nummern (für den WhatsApp-Link).</p>' +
+      '<p class="err" id="kf-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">' + (id ? 'Speichern' : 'Anlegen') + '</button>' +
+      '<button type="button" class="btn ghost" data-act="' + (id ? 'kunde-open' : 'kunden') + '"' + (id ? ' data-id="' + esc(id) + '"' : '') + '>Zurück</button></div></form>');
+    setTimeout(function () { var f = $('#k-name'); if (f && !id) { try { f.focus(); } catch (_) {} } }, 80);
+  }
+  async function saveKunde() {
+    var s = S.sheet;
+    if (!s || s.type !== 'kundeform' || S.busy) return;
+    var showErr = function (m) { var el = $('#kf-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    showErr('');
+    if (!canWrite()) { showErr('Du kannst dieses Inventar nur ansehen.'); return; }
+    var name = g('k-name'), tel = g('k-tel'), mail = g('k-mail');
+    if (!name) { showErr('Bitte den Namen eintragen.'); return; }
+    if (tel && !/^[+\d][\d\s/()-]{5,}$/.test(tel)) { showErr('Die Telefonnummer bitte nur mit Ziffern, z. B. 0664 1234567.'); return; }
+    if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { showErr('Die E-Mail-Adresse sieht nicht vollständig aus.'); return; }
+    var now = new Date().toISOString(), data = { name: name.slice(0, 80), telefon: tel.slice(0, 30) || null, email: mail.slice(0, 120) || null, adresse: g('k-adr').slice(0, 160) || null, notiz: g('k-notiz').slice(0, 500), geaendert: now };
+    setBusy(true);
+    try {
+      var id = s.id;
+      if (id) {
+        await write(function () { return S.db.doc('kunden/' + id).update(data); });
+        S.kunden.set(id, Object.assign({}, S.kunden.get(id) || {}, data));
+      } else {
+        var ref = S.db.collection('kunden').doc(), full = Object.assign({ erstellt: now, quelle: 'app' }, data);
+        id = ref.id;
+        await write(function () { return ref.set(full); });
+        if (!S.kunden.has(id)) S.kunden.set(id, full);
+      }
+      if (s.car && S.cars.has(s.car)) {
+        var cp = { kunde: id, fremd: true, geaendert: now };
+        await write(function () { return S.db.doc('fahrzeuge/' + s.car).update(cp); });
+        S.cars.set(s.car, Object.assign({}, S.cars.get(s.car), cp));
+      }
+      setBusy(false);
+      openKunde(id); renderAll();
+      toast(s.id ? 'Gespeichert.' : 'Kunde angelegt: ' + data.name);
+    } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Fahrzeug einem Kunden zuordnen (bestehende Fremdfahrzeuge übernehmen) ---------- */
+  function openKundeAssign(carId, kid) {
+    if (!canWrite()) { toast('Du kannst dieses Inventar nur ansehen.'); return; }
+    var cars = carsOhneKunde(), list = kundenList();
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundenbereich</p><h2 class="sh-title" id="sheet-title">' + (carId ? esc(carName(carId)) : 'Fahrzeug zuordnen') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div><form class="form" id="kundeassign" novalidate>';
+    if (carId) {
+      h += '<label class="f"><span>Kunde</span><select id="ka-kunde">' + list.map(function (p) { return '<option value="' + esc(p[0]) + '">' + esc(p[1].name) + '</option>'; }).join('') +
+        '<option value="__neu"' + (list.length ? '' : ' selected') + '>Neuer Kunde …</option></select></label>' +
+        '<label class="f" id="ka-neu"' + (list.length ? ' hidden' : '') + '><span>Name des neuen Kunden</span><input id="ka-name" maxlength="80" autocomplete="off"></label>';
+    } else {
+      h += '<label class="f"><span>Fahrzeug</span><select id="ka-car">' + cars.map(function (p) { return '<option value="' + esc(p[0]) + '">' + esc(p[1].name || 'Auto') + '</option>'; }).join('') + '</select></label>';
+    }
+    h += '<p class="help">Am Fahrzeug bleibt alles erhalten, es bekommt nur den Verweis auf den Kunden.</p><p class="err" id="ka-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Zuordnen</button><button type="button" class="btn ghost" data-act="' + (kid ? 'kunde-open' : 'kunden') + '"' + (kid ? ' data-id="' + esc(kid) + '"' : '') + '>Zurück</button></div></form>';
+    openSheet('kundeassign', { car: carId || null, kunde: kid || null }, h);
+  }
+  async function saveKundeAssign() {
+    var s = S.sheet;
+    if (!s || s.type !== 'kundeassign' || S.busy) return;
+    var showErr = function (m) { var el = $('#ka-err'); if (el) el.textContent = m; };
+    var carId = s.car || (($('#ka-car') || {}).value || ''), kid = s.kunde || (($('#ka-kunde') || {}).value || ''), now = new Date().toISOString();
+    if (!carId || !S.cars.has(carId)) { showErr('Bitte ein Fahrzeug wählen.'); return; }
+    if (kid === '__neu') {
+      var nm = (($('#ka-name') || {}).value || '').trim();
+      if (!nm) { showErr('Bitte den Namen des neuen Kunden eintragen.'); return; }
+      kid = null;
+      s.newName = nm.slice(0, 80);
+    } else if (!kid || !S.kunden.has(kid)) { showErr('Bitte einen Kunden wählen.'); return; }
+    setBusy(true);
+    try {
+      if (!kid) {
+        var ref = S.db.collection('kunden').doc(), full = { name: s.newName, telefon: null, email: null, adresse: null, notiz: '', erstellt: now, geaendert: now, quelle: 'app' };
+        kid = ref.id;
+        await write(function () { return ref.set(full); });
+        if (!S.kunden.has(kid)) S.kunden.set(kid, full);
+      }
+      var cp = { kunde: kid, fremd: true, geaendert: now };
+      await write(function () { return S.db.doc('fahrzeuge/' + carId).update(cp); });
+      S.cars.set(carId, Object.assign({}, S.cars.get(carId), cp));
+      setBusy(false);
+      openKunde(kid); renderAll();
+      toast(carName(carId) + ' gehört jetzt zu ' + S.kunden.get(kid).name + '.');
+    } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Link für Kunden ---------- */
+  function klConf() { var c = S.kundenLink || {}; return { name: kOne(c.name, 60), wa: String(c.whatsapp || '').replace(/\D/g, ''), mail: kOne(c.email, 120) }; }
+  function klReady() { var c = klConf(); return !!c.name && (c.wa.length >= 8 || /@/.test(c.mail)); }
+  function klUrl(kid) {
+    var c = klConf(), k = kid ? S.kunden.get(kid) : null, o = { v: 1, n: c.name };
+    if (c.wa) o.w = c.wa;
+    if (c.mail) o.m = c.mail;
+    if (k) { o.k = kid; o.p = { name: String(k.name || '').slice(0, 80) }; }
+    var u = new URL('kunde.html', location.href);
+    u.search = ''; u.hash = 'd=' + b64urlStr(JSON.stringify(o));
+    return u.href;
+  }
+  function klText(kid) {
+    var k = kid ? S.kunden.get(kid) : null, vor = k ? String(k.name || '').split(/\s+/)[0] : '';
+    return 'Hallo' + (vor ? ' ' + vor : '') + '! Bitte trag hier die Daten zu deinem Auto ein, dann kann ich alles vorbereiten. Den Zulassungsschein brauchst du dafür, es dauert ein paar Minuten:\n' + klUrl(kid);
+  }
+  function openKlSettings(next) {
+    if (!canWrite()) { toast('Du kannst dieses Inventar nur ansehen.'); return; }
+    var c = S.kundenLink || {};
+    openSheet('klsettings', { next: next || null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundenbereich</p><h2 class="sh-title" id="sheet-title">Link für Kunden</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="klsettings" novalidate>' +
+      '<p class="help">Das steht im Formular, das deine Kunden öffnen. Die Antwort kommt als Nachricht an diese Nummer oder Adresse.</p>' +
+      '<label class="f"><span>Dein Name im Formular</span><input id="kl-name" value="' + esc(c.name || '') + '" maxlength="60" placeholder="z. B. Johannes Pichler" autocomplete="off"></label>' +
+      '<label class="f"><span>Deine WhatsApp-Nummer</span><input id="kl-wa" type="tel" inputmode="tel" value="' + esc(c.whatsapp ? '+' + c.whatsapp : '') + '" maxlength="24" placeholder="z. B. +43 664 1234567" autocomplete="off"><small>Mit Ländervorwahl. Ohne Vorwahl gilt sie als österreichische Nummer.</small></label>' +
+      '<label class="f"><span>Deine E-Mail <span class="muted">(optional)</span></span><input id="kl-mail" type="email" inputmode="email" value="' + esc(c.email || '') + '" maxlength="120" autocomplete="off"></label>' +
+      '<p class="help">Die Nummer steht im Link, den du verschickst, nicht öffentlich auf einer Webseite. Das Formular selbst speichert nichts auf einem Server: Der Kunde schickt seine Angaben direkt per WhatsApp oder E-Mail an dich.</p>' +
+      '<p class="err" id="kl-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="kunden">Zurück</button></div></form>');
+  }
+  async function saveKlSettings() {
+    var s = S.sheet;
+    if (!s || s.type !== 'klsettings' || S.busy) return;
+    var showErr = function (m) { var el = $('#kl-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    var name = g('kl-name'), wa = g('kl-wa') ? telKey(g('kl-wa')) : '', mail = g('kl-mail');
+    if (!name) { showErr('Bitte den Namen eintragen, der im Formular stehen soll.'); return; }
+    if (g('kl-wa') && !wa) { showErr('Die WhatsApp-Nummer bitte mit Ziffern eintragen, z. B. +43 664 1234567.'); return; }
+    if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { showErr('Die E-Mail-Adresse sieht nicht vollständig aus.'); return; }
+    if (!wa && !mail) { showErr('Bitte eine WhatsApp-Nummer oder eine E-Mail-Adresse eintragen, sonst kann der Kunde nichts schicken.'); return; }
+    var data = { name: name.slice(0, 60), whatsapp: wa || null, email: mail.slice(0, 120) || null, geaendert: new Date().toISOString() };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('meta/kundenlink').set(data); });
+      S.kundenLink = data;
+      setBusy(false);
+      if (s.next && s.next.share) openKlShare(s.next.kunde || null); else openKunden();
+      toast('Gespeichert.');
+    } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
+  }
+  function openKlShare(kid) {
+    if (!KL_ON) return;
+    if (!klReady()) { openKlSettings({ share: true, kunde: kid || null }); return; }
+    var k = kid ? S.kunden.get(kid) : null, tk = k ? telKey(k.telefon) : '';
+    openSheet('klshare', { kunde: kid || null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundenbereich</p><h2 class="sh-title" id="sheet-title">' + esc(k ? 'Link an ' + k.name : 'Link an neuen Kunden') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<div class="form"><label class="f"><span>Nachricht</span><textarea id="kl-text" rows="6" maxlength="1500">' + esc(klText(kid)) + '</textarea><small>Du kannst den Text noch ändern. Der Link muss drinbleiben.</small></label>' +
+      '<div class="sh-btns kl-b">' + (tk ? '<button type="button" class="btn" data-act="kl-wa" data-tel="' + esc(tk) + '">' + esc('Per WhatsApp an ' + String(k.name).split(/\s+/)[0]) + '</button>' : '') +
+      (navigator.share ? '<button type="button" class="btn' + (tk ? ' ghost' : '') + '" data-act="kl-native">Teilen …</button>' : '') +
+      '<button type="button" class="btn' + (tk || navigator.share ? ' ghost' : '') + '" data-act="kl-copy">Text kopieren</button>' +
+      '<a class="btn ghost" href="' + esc(klUrl(kid)) + '" target="_blank" rel="noopener">Formular ansehen</a></div>' +
+      '<p class="help">Kommt die Antwort, tippst du in der Nachricht auf den Link. Öffnet er sich nicht in der App, kopiere die Nachricht und nimm in der App „Daten aus Nachricht“.</p></div>' +
+      '<div class="sh-foot"><button type="button" class="btn ghost" data-act="' + (kid ? 'kunde-open' : 'kunden') + '"' + (kid ? ' data-id="' + esc(kid) + '"' : '') + '>Zurück</button></div>');
+  }
+  function klCurrentText() { var t = $('#kl-text'); return t ? t.value : klText(S.sheet && S.sheet.kunde); }
+  async function klCopy(text, ok) {
+    var done = false;
+    try { await navigator.clipboard.writeText(text); done = true; } catch (_) {
+      try { var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); done = document.execCommand('copy'); ta.remove(); } catch (_) {}
+    }
+    toast(done ? ok : 'Kopieren ging nicht. Bitte den Text markieren und kopieren.');
+  }
+  async function klNative() {
+    try { await navigator.share({ title: 'Fahrzeugdaten', text: klCurrentText() }); } catch (e) { if (!e || e.name !== 'AbortError') klCopy(klCurrentText(), 'Kopiert.'); }
+  }
+  /* ---------- Antwort übernehmen: #kd=<Daten> im Link oder eingefügte Nachricht ---------- */
+  async function kdUnpack(code) {
+    var m = /^([01])\.([A-Za-z0-9_-]{10,40000})$/.exec(String(code || ''));
+    if (!m) throw kErr('Der Link ist unvollständig.');
+    var bytes;
+    try { bytes = b64urlBytes(m[2]); } catch (_) { throw kErr('Der Link ist beschädigt.'); }
+    if (m[1] === '1') {
+      if (typeof DecompressionStream !== 'function') throw kErr('Dieser Browser kann den Link nicht entpacken. Bitte die App aktualisieren.');
+      try { bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()); }
+      catch (_) { throw kErr('Der Link ist beschädigt.'); }
+    }
+    if (bytes.length > 65536) throw kErr('Der Link enthält zu viele Daten.');
+    var o;
+    try { o = JSON.parse(new TextDecoder().decode(bytes)); } catch (_) { throw kErr('Der Link ist beschädigt.'); }
+    return kdClean(o);
+  }
+  function kdClean(o) {
+    if (!o || typeof o !== 'object' || o.v !== 1 || !o.p || typeof o.p !== 'object' || !o.f || typeof o.f !== 'object') throw kErr('Das sind keine Kundendaten aus dem Formular.');
+    var int = function (x, max) { return typeof x === 'number' && isFinite(x) && x >= 0 && x <= max ? Math.round(x) : null; };
+    var f = o.f, a = o.a && typeof o.a === 'object' ? o.a : {};
+    var d = {
+      t: typeof o.t === 'string' && !isNaN(Date.parse(o.t)) ? o.t : null,
+      k: kOne(o.k, 40).replace(/[^A-Za-z0-9_-]/g, ''),
+      ok: o.ok === true,
+      p: { n: kOne(o.p.n, 80), tel: kOne(o.p.tel, 30), mail: kOne(o.p.mail, 120), adr: kOne(o.p.adr, 160) },
+      f: { ma: kOne(f.ma, 40), mo: kOne(f.mo, 60), kz: kOne(f.kz, 15).toUpperCase(), fin: kOne(f.fin, 20).toUpperCase().replace(/[^A-Z0-9]/g, ''),
+        ez: /^\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?$/.test(f.ez || '') ? f.ez : '', km: int(f.km, 3000000), ccm: int(f.ccm, 20000), kw: int(f.kw, 2000),
+        kr: kOne(f.kr, 30), ge: kOne(f.ge, 30), pk: isYm(f.pk) ? f.pk : '', rg: kOne(f.rg, 30).toUpperCase(), rt: RT_NAME[f.rt] ? f.rt : '' },
+      a: { txt: kStr(a.txt, 1000), wt: kOne(a.wt, 60) }
+    };
+    if (d.p.mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.p.mail)) d.p.mail = '';
+    if (!d.p.n || !d.f.ma || !d.f.mo) throw kErr('Im Link fehlen Name oder Auto.');
+    return d;
+  }
+  function kdFromHash() {
+    var m = /(?:^#|&)kd=([01]\.[A-Za-z0-9_-]{10,40000})/.exec(location.hash || '');
+    if (!m) return;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {}
+    try { sessionStorage.setItem('werkstatt-kd', m[1]); } catch (_) {}
+    S.kdPending = m[1];
+    kdTryOpen();
+  }
+  function kdTryOpen() {
+    if (!S.kdPending) { try { S.kdPending = sessionStorage.getItem('werkstatt-kd') || null; } catch (_) {} }
+    if (!S.kdPending || !S.db || !S.carsReady || !S.kundenReady || (S.sheet && S.sheet.type === 'kdimport')) return;
+    var code = S.kdPending;
+    S.kdPending = null;
+    try { sessionStorage.removeItem('werkstatt-kd'); } catch (_) {}
+    kdUnpack(code).then(openKdImport, function (e) { toast('Kundendaten nicht lesbar: ' + ((e && e.message) || 'Link beschädigt.')); });
+  }
+  function openKdPaste() {
+    if (!canWrite()) { toast('Du kannst dieses Inventar nur ansehen.'); return; }
+    openSheet('kdpaste', {},
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundenbereich</p><h2 class="sh-title" id="sheet-title">Daten aus Nachricht</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="kdpaste" novalidate><p class="help">Die Nachricht des Kunden in WhatsApp oder im Mail lange antippen, kopieren und hier einfügen. Die App sucht den Link mit den Daten darin.</p>' +
+      '<label class="f"><span>Nachricht</span><textarea id="kd-text" rows="6" placeholder="Fahrzeugdaten für …"></textarea></label>' +
+      '<p class="err" id="kd-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Übernehmen</button>' + (navigator.clipboard && navigator.clipboard.readText ? '<button type="button" class="btn ghost" data-act="kd-clip">Aus Zwischenablage</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="kunden">Zurück</button></div></form>');
+  }
+  async function kdPasteClip() {
+    try { var t = await navigator.clipboard.readText(), el = $('#kd-text'); if (el) el.value = t; if (t) saveKdPaste(); }
+    catch (_) { var e = $('#kd-err'); if (e) e.textContent = 'Die Zwischenablage ließ sich nicht lesen. Bitte die Nachricht ins Feld einfügen.'; }
+  }
+  async function saveKdPaste() {
+    var el = $('#kd-text'), err = $('#kd-err'), t = el ? el.value : '';
+    var m = /kd=([01]\.[A-Za-z0-9_-]{10,40000})/.exec(t);
+    if (err) err.textContent = '';
+    if (!m) { if (err) err.textContent = 'In der Nachricht ist kein Link mit Kundendaten. Bitte die ganze Nachricht kopieren.'; return; }
+    try { openKdImport(await kdUnpack(m[1])); } catch (e) { if (err) err.textContent = (e && e.message) || 'Die Daten sind nicht lesbar.'; }
+  }
+  function kdMatchKunde(d) {
+    if (d.k && S.kunden.has(d.k)) return d.k;
+    var tk = telKey(d.p.tel), mk = d.p.mail.toLowerCase(), hit = null;
+    S.kunden.forEach(function (k, id) { if (!hit && k && ((tk && telKey(k.telefon) === tk) || (mk && String(k.email || '').toLowerCase() === mk))) hit = id; });
+    return hit;
+  }
+  function kdMatchCar(d) {
+    var hit = null, kz = kzKey(d.f.kz);
+    S.cars.forEach(function (c, id) { if (hit || !c || c.archiviert || !c.fremd) return; if ((d.f.fin && String(c.fin || '').toUpperCase() === d.f.fin) || (kz && kzKey(c.kennzeichen) === kz)) hit = id; });
+    return hit;
+  }
+  function fmtEz(s) { var p = String(s || '').split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : p.length === 2 ? p[1] + '/' + p[0] : p[0] || ''; }
+  function kdKraft(s) { return KRAFTSTOFFE.indexOf(s) >= 0 ? s : s ? 'Sonstiges' : ''; }
+  var KD_K = [
+    { k: 'n', l: 'Name', f: 'name', v: function (d) { return d.p.n; } },
+    { k: 'tel', l: 'Telefon', f: 'telefon', v: function (d) { return d.p.tel; }, same: function (a, b) { return telKey(a) && telKey(a) === telKey(b); } },
+    { k: 'mail', l: 'E-Mail', f: 'email', v: function (d) { return d.p.mail; }, same: function (a, b) { return String(a).toLowerCase() === String(b || '').toLowerCase(); } },
+    { k: 'adr', l: 'Adresse', f: 'adresse', v: function (d) { return d.p.adr; } }
+  ];
+  var KD_C = [
+    { k: 'kz', l: 'Kennzeichen', show: function (f) { return f.kz; }, cur: function (c) { return c.kennzeichen || ''; }, same: function (f, c) { return kzKey(f.kz) === kzKey(c.kennzeichen); }, set: function (o, f) { o.kennzeichen = f.kz; } },
+    { k: 'fin', l: 'Fahrgestellnummer', show: function (f) { return f.fin; }, cur: function (c) { return c.fin || ''; }, set: function (o, f) { o.fin = f.fin; } },
+    { k: 'ez', l: 'Erstzulassung', show: function (f) { return f.ez ? fmtEz(f.ez) : ''; }, cur: function (c) { return c.erstzulassung ? fmtEz(c.erstzulassung) : ''; }, set: function (o, f) { o.erstzulassung = f.ez; o.baujahr = Number(f.ez.slice(0, 4)); } },
+    { k: 'km', l: 'Kilometerstand', show: function (f) { return f.km !== null ? nf.format(f.km) + ' km' : ''; }, cur: function (c) { return numOrNull(c.km) !== null ? nf.format(num(c.km)) + ' km' : ''; },
+      def: function (f, c) { return numOrNull(c.km) === null || f.km > num(c.km); }, set: function (o, f, c) { var t = dayKey(new Date()); o.km = f.km; o.kmDatum = t; o.kmLog = kmLogWith(c, t, f.km); } },
+    { k: 'kw', l: 'Leistung', show: function (f) { return f.kw !== null ? f.kw + ' kW (' + Math.round(f.kw * KW_PS) + ' PS)' : ''; },
+      cur: function (c) { return numOrNull(c.leistungKw) !== null ? c.leistungKw + ' kW' : numOrNull(c.leistungPs) !== null ? fmt(c.leistungPs) + ' PS' : ''; },
+      same: function (f, c) { return numOrNull(c.leistungKw) !== null ? num(c.leistungKw) === f.kw : numOrNull(c.leistungPs) !== null && Math.abs(num(c.leistungPs) - f.kw * KW_PS) < 1.5; },
+      set: function (o, f) { o.leistungKw = f.kw; o.leistungPs = Math.round(f.kw * KW_PS); } },
+    { k: 'ccm', l: 'Hubraum', show: function (f) { return f.ccm !== null ? f.ccm + ' cm³' : ''; }, cur: function (c) { return c.hubraum || ''; }, set: function (o, f) { o.hubraum = f.ccm + ' cm³'; } },
+    { k: 'kr', l: 'Kraftstoff', show: function (f) { return kdKraft(f.kr); }, cur: function (c) { return c.kraftstoff || ''; }, set: function (o, f) { o.kraftstoff = kdKraft(f.kr); } },
+    { k: 'ge', l: 'Getriebe', show: function (f) { return f.ge; }, cur: function (c) { return c.getriebe || ''; }, set: function (o, f) { o.getriebe = f.ge; } },
+    { k: 'pk', l: 'Nächstes Pickerl', show: function (f) { return f.pk ? ymTxt(f.pk) : ''; }, cur: function (c) { return isYm(c.pickerl) ? ymTxt(c.pickerl) : ''; },
+      def: function (f, c) { return !isYm(c.pickerl) || f.pk > c.pickerl; }, set: function (o, f) { o.pickerl = f.pk; } },
+    { k: 'rg', l: 'Reifen', show: function (f) { return f.rg ? f.rg + (f.rt ? ' (' + RT_NAME[f.rt] + ')' : '') : ''; },
+      cur: function (c, f) { var s = f.rt === 'sommer' || f.rt === 'winter' ? reifenSet(c, f.rt) : null; return s && s.groesse ? s.groesse : ''; },
+      same: function (f, c) { var s = f.rt === 'sommer' || f.rt === 'winter' ? reifenSet(c, f.rt) : null; return !!(s && kzKey(s.groesse) === kzKey(f.rg)); },
+      set: function (o, f, c) {
+        if (f.rt === 'sommer' || f.rt === 'winter') {
+          var rd = Object.assign({}, reifenDoc(c));
+          rd[f.rt] = Object.assign({}, reifenSet(c, f.rt) || {}, { groesse: f.rg });
+          if (!rd.montiert) rd.montiert = f.rt;
+          o.reifen = rd;
+        } else o.notiz = [String(c.notiz || ''), 'Reifen: ' + f.rg + (f.rt ? ' (' + RT_NAME[f.rt] + ')' : '')].filter(Boolean).join(' · ').slice(0, 300);
+      } }
+  ];
+  function kdRow(key, label, nv, ov, isSame, def) {
+    if (!nv) return '';
+    if (!ov) return '<li class="ki-r"><label class="check"><input type="checkbox" name="ki-f" value="' + key + '" checked><span><b>' + esc(label) + '</b> ' + esc(nv) + '</span></label></li>';
+    if (isSame) return '<li class="ki-r same"><span class="ki-s"><b>' + esc(label) + '</b> ' + esc(nv) + ' <span class="muted">(gleich)</span></span></li>';
+    return '<li class="ki-r diff"><label class="check"><input type="checkbox" name="ki-f" value="' + key + '"' + (def ? ' checked' : '') + '><span><b>' + esc(label) + '</b> ' + esc(nv) + '<small>' + esc('bisher: ' + ov) + '</small></span></label></li>';
+  }
+  function openKdImport(d) {
+    if (!canWrite()) { toast('Du kannst dieses Inventar nur ansehen.'); return; }
+    var kid = kdMatchKunde(d), cid = kdMatchCar(d);
+    if (!cid && kid) { var own = kundeCars(kid).filter(function (c) { return !c[1].archiviert && coll.compare(String(c[1].name || ''), d.f.ma + ' ' + d.f.mo) === 0; })[0]; if (own) cid = own[0]; }
+    var st = { kd: d, kunde: kid || '', car: cid || '' };
+    openSheet('kdimport', st, sheetKdImport(st));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function sheetKdImport(st) {
+    var s = st || S.sheet, d = s.kd, kid = s.kunde && S.kunden.has(s.kunde) ? s.kunde : '', cid = s.car && S.cars.has(s.car) ? s.car : '';
+    var k = kid ? S.kunden.get(kid) : null, car = cid ? S.cars.get(cid) : null, f = d.f;
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundendaten aus dem Formular</p><h2 class="sh-title" id="sheet-title">' + esc(d.p.n) + '</h2>' +
+      '<p class="buy">' + esc(f.ma + ' ' + f.mo + (f.kz ? ' · ' + f.kz : '') + (d.t ? ' · gesendet am ' + datum(d.t.slice(0, 10)) : '')) + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div><form class="form" id="kdimport" novalidate>';
+    var opts = '<option value=""' + (kid ? '' : ' selected') + '>' + esc('Neu anlegen: ' + d.p.n) + '</option>' + kundenList().map(function (p) { return '<option value="' + esc(p[0]) + '"' + (p[0] === kid ? ' selected' : '') + '>' + esc(p[1].name) + '</option>'; }).join('');
+    h += '<div class="sh-sec"><h3 class="sec">Kunde</h3><label class="f"><span class="vh">Kunde</span><select id="ki-kunde">' + opts + '</select></label><ul class="ki">' +
+      KD_K.map(function (x) { var nv = x.v(d), ov = k ? String(k[x.f] || '') : ''; if (!k && x.k === 'n') return '<li class="ki-r same"><span class="ki-s"><b>Name</b> ' + esc(nv) + '</span></li>'; return kdRow('k.' + x.k, x.l, nv, k ? ov : '', ov && (x.same ? x.same(nv, ov) : nv === ov), false); }).join('') + '</ul></div>';
+    var cands = (kid ? kundeCars(kid).filter(function (c) { return !c[1].archiviert; }) : []).concat(carsOhneKunde());
+    if (cid && !cands.some(function (c) { return c[0] === cid; })) cands.unshift([cid, car]);
+    var copts = '<option value=""' + (cid ? '' : ' selected') + '>' + esc('Neu anlegen: ' + f.ma + ' ' + f.mo) + '</option>' + cands.map(function (c) { return '<option value="' + esc(c[0]) + '"' + (c[0] === cid ? ' selected' : '') + '>' + esc((c[1].name || 'Auto') + (c[1].kennzeichen ? ' (' + c[1].kennzeichen + ')' : '') + (c[1].kunde ? '' : ' · ohne Kunde')) + '</option>'; }).join('');
+    h += '<div class="sh-sec"><h3 class="sec">Auto</h3><label class="f"><span class="vh">Auto</span><select id="ki-car">' + copts + '</select></label><ul class="ki">' +
+      (car ? '' : '<li class="ki-r same"><span class="ki-s"><b>Name</b> ' + esc(kdCarName(d)) + '</span></li>') +
+      KD_C.map(function (x) { var nv = x.show(f), ov = car ? x.cur(car, f) : ''; return kdRow('c.' + x.k, x.l, nv, ov, !!ov && (x.same ? x.same(f, car) : ov === nv), car && x.def ? x.def(f, car) : false); }).join('') + '</ul>' +
+      (car ? '<p class="help">Angehakt wird übernommen. Abweichende Werte bleiben, wie sie sind, außer du hakst sie an.</p>' : '') + '</div>';
+    if (d.a.txt || d.a.wt) {
+      h += '<div class="sh-sec"><h3 class="sec">Anliegen</h3><p class="ki-a">' + esc(d.a.txt || '') + '</p>' + (d.a.wt ? '<p class="help">' + esc('Wunschtermin: ' + d.a.wt) + '</p>' : '') +
+        (d.a.txt ? '<label class="check"><input type="checkbox" id="ki-rep" checked><span>Unter „Anstehend“ beim Auto eintragen</span></label>' : '') + '</div>';
+    }
+    h += (d.ok ? '<p class="help">Der Kunde hat im Formular der Speicherung seiner Angaben zugestimmt.</p>' : '') +
+      '<p class="err" id="ki-err" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Übernehmen</button><button type="button" class="btn ghost" data-act="close">Verwerfen</button></div></form>';
+    return h;
+  }
+  function kdCarName(d) {
+    var base = (d.f.ma + ' ' + d.f.mo).trim().slice(0, 60), name = base, n = 2;
+    var taken = function (x) { return activeCars().some(function (p) { return coll.compare(String(p[1].name || ''), x) === 0; }); };
+    if (taken(name)) name = (base + ' (' + (d.f.kz || d.p.n) + ')').slice(0, 60);
+    while (taken(name) && n < 50) { name = (base + ' ' + n).slice(0, 60); n++; }
+    return name;
+  }
+  function kdImportChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'kdimport') return;
+    if (t.id === 'ki-kunde') { s.kunde = t.value; if (s.car && S.cars.has(s.car) && S.cars.get(s.car).kunde && S.cars.get(s.car).kunde !== s.kunde) s.car = ''; }
+    else s.car = t.value;
+    var sh = $('#sheet'), top = sh.scrollTop;
+    setHTML(sh, sheetKdImport());
+    sh.scrollTop = top;
+  }
+  async function saveKdImport() {
+    var s = S.sheet;
+    if (!s || s.type !== 'kdimport' || S.busy) return;
+    var showErr = function (m) { var el = $('#ki-err'); if (el) el.textContent = m; };
+    if (!canWrite()) { showErr('Du kannst dieses Inventar nur ansehen.'); return; }
+    var d = s.kd, f = d.f, on = {}, now = new Date().toISOString(), rep = !!(($('#ki-rep') || {}).checked);
+    $$('input[name="ki-f"]').forEach(function (c) { if (c.checked) on[c.value] = true; });
+    var kid = s.kunde && S.kunden.has(s.kunde) ? s.kunde : null, cid = s.car && S.cars.has(s.car) ? s.car : null;
+    setBusy(true);
+    try {
+      var einw = d.ok ? { am: d.t || now, ueber: 'Formular' } : null;
+      if (kid) {
+        var kp = { geaendert: now, letztesFormular: d.t || now };
+        KD_K.forEach(function (x) { if (on['k.' + x.k] && x.v(d)) kp[x.f] = x.v(d); });
+        if (einw) kp.einwilligung = einw;
+        await write(function () { return S.db.doc('kunden/' + kid).update(kp); });
+        S.kunden.set(kid, Object.assign({}, S.kunden.get(kid), kp));
+      } else {
+        var kref = S.db.collection('kunden').doc(), kd = { name: d.p.n, telefon: on['k.tel'] ? d.p.tel || null : null, email: on['k.mail'] ? d.p.mail || null : null, adresse: on['k.adr'] ? d.p.adr || null : null, notiz: '', quelle: 'formular', erstellt: now, geaendert: now, letztesFormular: d.t || now, einwilligung: einw };
+        kid = kref.id;
+        await write(function () { return kref.set(kd); });
+        if (!S.kunden.has(kid)) S.kunden.set(kid, kd);
+      }
+      if (cid) {
+        var car = S.cars.get(cid), cp = { geaendert: now, kunde: kid, fremd: true };
+        KD_C.forEach(function (x) { if (on['c.' + x.k] && x.show(f)) x.set(cp, f, Object.assign({}, car, cp)); });
+        await write(function () { return S.db.doc('fahrzeuge/' + cid).update(cp); });
+        S.cars.set(cid, Object.assign({}, car, cp));
+      } else {
+        var cref = S.db.collection('fahrzeuge').doc(), nc = { name: kdCarName(d), fremd: true, kunde: kid, arbeiten: [], archiviert: false, erstellt: now, geaendert: now, abteil: '', notiz: '', typenschein: null };
+        KD_C.forEach(function (x) { if (on['c.' + x.k] && x.show(f)) x.set(nc, f, nc); });
+        cid = cref.id;
+        await write(function () { return cref.set(nc); });
+        if (!S.cars.has(cid)) S.cars.set(cid, nc);
+      }
+      if (rep && d.a.txt) {
+        var first = d.a.txt.split('\n')[0].trim(), cut = /^(.{8,}?[.!?])\s/.exec(first);
+        if (cut) first = cut[1];
+        first = first || d.a.txt;
+        var rd = { fahrzeug: cid, titel: first.slice(0, 80), notiz: (d.a.txt + (d.a.wt ? '\nWunschtermin: ' + d.a.wt : '') + '\nVom Kunden über das Formular' + (d.t ? ' am ' + datum(d.t.slice(0, 10)) : '') + '.').slice(0, 500),
+          faellig: null, faelligGenau: null, status: 'offen', recherche: null, quelle: 'kunde', erstellt: now, geaendert: now };
+        var rref = S.db.collection('reparaturen').doc();
+        await write(function () { return rref.set(rd); });
+        if (!S.reps.has(rref.id)) S.reps.set(rref.id, rd);
+      }
+      setBusy(false);
+      openKunde(kid); renderAll();
+      toast('Übernommen: ' + d.p.n + ', ' + carName(cid) + '.');
+    } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -7485,6 +8038,19 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'bv-rm': blViewRemove(t); break;
       case 'pickerl-plus': var pm = $('#p-mon'); if (pm && isYm(t.dataset.val)) pm.value = t.dataset.val; break;
       case 'zeitplan': openZeitplan(); break;
+      case 'kunden': if (!S.busy) openKunden(); break;
+      case 'kunde-open': if (!S.busy) openKunde(t.dataset.id); break;
+      case 'kunde-new': openKundeForm(null); break;
+      case 'kunde-edit': openKundeForm(t.dataset.id); break;
+      case 'kunde-car-new': openCarForm(null, { fremd: true, kunde: t.dataset.id }); break;
+      case 'kunde-assign': openKundeAssign(t.dataset.car || null, t.dataset.kunde || null); break;
+      case 'kl-share': openKlShare(t.dataset.id || null); break;
+      case 'kl-settings': openKlSettings(null); break;
+      case 'kl-wa': window.open('https://wa.me/' + t.dataset.tel + '?text=' + encodeURIComponent(klCurrentText()), '_blank', 'noopener'); break;
+      case 'kl-native': klNative(); break;
+      case 'kl-copy': klCopy(klCurrentText(), 'Kopiert. Jetzt in WhatsApp oder in eine SMS einfügen.'); break;
+      case 'kd-paste': openKdPaste(); break;
+      case 'kd-clip': kdPasteClip(); break;
       case 'zeitplan-csv': saveZeitplanCsv(); break;
       case 'zeitplan-ics': saveZeitplanIcs(); break;
       case 'km-all': openKmAll(); break;
@@ -7501,6 +8067,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!t) return;
     if (t.name === 'rw-auf') { reifenWechselLabel(); return; }
     if (t.dataset && t.dataset.blAdd !== undefined) { blAddFiles(t); return; }
+    if (t.id === 'ka-kunde') { var kn = $('#ka-neu'); if (kn) kn.hidden = t.value !== '__neu'; return; }
+    if (t.id === 'ki-kunde' || t.id === 'ki-car') { kdImportChange(t); return; }
     if (t.name === 'f-bereich') {
       var f = $('#editform');
       if (f) f.dataset.bereich = t.value;
@@ -7551,6 +8119,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'reifenform') { e.preventDefault(); saveReifen(); }
       else if (e.target.id === 'reifenwechsel') { e.preventDefault(); saveReifenWechsel(); }
       else if (e.target.id === 'kmallform') { e.preventDefault(); saveKmAll(); }
+      else if (e.target.id === 'kundeform') { e.preventDefault(); saveKunde(); }
+      else if (e.target.id === 'kundeassign') { e.preventDefault(); saveKundeAssign(); }
+      else if (e.target.id === 'klsettings') { e.preventDefault(); saveKlSettings(); }
+      else if (e.target.id === 'kdpaste') { e.preventDefault(); saveKdPaste(); }
+      else if (e.target.id === 'kdimport') { e.preventDefault(); saveKdImport(); }
     });
     document.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'repdone') S.repDoneOpen = e.target.open; }, true);
     document.addEventListener('input', function (e) {
@@ -7576,7 +8149,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     bind();
     var th = tabFromHash();
     if (th) setTab(th);
-    window.addEventListener('hashchange', function () { var t2 = tabFromHash(); if (t2) setTab(t2); });
+    window.addEventListener('hashchange', function () { var t2 = tabFromHash(); if (t2) setTab(t2); kdFromHash(); });
+    kdFromHash();
     renderAll();
     setTimeout(function () { loadZX().catch(function () {}); }, 1800);
     use('mcp').then(function (m) { S.mcp = m; renderAnstehend(); });

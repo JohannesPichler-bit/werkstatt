@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Fahrzeugdaten eintragen</title>
+<meta name="description" content="Daten zu deinem Auto eintragen und per WhatsApp oder E-Mail an die Werkstatt schicken.">
+<meta name="theme-color" content="#e7ebed" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111618" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Big Shoulders Display"; font-style: normal; font-weight: 800; font-display: swap; src: url(fonts/big-shoulders-display-latin-800-normal.woff2) format("woff2"); }
+:root {
+  --bg: #e7ebed; --surface: #f8f9fa; --surface-2: #dde3e6; --ink: #172024; --muted: #56636c; --line: #c4ccd1;
+  --wb: #1f5da6; --wb-soft: #dbe6f3; --ro: #d9661f; --ro-soft: #f7e3d4; --ro-text: #9a4510;
+  --in: #2c7a4b; --in-soft: #dcefe3; --in-text: #23653e; --bad: #b23a2a; --bad-soft: #f5dcd8;
+  --focus: #1f5da6; --wa: #1f7a4d;
+  --f-display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-code: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111618; --surface: #192024; --surface-2: #232c31; --ink: #e3e8eb; --muted: #98a4ac; --line: #2e383e;
+    --wb: #5b9be3; --wb-soft: #172638; --ro: #ec8a3f; --ro-soft: #36230f; --ro-text: #f3a86b;
+    --in: #45ad70; --in-soft: #17301f; --in-text: #6fcf97; --bad: #f0806d; --bad-soft: #3d1f1b;
+    --focus: #7fb3ee; --wa: #3fae74;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111618; --surface: #192024; --surface-2: #232c31; --ink: #e3e8eb; --muted: #98a4ac; --line: #2e383e;
+  --wb: #5b9be3; --wb-soft: #172638; --ro: #ec8a3f; --ro-soft: #36230f; --ro-text: #f3a86b;
+  --in: #45ad70; --in-soft: #17301f; --in-text: #6fcf97; --bad: #f0806d; --bad-soft: #3d1f1b;
+  --focus: #7fb3ee; --wa: #3fae74;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.5; }
+main { max-width: 600px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top, 0px)) 16px max(40px, env(safe-area-inset-bottom, 0px)); }
+h1, h2 { font-family: var(--f-display); font-weight: 800; line-height: 1; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(40px, 11vw, 56px); }
+h2 { font-size: 30px; }
+p { margin: 0; }
+a { color: var(--wb); }
+.head { padding: 8px 0 22px; border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+.for { margin-top: 6px; font-size: 19px; font-weight: 700; }
+.lead { margin-top: 10px; color: var(--muted); max-width: 46ch; }
+.step { display: grid; grid-template-columns: 34px minmax(0, 1fr); column-gap: 12px; padding: 22px 0 6px; }
+.num { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--ink); font-family: var(--f-display); font-weight: 800; font-size: 20px; line-height: 1; }
+.step > h2 { align-self: center; }
+.body { grid-column: 2; display: flex; flex-direction: column; gap: 14px; padding-top: 14px; min-width: 0; }
+.f { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.f > span { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
+.f small, .hint { color: var(--muted); font-size: 14px; line-height: 1.4; }
+.code { flex: none; font-family: var(--f-code); font-size: 12px; font-weight: 700; line-height: 1; padding: 4px 5px 3px; border: 1.5px solid currentColor; border-radius: 4px; color: var(--muted); }
+.opt { font-weight: 400; color: var(--muted); font-size: 14px; }
+input, select, textarea { width: 100%; min-height: 48px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 17px; }
+textarea { min-height: 96px; resize: vertical; line-height: 1.4; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; border-color: var(--focus); }
+input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--bad); }
+.mono { font-family: var(--f-code); letter-spacing: 0.04em; text-transform: uppercase; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 360px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
+.zs { border-radius: 12px; background: var(--surface); border: 1px solid var(--line); padding: 14px 14px 12px; }
+.zs-t { font-weight: 700; font-size: 15px; }
+.zs-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; margin: 10px 0 0; padding: 0; list-style: none; }
+.zs-g li { display: flex; align-items: baseline; gap: 8px; font-size: 14px; color: var(--muted); min-width: 0; }
+.zs-g .code { min-width: 34px; text-align: center; }
+.zs-g li.on { color: var(--ink); }
+.zs-g li.on .code { color: var(--wb); background: var(--wb-soft); }
+@media (max-width: 520px) { .zs-g { grid-template-columns: minmax(0, 1fr); } }
+.check { display: flex; align-items: flex-start; gap: 12px; font-size: 16px; }
+.check input { flex: none; width: 24px; height: 24px; min-height: 0; margin: 1px 0 0; accent-color: var(--ink); }
+.privacy { margin-top: 26px; padding: 14px; border-radius: 12px; background: var(--surface-2); font-size: 15px; display: flex; flex-direction: column; gap: 12px; }
+.err { min-height: 1.2em; color: var(--bad); font-weight: 700; font-size: 15px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 20px; border-radius: 12px; border: 2px solid var(--ink); background: var(--ink); color: var(--bg); font: inherit; font-weight: 700; font-size: 17px; text-decoration: none; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.wa { background: var(--wa); border-color: var(--wa); color: #fff; }
+.btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.btn svg { width: 22px; height: 22px; flex: none; }
+.actions { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.sum { margin: 14px 0 0; border-top: 1px solid var(--line); }
+.sum div { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.sum dt { color: var(--muted); }
+.sum dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.done { margin-top: 18px; padding: 14px; border-radius: 12px; background: var(--in-soft); color: var(--in-text); font-weight: 700; }
+.warn { padding: 14px; border-radius: 12px; background: var(--ro-soft); color: var(--ro-text); font-weight: 700; }
+.foot { margin-top: 30px; color: var(--muted); font-size: 13px; }
+[hidden] { display: none !important; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<main>
+  <header class="head">
+    <h1>Fahrzeugdaten</h1>
+    <p class="for" id="for"></p>
+    <p class="lead">Damit alles vorbereitet ist, bevor du kommst. Dauert ein paar Minuten, den Zulassungsschein brauchst du dafür.</p>
+  </header>
+
+  <p class="warn" id="badlink" hidden>Dieser Link ist unvollständig. Bitte frag nach einem neuen Link.</p>
+
+  <form id="form" novalidate hidden>
+    <section class="step" aria-labelledby="h1">
+      <span class="num" aria-hidden="true">1</span><h2 id="h1">Du</h2>
+      <div class="body">
+        <label class="f"><span>Vor- und Nachname</span><input id="name" autocomplete="name" maxlength="80" required></label>
+        <label class="f"><span>Telefon</span><input id="tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="30" placeholder="z. B. 0664 1234567"></label>
+        <label class="f"><span>E-Mail <span class="opt">(optional)</span></span><input id="mail" type="email" inputmode="email" autocomplete="email" maxlength="120"></label>
+        <label class="f"><span>Adresse <span class="opt">(optional)</span></span><input id="adr" autocomplete="street-address" maxlength="160" placeholder="Straße, PLZ Ort"></label>
+      </div>
+    </section>
+
+    <section class="step" aria-labelledby="h2">
+      <span class="num" aria-hidden="true">2</span><h2 id="h2">Dein Auto</h2>
+      <div class="body">
+        <div class="zs">
+          <p class="zs-t">Das meiste steht im Zulassungsschein. Die Buchstaben zeigen, in welchem Feld.</p>
+          <ul class="zs-g" id="zs">
+            <li data-code="A"><span class="code">A</span>Kennzeichen</li>
+            <li data-code="B"><span class="code">B</span>Erstzulassung</li>
+            <li data-code="D.1"><span class="code">D.1</span>Marke</li>
+            <li data-code="D.3"><span class="code">D.3</span>Handelsbezeichnung</li>
+            <li data-code="E"><span class="code">E</span>Fahrgestellnummer</li>
+            <li data-code="P.1"><span class="code">P.1</span>Hubraum</li>
+            <li data-code="P.2"><span class="code">P.2</span>Leistung in kW</li>
+            <li data-code="P.3"><span class="code">P.3</span>Antriebsart</li>
+          </ul>
+        </div>
+        <div class="row2">
+          <label class="f"><span>Marke <span class="code">D.1</span></span><input id="marke" maxlength="40" placeholder="z. B. BMW" data-code="D.1" required></label>
+          <label class="f"><span>Modell <span class="code">D.3</span></span><input id="modell" maxlength="60" placeholder="z. B. 320d Touring" data-code="D.3" required></label>
+        </div>
+        <div class="row2">
+          <label class="f"><span>Kennzeichen <span class="code">A</span></span><input id="kz" class="mono" maxlength="15" autocapitalize="characters" spellcheck="false" placeholder="BR-123AB" data-code="A"></label>
+          <label class="f"><span>Erstzulassung <span class="code">B</span></span><input id="ez" inputmode="numeric" maxlength="10" placeholder="TT.MM.JJJJ" data-code="B"></label>
+        </div>
+        <label class="f"><span>Fahrgestellnummer <span class="code">E</span></span><input id="fin" class="mono" maxlength="20" autocapitalize="characters" spellcheck="false" placeholder="17 Zeichen" data-code="E"><small id="fin-hint">Buchstaben und Ziffern, ohne Leerzeichen.</small></label>
+        <label class="f"><span>Kilometerstand</span><input id="km" inputmode="numeric" maxlength="9" placeholder="Was der Tacho jetzt zeigt"></label>
+        <div class="row2">
+          <label class="f"><span>Hubraum <span class="code">P.1</span></span><input id="ccm" inputmode="numeric" maxlength="5" placeholder="cm³" data-code="P.1"></label>
+          <label class="f"><span>Leistung <span class="code">P.2</span></span><input id="kw" inputmode="numeric" maxlength="4" placeholder="kW" data-code="P.2"></label>
+        </div>
+        <div class="row2">
+          <label class="f"><span>Kraftstoff <span class="code">P.3</span></span><select id="kraft" data-code="P.3"><option value="">–</option><option>Benzin</option><option>Diesel</option><option>Autogas (LPG)</option><option>Erdgas (CNG)</option><option>Hybrid</option><option>Elektro</option><option>Sonstiges</option></select></label>
+          <label class="f"><span>Getriebe</span><select id="getr"><option value="">–</option><option>Schaltgetriebe</option><option>Automatik</option></select></label>
+        </div>
+        <label class="f"><span>Nächstes Pickerl <span class="opt">(falls bekannt)</span></span><input id="pk" inputmode="numeric" maxlength="7" placeholder="MM/JJJJ"><small>Steht gelocht auf der Plakette an der Windschutzscheibe.</small></label>
+        <div class="row2">
+          <label class="f"><span>Reifengröße</span><input id="rg" maxlength="30" autocapitalize="characters" spellcheck="false" placeholder="z. B. 205/55 R16"><small>Steht auf der Reifenflanke.</small></label>
+          <label class="f"><span>Gerade drauf</span><select id="rt"><option value="">–</option><option value="sommer">Sommerreifen</option><option value="winter">Winterreifen</option><option value="ganzjahr">Ganzjahresreifen</option></select></label>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" aria-labelledby="h3">
+      <span class="num" aria-hidden="true">3</span><h2 id="h3">Was soll gemacht werden?</h2>
+      <div class="body">
+        <label class="f"><span>Anliegen</span><textarea id="anl" maxlength="1000" placeholder="z. B. Ölwechsel, Bremsen hinten quietschen, Pickerl machen"></textarea></label>
+        <label class="f"><span>Wunschtermin <span class="opt">(optional)</span></span><input id="wt" maxlength="60" placeholder="z. B. ab 10.11., am liebsten vormittags"></label>
+      </div>
+    </section>
+
+    <div class="privacy">
+      <p id="privacy-txt"></p>
+      <label class="check"><input type="checkbox" id="ok"><span id="ok-txt"></span></label>
+    </div>
+    <p class="err" id="err" role="alert"></p>
+    <div class="actions"><button type="submit" class="btn">Weiter zum Senden</button></div>
+  </form>
+
+  <section id="send" hidden aria-labelledby="hs">
+    <div class="step"><span class="num" aria-hidden="true">4</span><h2 id="hs">Prüfen und senden</h2>
+      <div class="body">
+        <p>Passt alles? Dann schick die Nachricht ab. Sie geht direkt von dir an <b id="to"></b>.</p>
+        <dl class="sum" id="sum"></dl>
+        <div class="actions">
+          <a class="btn wa" id="send-wa" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.4 14.6L2.3 21.8l5.1-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7c-1.5 0-2.9-.4-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3a8 8 0 1 1 6.8 3.7Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1c0 1.2.9 2.4 1 2.6.1.2 1.8 2.7 4.3 3.8 1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.5-.3Z"/></svg>Per WhatsApp senden</a>
+          <a class="btn" id="send-mail" hidden>Per E-Mail senden</a>
+          <button type="button" class="btn ghost" id="copy">Text kopieren</button>
+          <button type="button" class="btn ghost" id="back">Zurück und ändern</button>
+        </div>
+        <p class="done" id="done" hidden>Danke! Wenn die Nachricht verschickt ist, bist du fertig. Fotos vom Zulassungsschein oder von einem Schaden kannst du gleich hinterherschicken.</p>
+        <p class="hint" id="copy-ok" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">Deine Eingaben werden an keinen Server geschickt. Sie bleiben auf diesem Gerät, bis du sie selbst per WhatsApp oder E-Mail abschickst.</p>
+</main>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  function b64urlFromBytes(bytes) { var s = '', CH = 0x8000; for (var i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function bytesFromB64url(s) { s = String(s).replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var bin = atob(s), out = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; }
+  function readConf() {
+    var m = /(?:^#|&)d=([A-Za-z0-9_-]{4,2000})/.exec(location.hash || '');
+    if (!m) return null;
+    try {
+      var c = JSON.parse(new TextDecoder().decode(bytesFromB64url(m[1])));
+      if (!c || typeof c !== 'object' || c.v !== 1) return null;
+      var str = function (x, n) { return typeof x === 'string' ? x.trim().slice(0, n) : ''; };
+      var w = str(c.w, 20).replace(/\D/g, ''), mail = str(c.m, 120);
+      return { n: str(c.n, 60) || 'die Werkstatt', w: w.length >= 8 && w.length <= 15 ? w : '', m: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail) ? mail : '', k: /^[A-Za-z0-9_-]{4,40}$/.test(c.k || '') ? c.k : '', pn: str(c.p && c.p.name, 80) };
+    } catch (_) { return null; }
+  }
+  var conf = readConf();
+  if (!conf) { $('#badlink').hidden = false; $('#for').textContent = ''; return; }
+  $('#for').textContent = 'für ' + conf.n;
+  $('#to').textContent = conf.n;
+  $('#privacy-txt').textContent = 'Deine Angaben gehen per WhatsApp oder E-Mail direkt von dir an ' + conf.n + '. ' + conf.n + ' verwendet sie nur für die Arbeit an deinem Auto und für Rückfragen.';
+  $('#ok-txt').textContent = 'Einverstanden, dass ' + conf.n + ' meine Angaben dafür speichert.';
+  $('#form').hidden = false;
+
+  /* Entwurf auf dem Gerät behalten (nur lokal) */
+  var IDS = ['name', 'tel', 'mail', 'adr', 'marke', 'modell', 'kz', 'ez', 'fin', 'km', 'ccm', 'kw', 'kraft', 'getr', 'pk', 'rg', 'rt', 'anl', 'wt'];
+  var KEY = 'kunde-entwurf:' + (conf.k || 'neu');
+  function saveDraft() { try { var o = {}; IDS.forEach(function (id) { o[id] = $('#' + id).value; }); localStorage.setItem(KEY, JSON.stringify(o)); } catch (_) {} }
+  try { var d = JSON.parse(localStorage.getItem(KEY) || 'null'); if (d) IDS.forEach(function (id) { if (typeof d[id] === 'string') $('#' + id).value = d[id]; }); } catch (_) {}
+  if (!$('#name').value && conf.pn) $('#name').value = conf.pn;
+  document.addEventListener('input', function (e) { saveDraft(); if (e.target && e.target.removeAttribute) e.target.removeAttribute('aria-invalid'); });
+  window.addEventListener('hashchange', function () { location.reload(); });
+  document.addEventListener('change', function () { saveDraft(); });
+
+  /* Feld mit Code: im Zulassungsschein-Kasten markieren */
+  document.addEventListener('focusin', function (e) {
+    var c = e.target && e.target.getAttribute && e.target.getAttribute('data-code');
+    Array.prototype.forEach.call(document.querySelectorAll('#zs li'), function (li) { li.classList.toggle('on', !!c && li.getAttribute('data-code') === c); });
+  });
+
+  function v(id) { return $('#' + id).value.trim(); }
+  function parseYm(s, allowDay) {
+    s = String(s || '').trim();
+    var m;
+    if (allowDay && (m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s))) { var d = +m[1], mo = +m[2], y = +m[3]; if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31 && y >= 1900 && y <= 2100) return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0'); return null; }
+    if ((m = /^(\d{1,2})\s*[./-]\s*(\d{4})$/.exec(s))) { var mo2 = +m[1], y2 = +m[2]; if (mo2 >= 1 && mo2 <= 12 && y2 >= 1900 && y2 <= 2100) return y2 + '-' + String(mo2).padStart(2, '0'); return null; }
+    if (allowDay && (m = /^(\d{4})$/.exec(s))) { var y3 = +m[1]; return y3 >= 1900 && y3 <= 2100 ? String(y3) : null; }
+    return null;
+  }
+  function num(s, max) { s = String(s || '').replace(/[.\s']/g, '').replace(',', '.'); if (!s) return null; var n = Number(s); return isFinite(n) && n >= 0 && n <= max ? Math.round(n) : NaN; }
+  function bad(id, msg) { var el = $('#' + id); el.setAttribute('aria-invalid', 'true'); try { el.focus(); } catch (_) {} $('#err').textContent = msg; return false; }
+  function check() {
+    Array.prototype.forEach.call(document.querySelectorAll('[aria-invalid]'), function (el) { el.removeAttribute('aria-invalid'); });
+    $('#err').textContent = '';
+    if (!v('name')) return bad('name', 'Bitte deinen Namen eintragen.');
+    if (!v('tel') && !v('mail')) return bad('tel', 'Bitte eine Telefonnummer oder E-Mail-Adresse eintragen, damit du erreichbar bist.');
+    if (v('tel') && !/^[+\d][\d\s/()-]{5,}$/.test(v('tel'))) return bad('tel', 'Die Telefonnummer bitte nur mit Ziffern, z. B. 0664 1234567.');
+    if (v('mail') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('mail'))) return bad('mail', 'Die E-Mail-Adresse sieht nicht vollständig aus.');
+    if (!v('marke')) return bad('marke', 'Bitte die Marke eintragen, z. B. BMW.');
+    if (!v('modell')) return bad('modell', 'Bitte das Modell eintragen, z. B. 320d Touring.');
+    if (v('ez') && !parseYm(v('ez'), true)) return bad('ez', 'Die Erstzulassung bitte als TT.MM.JJJJ eintragen, z. B. 12.05.2009.');
+    var fin = v('fin').toUpperCase().replace(/[\s.-]/g, '');
+    if (fin && !/^[A-Z0-9]+$/.test(fin)) return bad('fin', 'Die Fahrgestellnummer hat nur Buchstaben und Ziffern.');
+    if (fin.length === 17 && /[IOQ]/.test(fin)) return bad('fin', 'I, O und Q kommen in der Fahrgestellnummer nicht vor. Meist ist 1 oder 0 gemeint.');
+    if (fin && fin.length !== 17 && fin.length < 8) return bad('fin', 'Die Fahrgestellnummer ist zu kurz. Bei neueren Autos hat sie 17 Zeichen.');
+    if (Number.isNaN(num(v('km'), 3000000))) return bad('km', 'Den Kilometerstand bitte als Zahl eintragen, z. B. 238400.');
+    if (Number.isNaN(num(v('ccm'), 20000))) return bad('ccm', 'Den Hubraum bitte in cm³ eintragen, z. B. 1995.');
+    if (Number.isNaN(num(v('kw'), 2000))) return bad('kw', 'Die Leistung bitte in kW eintragen, z. B. 110.');
+    if (v('pk') && !parseYm(v('pk'), false)) return bad('pk', 'Das Pickerl bitte als MM/JJJJ eintragen, z. B. 05/2027.');
+    if (!$('#ok').checked) { $('#err').textContent = 'Bitte bestätige, dass deine Angaben gespeichert werden dürfen.'; try { $('#ok').focus(); } catch (_) {} return false; }
+    return true;
+  }
+  function data() {
+    var fin = v('fin').toUpperCase().replace(/[\s.-]/g, '');
+    var o = { v: 1, t: new Date().toISOString(), p: { n: v('name') }, f: { ma: v('marke'), mo: v('modell') }, ok: true };
+    if (conf.k) o.k = conf.k;
+    if (v('tel')) o.p.tel = v('tel');
+    if (v('mail')) o.p.mail = v('mail');
+    if (v('adr')) o.p.adr = v('adr');
+    if (v('kz')) o.f.kz = v('kz').toUpperCase().replace(/\s+/g, ' ');
+    if (v('ez')) o.f.ez = parseYm(v('ez'), true);
+    if (fin) o.f.fin = fin;
+    var km = num(v('km'), 3000000), ccm = num(v('ccm'), 20000), kw = num(v('kw'), 2000);
+    if (km !== null) o.f.km = km;
+    if (ccm !== null) o.f.ccm = ccm;
+    if (kw !== null) o.f.kw = kw;
+    if (v('kraft')) o.f.kr = v('kraft');
+    if (v('getr')) o.f.ge = v('getr');
+    if (v('pk')) o.f.pk = parseYm(v('pk'), false);
+    if (v('rg')) o.f.rg = v('rg').toUpperCase();
+    if (v('rt')) o.f.rt = v('rt');
+    if (v('anl')) o.a = { txt: v('anl') };
+    if (v('wt')) { o.a = o.a || {}; o.a.wt = v('wt'); }
+    return o;
+  }
+  async function pack(obj) {
+    var bytes = new TextEncoder().encode(JSON.stringify(obj));
+    if (typeof CompressionStream === 'function') {
+      try {
+        var buf = await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+        return '1.' + b64urlFromBytes(new Uint8Array(buf));
+      } catch (_) {}
+    }
+    return '0.' + b64urlFromBytes(bytes);
+  }
+  function fmtYm(s) { if (!s) return ''; var p = s.split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : p.length === 2 ? p[1] + '/' + p[0] : p[0]; }
+  function rows(o) {
+    var f = o.f, r = [['Name', o.p.n], ['Telefon', o.p.tel], ['E-Mail', o.p.mail], ['Adresse', o.p.adr], ['Auto', f.ma + ' ' + f.mo], ['Kennzeichen', f.kz], ['Erstzulassung', fmtYm(f.ez)], ['Fahrgestellnr.', f.fin],
+      ['Kilometerstand', f.km != null ? f.km.toLocaleString('de-AT') + ' km' : ''], ['Hubraum', f.ccm != null ? f.ccm + ' cm³' : ''], ['Leistung', f.kw != null ? f.kw + ' kW' : ''], ['Kraftstoff', f.kr], ['Getriebe', f.ge], ['Nächstes Pickerl', fmtYm(f.pk)],
+      ['Reifen', [f.rg, f.rt ? { sommer: 'Sommerreifen', winter: 'Winterreifen', ganzjahr: 'Ganzjahresreifen' }[f.rt] : ''].filter(Boolean).join(', ')], ['Anliegen', o.a && o.a.txt], ['Wunschtermin', o.a && o.a.wt]];
+    return r.filter(function (x) { return x[1]; });
+  }
+  var current = null;
+  $('#form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!check()) return;
+    var o = data(), code = await pack(o);
+    var link = new URL('./', location.href);
+    link.hash = 'kd=' + code;
+    var r = rows(o), text = 'Fahrzeugdaten für ' + conf.n + '\n' + r.map(function (x) { return x[0] + ': ' + String(x[1]).replace(/\s*\n\s*/g, ' / '); }).join('\n') + '\n\nZum Übernehmen in die Werkstatt-App:\n' + link.href;
+    current = { text: text };
+    var dl = $('#sum');
+    dl.textContent = '';
+    r.forEach(function (x) { var d = document.createElement('div'), dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = x[0]; dd.textContent = x[1]; d.appendChild(dt); d.appendChild(dd); dl.appendChild(d); });
+    var wa = $('#send-wa'), ml = $('#send-mail');
+    wa.hidden = !conf.w; ml.hidden = !conf.m;
+    if (conf.w) wa.href = 'https://wa.me/' + conf.w + '?text=' + encodeURIComponent(text);
+    if (conf.m) ml.href = 'mailto:' + encodeURIComponent(conf.m) + '?subject=' + encodeURIComponent('Fahrzeugdaten ' + o.f.ma + ' ' + o.f.mo) + '&body=' + encodeURIComponent(text);
+    $('#copy').className = conf.w || conf.m ? 'btn ghost' : 'btn';
+    $('#done').hidden = true; $('#copy-ok').textContent = '';
+    $('#form').hidden = true; $('#send').hidden = false;
+    window.scrollTo(0, 0);
+    try { $('#hs').focus(); } catch (_) {}
+  });
+  ['#send-wa', '#send-mail'].forEach(function (s) { $(s).addEventListener('click', function () { setTimeout(function () { $('#done').hidden = false; }, 600); }); });
+  $('#copy').addEventListener('click', async function () {
+    if (!current) return;
+    var ok = false;
+    try { await navigator.clipboard.writeText(current.text); ok = true; } catch (_) {
+      try { var ta = document.createElement('textarea'); ta.value = current.text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (_) {}
+    }
+    $('#copy-ok').textContent = ok ? 'Kopiert. Füge den Text in eine Nachricht an ' + conf.n + ' ein.' : 'Kopieren ging nicht. Bitte den Text oben markieren und kopieren.';
+    if (ok) $('#done').hidden = false;
+  });
+  $('#back').addEventListener('click', function () { $('#send').hidden = true; $('#form').hidden = false; window.scrollTo(0, 0); });
+  $('#h1').setAttribute('tabindex', '-1'); $('#hs').setAttribute('tabindex', '-1');
+})();
+</script>
+</body>
+</html>
