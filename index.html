@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "29", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "30", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1682,6 +1682,46 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .wp-more { border-top: 1px solid var(--line); }
 .wp-more summary { padding: 10px 0 6px; font-weight: 700; cursor: pointer; }
 .wp-prev { margin: 0 0 8px; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+/* Kostenvoranschlag */
+.kva-card { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.kva-card b { font-size: 16px; line-height: 1.3; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kva-card span { font-size: 14px; line-height: 1.35; color: var(--muted); }
+.kva-act { display: flex; flex-wrap: wrap; gap: 8px; }
+.kva-row3 { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+@media (max-width: 420px) { .kva-row3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .kva-row3 > :first-child { grid-column: 1 / -1; } }
+#kva-rows { display: flex; flex-direction: column; }
+.kvp { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); }
+.kvp:first-child { border-top: 0; padding-top: 2px; }
+.kvp-h { display: flex; align-items: center; gap: 10px; min-height: 36px; }
+.kvp-n { font-size: 13px; font-weight: 700; color: var(--muted); }
+.kvp-s { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kvp-x { flex: none; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 50%; background: none; color: var(--muted); font-size: 20px; line-height: 1; }
+.kvp-g { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; }
+.kva-sum { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 2px solid var(--ink); font-variant-numeric: tabular-nums; }
+.kva-sum > div { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--muted); }
+.kva-sum b { color: var(--ink); white-space: nowrap; }
+.kva-sum .kva-tot { font-size: 18px; font-weight: 700; color: var(--ink); }
+.kva-v { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.kva-v legend { padding: 0; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.kva-v .check > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kva-v .check small, .kva-why { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.kva-abs { border-top: 1px solid var(--line); }
+.kva-abs summary { padding: 10px 0 6px; font-weight: 700; cursor: pointer; overflow-wrap: anywhere; }
+.kva-absb { display: flex; flex-direction: column; gap: 10px; padding-bottom: 4px; }
+/* Rückrufe */
+.rr-st { margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 14px; color: var(--muted); }
+.rr-l { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.rr-i { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 10px 0; border-top: 1px solid var(--line); }
+.rr-h { display: flex; align-items: flex-start; gap: 8px; }
+.rr-h b { font-size: 15.5px; line-height: 1.3; overflow-wrap: anywhere; }
+.rr-h .wst { margin-top: 2px; }
+.rr-x { margin: 0; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.rr-q { font-size: 13px; color: var(--muted); }
+.rr-i .linkbtn { padding: 4px 0; font-size: 14px; }
+.rr-src { border-top: 1px solid var(--line); }
+.rr-src summary { padding: 10px 0 6px; font-weight: 700; cursor: pointer; }
+.car-s .rr-f b { color: var(--kaufen); }
+.rr-a { color: var(--wb); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 </style>
 
 <div class="wrap">
@@ -1843,6 +1883,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2232,14 +2273,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         renderAll(); refreshSheet();
       }, function () { S.repsReady = true; renderAll(); });
       S.db.collection('meta').onSnapshot(function (snap) {
-        var m = null, e = null, ri = null, kl = null;
+        var m = null, e = null, ri = null, kl = null, kv = null;
         snap.docs.forEach(function (d) {
           if (!d.exists) return;
           var v = d.data();
           if (!v || typeof v !== 'object') return;
-          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v;
+          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v;
         });
-        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.metaReady = true; renderAll(); refreshSheet();
+        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.metaReady = true; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('wartung').onSnapshot(function (snap) {
         var m = new Map();
@@ -2247,6 +2288,12 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         S.wart = m; S.wartReady = true;
         renderAll(); refreshSheet();
       }, function () { S.wartReady = true; renderAll(); });
+      S.db.collection('rueckrufe').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.rr = m;
+        renderAll(); refreshSheet();
+      }, function () {});
       S.db.collection('karte').onSnapshot(function (snap) {
         var next = { wb: null, ro: null };
         snap.docs.forEach(function (d) { if (d.exists && (d.id === 'wb' || d.id === 'ro')) { var v = d.data(); if (v && typeof v === 'object') next[d.id] = v; } });
@@ -3740,6 +3787,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       carWartSec(id, car) +
       reifenSec(id, car) +
       ubSec(id, car) +
+      rrSec(id, car) +
       carFotosSec(id, car) +
       '<div class="sh-sec"><div class="vhead"><h3 class="sec">Anstehend · ' + reps.length + '</h3>' +
       (canWrite() ? '<button type="button" class="linkbtn" data-act="rep-new" data-car="' + esc(id) + '">+ Eintragen</button>' : '') + '</div>' +
@@ -3825,7 +3873,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<label class="f"><span>Was wurde gemacht?</span><input id="w-titel" value="' + esc(w.titel || '') + '" maxlength="80" placeholder="z. B. Bremsen vorne" autocomplete="off"></label>' +
       '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="w-datum" value="' + (isDay(w.datum) ? w.datum : '') + '"></label>' +
       '<label class="f"><span>Genauigkeit</span><select id="w-gen">' + genOpts(w.datumGenau, true) + '</select></label></div>' +
-      '<div class="row2"><label class="f"><span>Kosten (€)</span><input id="w-kosten" inputmode="decimal" value="' + (numOrNull(w.kosten) === null ? '' : nfPrice.format(w.kosten)) + '" placeholder="leer = offen" autocomplete="off">' + (pre.estimate ? '<small>' + esc('Recherche: Teile ' + pre.estimate) + '</small>' : '') + '</label>' +
+      '<div class="row2"><label class="f"><span>Kosten (€)</span><input id="w-kosten" inputmode="decimal" value="' + (numOrNull(w.kosten) === null ? '' : nfPrice.format(w.kosten)) + '" placeholder="leer = offen" autocomplete="off">' + (pre.estimate ? '<small>' + esc((pre.kva ? 'Kostenvoranschlag: ' : 'Recherche: Teile ') + pre.estimate) + '</small>' : '') + '</label>' +
       '<label class="f"><span>Kilometerstand dabei</span><input id="w-km" inputmode="numeric" value="' + (numOrNull(w.km) === null ? '' : String(w.km)) + '" placeholder="optional" autocomplete="off"></label></div>' +
       '<label class="check"><input type="checkbox" id="w-kmca"' + (w.kmCa ? ' checked' : '') + '><span>Kilometerstand ist nur ungefähr</span></label>' +
       '<label class="f"><span>Durchgeführt von</span><input id="w-durch" list="w-durch-l" value="' + esc(w.durch || '') + '" maxlength="60" placeholder="z. B. selbst oder Name der Werkstatt" autocomplete="off"><datalist id="w-durch-l">' + durchOpts() + '</datalist></label>' +
@@ -4109,6 +4157,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       }
       h += '<p class="help">Recherche von Claude' + (isDay(x.stand) ? ', Stand ' + datum(x.stand) : '') + '. Preise ändern sich, vor dem Bestellen prüfen.</p>';
     }
+    h += kvaSec(id, r);
     var st = open && (r.anfrage || !x) ? researchStatus() : null;
     h += (S.rMsg && open ? '<p class="rstat ' + S.rMsg.kind + '" role="status">' + esc(S.rMsg.text) + '</p>' : st ? '<p class="rstat ' + st.kind + '">' + esc(st.text) + '</p>' : '') +
       '<p class="err" id="rep-err" role="alert"></p><div class="sh-foot">' +
@@ -4139,7 +4188,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (r.fahrzeug && S.cars.has(r.fahrzeug) && S.cars.get(r.fahrzeug).archiviert) cars = cars.concat([[r.fahrzeug, S.cars.get(r.fahrzeug)]]).sort(carSort);
     var sel = (!r.fahrzeug || !S.cars.has(r.fahrzeug) ? '<option value="" selected disabled>Auto wählen …</option>' : '') +
       carOptList(cars, r.fahrzeug, function (p) { return String(p[1].name || 'Auto ohne Namen'); });
-    openSheet('repform', { id: id || null, wartung: (!id && pre.wartung) || null, problem: (!id && pre.problem) || null },
+    openSheet('repform', { id: id || null, wartung: (!id && pre.wartung) || null, problem: (!id && pre.problem) || null, rueckruf: (!id && pre.rueckruf) || null },
       '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + (id ? 'Eintrag bearbeiten' : 'Anstehende Reparatur') + '</p>' +
       '<h2 class="sh-title' + (id && String(r.titel).length > 26 ? ' long' : '') + '" id="sheet-title">' + (id ? esc(r.titel) : 'Was steht an?') + '</h2></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
@@ -4179,7 +4228,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         setBusy(false); openRep(s.id); toast('Gespeichert.');
       } else {
         var ref = S.db.collection('reparaturen').doc();
-        var full = Object.assign({ status: 'offen', recherche: null, erstellt: now }, s.wartung ? { wartung: s.wartung } : {}, s.problem ? { problem: s.problem } : {}, data);
+        var full = Object.assign({ status: 'offen', recherche: null, erstellt: now }, s.wartung ? { wartung: s.wartung } : {}, s.problem ? { problem: s.problem } : {}, s.rueckruf ? { rueckruf: s.rueckruf } : {}, data);
         await write(function () { return ref.set(full); });
         if (!S.reps.has(ref.id)) S.reps.set(ref.id, full);
         setBusy(false); openRep(ref.id); renderAll(); toast('Eingetragen: ' + data.titel);
@@ -4222,8 +4271,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var s = S.sheet, r = s && s.type === 'rep' ? S.reps.get(s.id) : null;
     if (!r) return;
     if (!S.cars.has(r.fahrzeug)) { toast('Das Auto zu diesem Eintrag gibt es nicht mehr.'); return; }
-    var x = repResearch(r), ps = x ? repPartsSum(x) : null;
-    openWorkForm(r.fahrzeug, null, { titel: r.titel, datum: dayKey(new Date()), repair: s.id, estimate: ps ? (ps.all ? 'ca. ' : 'ab ') + eur(ps.sum) : '', wartung: r.wartung ? [r.wartung] : null });
+    var x = repResearch(r), ps = x ? repPartsSum(x) : null, kv = kvaOf(r);
+    openWorkForm(r.fahrzeug, null, { titel: r.titel, datum: dayKey(new Date()), repair: s.id, kva: !!kv, estimate: kv ? eur(kvaTotals(kvaPos(kv), kv.ust).brutto) : ps ? (ps.all ? 'ca. ' : 'ab ') + eur(ps.sum) : '', wartung: r.wartung ? [r.wartung] : null });
   }
   /* ---------- Wartungsplan ---------- */
   var WARTUNG_TRIGGER = 'trig_01X2tbdRakgktUwNhk4FuuZx';
@@ -6093,6 +6142,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (st.works.length - st.preN) foot.push('<span>Arbeiten <b>' + (st.works.length - st.preN) + '</b></span>');
     if (nRep) foot.push('<span>Anstehend <b>' + nRep + '</b></span>');
     if (st.waitN) foot.push('<span>Teile wartend <b>' + st.waitN + '</b></span>');
+    if (!arch && rrOpenN(id)) foot.push('<span class="rr-f">Rückruf offen <b>' + rrOpenN(id) + '</b></span>');
     if (arch) foot.push('<span>archiviert</span>');
     foot.push('<span class="car-sum">Gesamt <b>' + esc(eur(st.total)) + '</b></span>');
     return '<li><button type="button" class="car lvl-' + (arch ? 'none' : carLevel(id, car)) + (arch ? ' arch' : '') + '" data-act="open-car" data-id="' + esc(id) + '">' +
@@ -9368,6 +9418,419 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (t.id === 'wp-erhalt2') { wpSimple('erhalt', t.checked); return true; }
     return false;
   }
+  /* ---------- Kostenvoranschlag für Kundenautos (§ 1170a ABGB, § 5 KSchG) ---------- */
+  var KVA_Q = { quellen: [
+    { titel: 'JUSLINE: § 5 KSchG, Kostenvoranschläge', url: 'https://www.jusline.at/gesetz/kschg/paragraf/5.pdf' },
+    { titel: 'JUSLINE: § 1170a ABGB, Kostenvoranschlag', url: 'https://www.jusline.at/gesetz/abgb/paragraf/1170a.pdf' },
+    { titel: 'Unternehmensserviceportal: Steuersätze und Steuerbefreiungen der Umsatzsteuer', url: 'https://www.usp.gv.at/steuern-finanzen/umsatzsteuer-ueberblick/steuersaetze-und-steuerbefreiungen-der-umsatzsteuer.html' }
+  ] };
+  var KVA_UST = { inkl: 'Preise inklusive 20 % USt', zzgl: 'Preise netto, zuzüglich 20 % USt', klein: 'Ohne USt (Kleinunternehmen)' };
+  var KVA_EH = ['Stk', 'h', 'l', 'kg', 'Satz', 'pausch.'];
+  var KVA_TXT = {
+    verbindlich: 'Verbindlicher Kostenvoranschlag: Für die Richtigkeit wird ausdrücklich gewährleistet. Der Preis gilt auch, wenn die Arbeiten umfangreicher oder teurer werden als veranschlagt.',
+    unverbindlich: 'Unverbindlicher Kostenvoranschlag: Für die Richtigkeit wird keine Gewähr übernommen. Zeichnet sich eine beträchtliche Überschreitung ab, werden Sie sofort informiert. Sie können dann vom Auftrag zurücktreten und zahlen eine angemessene Vergütung für die bis dahin geleistete Arbeit.'
+  };
+  function kvaConf() {
+    var c = S.kvaConf && typeof S.kvaConf === 'object' ? S.kvaConf : {}, kl = klConf();
+    return { name: kOne(c.name, 80) || kl.name || '', adresse: kStr(c.adresse, 200), telefon: kOne(c.telefon, 40), email: kOne(c.email, 120) || kl.mail || '',
+      stundensatz: numOrNull(c.stundensatz), ust: KVA_UST[c.ust] ? c.ust : 'inkl' };
+  }
+  function kvaOf(r) { var k = r && r.kva; return k && typeof k === 'object' && Array.isArray(k.pos) ? k : null; }
+  function kvaPos(k) { return arr(k && k.pos).filter(function (p) { return p && typeof p === 'object' && String(p.t || '').trim(); }); }
+  function kvaTotals(pos, ust) {
+    var sum = round2(pos.reduce(function (a, p) { var m = numOrNull(p.m), pr = numOrNull(p.p); return a + (m !== null && pr !== null ? m * pr : 0); }, 0));
+    if (ust === 'zzgl') { var u = round2(sum * 0.2); return { sum: sum, netto: sum, ust: u, brutto: round2(sum + u) }; }
+    if (ust === 'inkl') { var n = round2(sum / 1.2); return { sum: sum, netto: n, ust: round2(sum - n), brutto: sum }; }
+    return { sum: sum, netto: null, ust: null, brutto: sum };
+  }
+  function kvaNextNr() {
+    var y = dayKey(new Date()).slice(0, 4), max = 0;
+    S.reps.forEach(function (r) { var k = kvaOf(r), m = k && /^(\d{4})-(\d+)$/.exec(String(k.nr || '')); if (m && m[1] === y) max = Math.max(max, Number(m[2])); });
+    return y + '-' + String(max + 1).padStart(3, '0');
+  }
+  /* Vorschlag aus der Recherche: Teile mit dem ersten Angebot mit Preis (wie die Summe der Recherche), Arbeitszeit mit dem oberen Wert */
+  function kvaPrefill(r, conf) {
+    var x = repResearch(r), pos = [];
+    repParts(x).forEach(function (t) {
+      var offers = partOffers(t), o = offers.filter(function (a) { return numOrNull(a.preis) !== null; })[0] || offers[0] || null;
+      var det = o ? [o.marke, o.nummer].filter(Boolean).join(' ') : [t.marke, t.nummer].filter(Boolean).join(' ');
+      pos.push({ t: (String(t.name || 'Teil') + (det ? ' (' + det + ')' : '')).slice(0, 120), m: numOrNull(t.menge) || 1, e: 'Stk', p: partPrice(t) });
+    });
+    var z = zeitRange(x);
+    pos.push({ t: ('Arbeitszeit: ' + String(r.titel || 'Arbeit')).slice(0, 120), m: z ? z[1] : 1, e: 'h', p: conf.stundensatz });
+    return pos;
+  }
+  function kvaSec(id, r) {
+    var car = S.cars.get(r.fahrzeug);
+    if (!car || !car.fremd) return '';
+    var k = kvaOf(r), can = canWrite();
+    if (!k) {
+      if (!repOpen(r)) return '';
+      return '<div class="sh-sec kva-sec"><h3 class="sec">Kostenvoranschlag</h3><p class="note">Für den Kunden: Teile und Arbeitszeit aus der Recherche übernehmen, Preise anpassen und als PDF schicken.</p>' +
+        (can ? '<div class="kva-act"><button type="button" class="btn small" data-act="kva-open" data-id="' + esc(id) + '">Kostenvoranschlag erstellen</button></div>' : '') + '</div>';
+    }
+    var tot = kvaTotals(kvaPos(k), k.ust);
+    return '<div class="sh-sec kva-sec"><h3 class="sec">Kostenvoranschlag</h3><div class="kva-card"><b>' + esc('Nr. ' + (k.nr || '–') + ' · ' + eur(tot.brutto)) + '</b><span>' +
+      esc([isDay(k.datum) ? 'vom ' + datum(k.datum) : '', k.verbindlich ? 'verbindlich' : 'unverbindlich', isDay(k.gueltig) ? 'gültig bis ' + datum(k.gueltig) : ''].filter(Boolean).join(' · ')) + '</span></div>' +
+      '<div class="kva-act">' + (S.dl ? '<button type="button" class="btn small" data-act="kva-pdf" data-id="' + esc(id) + '" aria-label="Kostenvoranschlag als PDF">PDF</button>' : '') +
+      (can ? '<button type="button" class="btn ghost small" data-act="kva-open" data-id="' + esc(id) + '" aria-label="Kostenvoranschlag bearbeiten">Bearbeiten</button>' : '') + '</div></div>';
+  }
+  function kvaRow(p, i) {
+    var nv = function (v) { return numOrNull(v) === null ? '' : nfIn.format(v); }, pv = function (v) { return numOrNull(v) === null ? '' : nfPrice.format(v); };
+    var e = KVA_EH.indexOf(p.e) >= 0 ? p.e : 'Stk';
+    return '<div class="kvp" data-i="' + i + '"><div class="kvp-h"><span class="kvp-n">Position ' + (i + 1) + '</span><span class="kvp-s" id="kvp-s' + i + '"></span>' +
+      '<button type="button" class="kvp-x" data-act="kva-rm" data-i="' + i + '" aria-label="' + esc('Position ' + (i + 1) + ' entfernen') + '">×</button></div>' +
+      '<label class="f"><span class="vh">' + esc('Beschreibung Position ' + (i + 1)) + '</span><input id="kvp-t' + i + '" value="' + esc(p.t || '') + '" maxlength="120" placeholder="z. B. Bremsscheiben vorne" autocomplete="off"></label>' +
+      '<div class="kvp-g"><label class="f"><span>Menge</span><input id="kvp-m' + i + '" inputmode="decimal" value="' + nv(p.m) + '" autocomplete="off"></label>' +
+      '<label class="f"><span>Einheit</span><select id="kvp-e' + i + '">' + KVA_EH.map(function (u) { return '<option' + (u === e ? ' selected' : '') + '>' + u + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Einzelpreis (€)</span><input id="kvp-p' + i + '" inputmode="decimal" value="' + pv(p.p) + '" placeholder="offen" autocomplete="off"></label></div></div>';
+  }
+  function kvaRead() {
+    return $$('#kvaform .kvp').map(function (row) {
+      var i = row.dataset.i, g = function (k) { var el = $('#kvp-' + k + i); return el ? el.value.trim() : ''; };
+      return { t: g('t').slice(0, 120), m: parseNum(g('m')), e: g('e'), p: parseNum(g('p')) };
+    });
+  }
+  function kvaRows(pos) { var box = $('#kva-rows'); if (box) box.innerHTML = pos.map(kvaRow).join(''); kvaUpdate(); }
+  function kvaUpdate() {
+    var pos = kvaRead(), ust = ($('#kva-ust') || {}).value || 'inkl', ok = function (v) { return v !== null && !isNaN(v); };
+    pos.forEach(function (p, i) { var el = $('#kvp-s' + i); if (el) el.textContent = ok(p.m) && ok(p.p) ? eur(round2(p.m * p.p)) : ''; });
+    var t = kvaTotals(pos.filter(function (p) { return ok(p.m) && ok(p.p); }), ust), el = $('#kva-sum');
+    if (el) {
+      el.innerHTML = (ust === 'zzgl' ? '<div><span>Netto</span><b>' + esc(eur(t.netto)) + '</b></div><div><span>zuzüglich 20 % USt</span><b>' + esc(eur(t.ust)) + '</b></div>' : '') +
+        '<div class="kva-tot"><span>Gesamt</span><b>' + esc(eur(t.brutto)) + '</b></div>' +
+        (ust === 'inkl' ? '<div><span>darin 20 % USt</span><b>' + esc(eur(t.ust)) + '</b></div>' : '') +
+        (pos.some(function (p) { return p.t && !ok(p.p); }) ? '<div><span>Positionen ohne Preis zählen nicht mit.</span></div>' : '');
+    }
+    var kb = $('#kva-kosten-f'), kc = $('#kva-frei');
+    if (kb && kc) kb.hidden = kc.checked;
+  }
+  function openKva(repId) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var r = S.reps.get(repId), car = r ? S.cars.get(r.fahrzeug) : null;
+    if (!r || !car) { toast('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var conf = kvaConf(), k = kvaOf(r), kunde = kundeOf(car), today = dayKey(new Date());
+    var pos = k ? kvaPos(k) : kvaPrefill(r, conf);
+    if (!pos.length) pos = [{ t: '', m: 1, e: 'Stk', p: null }];
+    var ust = k ? (KVA_UST[k.ust] ? k.ust : 'inkl') : conf.ust, verb = k ? !!k.verbindlich : false, frei = !k || k.kostenlos !== false;
+    var shv = conf.stundensatz === null ? '' : nfPrice.format(conf.stundensatz);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Kostenvoranschlag · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title' + (String(r.titel).length > 26 ? ' long' : '') + '" id="sheet-title">' + esc(r.titel) + '</h2>' +
+      '<p class="buy">' + esc(kunde ? 'Für ' + kunde.name + (car.kennzeichen ? ' · ' + car.kennzeichen : '') : 'Noch kein Kunde zugeordnet. Im Auto unter „Bearbeiten“ einen Kunden wählen, dann steht er im PDF.') + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="kvaform" novalidate>' +
+      '<div class="kva-row3"><label class="f"><span>Nummer</span><input id="kva-nr" value="' + esc(k ? k.nr || '' : kvaNextNr()) + '" maxlength="20" autocomplete="off"></label>' +
+      '<label class="f"><span>Datum</span><input type="date" id="kva-d" value="' + esc(k && isDay(k.datum) ? k.datum : today) + '"></label>' +
+      '<label class="f"><span>Gültig bis</span><input type="date" id="kva-g" value="' + esc(k && isDay(k.gueltig) ? k.gueltig : '') + '"></label></div>' +
+      '<h3 class="sec">Positionen</h3>' + (k ? '' : '<p class="help">Vorschlag aus der Recherche: Teile mit dem ersten Angebot mit Preis, Arbeitszeit mit dem oberen Wert der Schätzung. Alles lässt sich ändern.</p>') +
+      '<div id="kva-rows">' + pos.map(kvaRow).join('') + '</div>' +
+      '<button type="button" class="linkbtn" data-act="kva-add">+ Position</button>' +
+      '<label class="f kva-sh"><span>Stundensatz (€)</span><input id="kva-sh" inputmode="decimal" value="' + shv + '" data-prev="' + shv + '" placeholder="z. B. 50" autocomplete="off"><small>Gilt für Positionen in Stunden und wird für die nächsten Kostenvoranschläge gemerkt.</small></label>' +
+      '<label class="f"><span>Umsatzsteuer</span><select id="kva-ust">' + Object.keys(KVA_UST).map(function (u) { return '<option value="' + u + '"' + (u === ust ? ' selected' : '') + '>' + esc(KVA_UST[u]) + '</option>'; }).join('') + '</select>' +
+      '<small>Normalsteuersatz 20 %, Kleinunternehmen sind befreit.' + srcRefs(KVA_Q, [3]) + '</small></label>' +
+      '<div class="kva-sum" id="kva-sum" aria-live="polite"></div>' +
+      '<fieldset class="kva-v"><legend>Verbindlich oder unverbindlich?</legend>' +
+      '<label class="check"><input type="radio" name="kva-v" value="0"' + (verb ? '' : ' checked') + '><span><b>Unverbindlich</b><small>Ohne Gewähr für die Richtigkeit. Wird es beträchtlich teurer, musst du das dem Kunden sofort sagen, sonst verlierst du den Anspruch auf die Mehrkosten. Der Kunde darf dann zurücktreten und zahlt eine angemessene Vergütung für die bisherige Arbeit.' + srcRefs(KVA_Q, [2]) + '</small></span></label>' +
+      '<label class="check"><input type="radio" name="kva-v" value="1"' + (verb ? ' checked' : '') + '><span><b>Verbindlich</b><small>Der Preis gilt auch, wenn die Arbeit umfangreicher oder teurer wird.' + srcRefs(KVA_Q, [2]) + '</small></span></label>' +
+      '<small class="kva-why">Gegenüber Verbrauchern gilt ein Kostenvoranschlag als verbindlich, wenn nicht ausdrücklich das Gegenteil erklärt ist. Deshalb steht die Wahl im PDF.' + srcRefs(KVA_Q, [1]) + '</small></fieldset>' +
+      '<label class="check"><input type="checkbox" id="kva-frei"' + (frei ? ' checked' : '') + '><span>Der Kostenvoranschlag ist kostenlos</span></label>' +
+      '<label class="f" id="kva-kosten-f"' + (frei ? ' hidden' : '') + '><span>Kosten für den Kostenvoranschlag (€)</span><input id="kva-kosten" inputmode="decimal" value="' + (k && numOrNull(k.kosten) !== null ? nfPrice.format(k.kosten) : '') + '" autocomplete="off">' +
+      '<small>Ein Verbraucher muss dafür nur zahlen, wenn du ihn vorher auf die Kosten hingewiesen hast.' + srcRefs(KVA_Q, [1]) + '</small></label>' +
+      '<label class="f"><span>Bemerkung</span><textarea id="kva-bem" rows="2" maxlength="400" placeholder="z. B. Teilepreise Stand ' + esc(datum(today)) + '">' + esc(k ? k.bem || '' : '') + '</textarea></label>' +
+      '<details class="kva-abs"' + (conf.name ? '' : ' open') + '><summary>Absender im PDF' + (conf.name ? ': ' + esc(conf.name) : '') + '</summary><div class="kva-absb">' +
+      '<label class="f"><span>Name oder Werkstatt</span><input id="kva-an" value="' + esc(conf.name) + '" maxlength="80" autocomplete="off"></label>' +
+      '<label class="f"><span>Adresse</span><textarea id="kva-aa" rows="2" maxlength="200">' + esc(conf.adresse) + '</textarea></label>' +
+      '<div class="row2"><label class="f"><span>Telefon</span><input id="kva-at" value="' + esc(conf.telefon) + '" maxlength="40" inputmode="tel" autocomplete="off"></label>' +
+      '<label class="f"><span>E-Mail</span><input id="kva-ae" value="' + esc(conf.email) + '" maxlength="120" inputmode="email" autocomplete="off"></label></div></div></details>' +
+      '<p class="help">Hinweis: Das ersetzt keine Rechtsberatung.</p>' +
+      '<p class="err" id="kva-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
+      (S.dl ? '<button type="button" class="btn ghost" data-act="kva-save-pdf">Speichern und PDF</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="open-rep" data-id="' + esc(repId) + '">Zurück</button></div></form>';
+    openSheet('kva', { id: repId }, h);
+    kvaUpdate();
+  }
+  async function saveKva(andPdf) {
+    var s = S.sheet;
+    if (!s || s.type !== 'kva' || S.busy) return;
+    var r = S.reps.get(s.id), err = function (m) { var el = $('#kva-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    if (!r) { err('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var pos = kvaRead().filter(function (p) { return p.t || p.p !== null; });
+    if (!pos.length) { err('Bitte mindestens eine Position eintragen.'); return; }
+    for (var i = 0; i < pos.length; i++) {
+      var p = pos[i];
+      if (!p.t) { err('Position ' + (i + 1) + ': Bitte eine Beschreibung eintragen.'); return; }
+      if (p.m === null || isNaN(p.m) || p.m <= 0) { err('Position ' + (i + 1) + ': Bitte die Menge als Zahl eintragen, z. B. 1 oder 2,5.'); return; }
+      if (p.p !== null && (isNaN(p.p) || p.p < 0)) { err('Position ' + (i + 1) + ': Den Preis bitte als Zahl eintragen, z. B. 89,90.'); return; }
+      pos[i] = { t: p.t, m: round3(p.m), e: KVA_EH.indexOf(p.e) >= 0 ? p.e : 'Stk', p: p.p === null ? null : round2(p.p) };
+    }
+    var d = g('kva-d'), gu = g('kva-g'), sh = parseNum(g('kva-sh')), ko = parseNum(g('kva-kosten')), frei = !!(($('#kva-frei') || {}).checked);
+    if (!isDay(d)) { err('Bitte ein gültiges Datum eintragen.'); return; }
+    if (gu && (!isDay(gu) || gu < d)) { err('„Gültig bis“ muss nach dem Datum liegen.'); return; }
+    if (sh !== null && (isNaN(sh) || sh < 0)) { err('Den Stundensatz bitte als Zahl eintragen, z. B. 50.'); return; }
+    if (!frei && (ko === null || isNaN(ko) || ko < 0)) { err('Bitte die Kosten für den Kostenvoranschlag eintragen oder „kostenlos“ ankreuzen.'); return; }
+    var v = $('input[name="kva-v"]:checked'), ust = KVA_UST[g('kva-ust')] ? g('kva-ust') : 'inkl', now = new Date().toISOString(), old = kvaOf(r);
+    var k = { nr: g('kva-nr').slice(0, 20) || kvaNextNr(), datum: d, gueltig: gu || null, verbindlich: !!(v && v.value === '1'), kostenlos: frei, kosten: frei ? null : round2(ko),
+      ust: ust, pos: pos, bem: g('kva-bem').slice(0, 400), erstellt: old && old.erstellt ? old.erstellt : now, geaendert: now };
+    var conf = { name: g('kva-an').slice(0, 80) || null, adresse: g('kva-aa').slice(0, 200) || null, telefon: g('kva-at').slice(0, 40) || null, email: g('kva-ae').slice(0, 120) || null, stundensatz: sh === null ? null : round2(sh), ust: ust };
+    var prev = S.kvaConf || {}, confSame = Object.keys(conf).every(function (x) { return (prev[x] == null ? null : prev[x]) === conf[x]; });
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('reparaturen/' + s.id).update({ kva: k, geaendert: now }); });
+      S.reps.set(s.id, Object.assign({}, S.reps.get(s.id) || r, { kva: k, geaendert: now }));
+      if (!confSame) {
+        var had = !!S.kvaConf;
+        try { await write(function () { var ref = S.db.doc('meta/kva'); return had ? ref.update(conf) : ref.set(conf); }); S.kvaConf = Object.assign({}, S.kvaConf || {}, conf); } catch (_) {}
+      }
+      setBusy(false);
+      openRep(s.id);
+      toast('Kostenvoranschlag ' + k.nr + ' gespeichert.');
+      if (andPdf) await saveKvaPdf(s.id);
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  function kvaPdf(lib, r, car, kunde, k, conf) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, M = 18, X1 = W - M, BOT = H - 22, y = M, PT = 0.3528;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243] };
+    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/[^\u0000-ÿ€„“”‘’–—…•]/g, '?'); };
+    var txt = function (s, x, yy, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), x, yy, o); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.3; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    var need = function (hh) { if (y + hh > BOT) { doc.addPage(); y = M; return true; } return false; };
+    var lines = function (s) { return String(s || '').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean); };
+    doc.setLineHeightFactor(1.3);
+    doc.setProperties({ title: 'Kostenvoranschlag ' + (k.nr || ''), subject: String(r.titel || ''), creator: 'Werkstatt-Inventar' });
+    // Kopf: Titel und Nummer links, Absender rechts
+    f('bold', 20); tc(C.ink); txt('Kostenvoranschlag', M, y + 7);
+    var ly = y + 12.5;
+    [['Nummer', k.nr || '–'], ['Datum', datum(k.datum) || '–']].concat(isDay(k.gueltig) ? [['Gültig bis', datum(k.gueltig)]] : []).forEach(function (p) {
+      f('normal', 9.5); tc(C.mut); txt(p[0], M, ly + 3.5); tc(C.ink); f('bold', 9.5); txt(p[1], M + 22, ly + 3.5); ly += lh(9.5) + 0.4;
+    });
+    var ry = y;
+    if (conf.name) { f('bold', 11); tc(C.ink); txt(split(conf.name, 78)[0], X1, ry + 4.5, { align: 'right' }); ry += 6; }
+    f('normal', 9); tc(C.mut);
+    lines(conf.adresse).concat(conf.telefon ? ['Tel. ' + conf.telefon] : [], conf.email ? [conf.email] : []).forEach(function (l) { txt(split(l, 78)[0], X1, ry + 3.5, { align: 'right' }); ry += lh(9); });
+    y = Math.max(ly, ry) + 8;
+    // Kunde
+    if (kunde) {
+      f('normal', 8.5); tc(C.mut); txt('Kunde', M, y + 3); y += 4.6;
+      f('bold', 10.5); tc(C.ink); txt(split(kunde.name || '', 110)[0], M, y + 4); y += 5.4;
+      f('normal', 9.5);
+      lines(kunde.adresse).concat(kunde.telefon ? ['Tel. ' + kunde.telefon] : []).forEach(function (l) { txt(split(l, 110)[0], M, y + 3.6); y += lh(9.5); });
+      y += 5;
+    }
+    // Fahrzeug
+    var fz = [car.name || 'Auto', car.kennzeichen ? 'Kennzeichen ' + car.kennzeichen : '', car.fin ? 'FIN ' + car.fin : '', numOrNull(car.km) !== null ? nf.format(num(car.km)) + ' km' : ''].filter(Boolean).join(' · ');
+    f('normal', 9.5); var fzl = split(fz, X1 - M - 8), bh = 8.6 + fzl.length * lh(9.5);
+    fc(C.soft); doc.roundedRect(M, y, X1 - M, bh, 2, 2, 'F');
+    f('normal', 8.5); tc(C.mut); txt('Fahrzeug', M + 4, y + 4.8);
+    f('normal', 9.5); tc(C.ink); txt(fzl, M + 4, y + 9.3);
+    y += bh + 7;
+    f('bold', 13); tc(C.ink); var bt = split(String(r.titel || ''), X1 - M); txt(bt, M, y + 4.6); y += bt.length * lh(13) + 4;
+    // Tabelle
+    var cols = [{ t: 'Pos.', w: 11 }, { t: 'Beschreibung', w: X1 - M - 11 - 22 - 27 - 27 }, { t: 'Menge', w: 22, r: true }, { t: 'Einzelpreis', w: 27, r: true }, { t: 'Betrag', w: 27, r: true }], pad = 1.6;
+    var hdr = function () { f('bold', 8.5); tc(C.mut); var xx = M; cols.forEach(function (cl) { txt(cl.t, cl.r ? xx + cl.w - pad : xx + pad, y + 4, cl.r ? { align: 'right' } : undefined); xx += cl.w; }); y += 6; dc(C.ink); doc.setLineWidth(0.4); doc.line(M, y, X1, y); y += 0.6; };
+    hdr();
+    var pos = kvaPos(k);
+    pos.forEach(function (p, i) {
+      f('normal', 9.5);
+      var d = split(p.t, cols[1].w - 2 * pad), rh = d.length * lh(9.5) + 2 * pad + 0.6, m = numOrNull(p.m), pr = numOrNull(p.p);
+      if (need(rh)) hdr();
+      var yy = y + pad + lh(9.5) * 0.74, xx = M;
+      tc(C.mut); txt(String(i + 1), xx + pad, yy); xx += cols[0].w;
+      tc(C.ink); txt(d, xx + pad, yy); xx += cols[1].w;
+      txt(m === null ? '' : nf.format(m) + ' ' + (p.e || ''), xx + cols[2].w - pad, yy, { align: 'right' }); xx += cols[2].w;
+      txt(pr === null ? 'offen' : eur(pr), xx + cols[3].w - pad, yy, { align: 'right' }); xx += cols[3].w;
+      txt(m === null || pr === null ? '' : eur(round2(m * pr)), xx + cols[4].w - pad, yy, { align: 'right' });
+      y += rh; dc(C.line); doc.setLineWidth(0.2); doc.line(M, y, X1, y);
+    });
+    // Summen
+    var t = kvaTotals(pos, k.ust), sx = X1 - 74;
+    var srow = function (lab, val, bold) { need(8); f(bold ? 'bold' : 'normal', bold ? 11.5 : 9.5); tc(C.ink); txt(lab, sx, y + 4.6); txt(val, X1 - pad, y + 4.6, { align: 'right' }); y += bold ? 7.6 : 6; };
+    y += 2;
+    if (k.ust === 'zzgl') { srow('Netto', eur(t.netto)); srow('zuzüglich 20 % USt', eur(t.ust)); }
+    need(10); dc(C.ink); doc.setLineWidth(0.4); doc.line(sx, y + 0.6, X1, y + 0.6); y += 1.2;
+    srow('Gesamtbetrag', eur(t.brutto), true);
+    if (k.ust === 'inkl') srow('darin enthalten 20 % USt', eur(t.ust));
+    var foot = [];
+    if (k.ust === 'klein') foot.push('Ohne Umsatzsteuer (Kleinunternehmen).');
+    if (pos.some(function (p) { return numOrNull(p.p) === null; })) foot.push('Positionen ohne Preis sind nicht in der Summe enthalten.');
+    foot.forEach(function (l) { need(6); f('normal', 8.5); tc(C.mut); txt(l, X1 - pad, y + 3.6, { align: 'right' }); y += 5; });
+    y += 5;
+    // Verbindlichkeit
+    f('normal', 9.5);
+    var st = split(k.verbindlich ? KVA_TXT.verbindlich : KVA_TXT.unverbindlich, X1 - M - 10), sh = st.length * lh(9.5) + 7;
+    need(sh + 4);
+    dc(C.ink); doc.setLineWidth(0.35); doc.roundedRect(M, y, X1 - M, sh, 1.5, 1.5, 'S');
+    tc(C.ink); txt(st, M + 5, y + 5.4); y += sh + 5;
+    var extra = [k.kostenlos !== false ? 'Die Erstellung dieses Kostenvoranschlags ist kostenlos.' : 'Kosten für diesen Kostenvoranschlag: ' + eur(k.kosten) + ' (wie vorher vereinbart).'];
+    if (k.bem) extra.push(k.bem);
+    extra.forEach(function (e) { f('normal', 9.5); var l = split(e, X1 - M); need(l.length * lh(9.5) + 2); tc(C.ink); txt(l, M, y + 3.6); y += l.length * lh(9.5) + 2.4; });
+    // Unterschriften
+    need(30); y += 18; dc(C.ink); doc.setLineWidth(0.3);
+    doc.line(M, y, M + 74, y); doc.line(X1 - 74, y, X1, y);
+    f('normal', 8.5); tc(C.mut); txt('Ort, Datum, Unterschrift', M, y + 4.2); txt('Auftrag erteilt: Datum, Unterschrift Kunde', X1 - 74, y + 4.2);
+    var n = doc.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 13, X1, H - 13);
+      txt('Kostenvoranschlag Nr. ' + (k.nr || '') + (conf.name ? ' · ' + conf.name : ''), M, H - 9);
+      txt('Seite ' + i + ' von ' + n, X1, H - 9, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveKvaPdf(repId) {
+    var r = S.reps.get(repId), car = r ? S.cars.get(r.fahrzeug) : null, k = kvaOf(r);
+    var err = function (m) { var el = $('#kva-err') || $('#rep-err'); if (el) el.textContent = m; else toast(m); };
+    if (!r || !car || !k) { err('Erst den Kostenvoranschlag speichern.'); return; }
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var blob;
+    try { blob = kvaPdf(lib, r, car, kundeOf(car), k, kvaConf()).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    var name = 'Kostenvoranschlag ' + fileSafe(k.nr || '') + ' ' + fileSafe(car.name || 'Auto') + '.pdf';
+    try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
+  /* Stundensatz ändert Stunden-Positionen mit leerem oder bisherigem Preis */
+  function kvaShInput(t) {
+    var nv = parseNum(t.value.trim()), old = parseNum(t.dataset.prev || '');
+    $$('#kvaform .kvp').forEach(function (row) {
+      var i = row.dataset.i, e = $('#kvp-e' + i), p = $('#kvp-p' + i);
+      if (!e || !p || e.value !== 'h') return;
+      var cur = parseNum(p.value.trim());
+      if (cur === null || (old !== null && !isNaN(old) && cur !== null && !isNaN(cur) && Math.abs(cur - old) < 0.005)) p.value = nv === null || isNaN(nv) ? '' : nfPrice.format(nv);
+    });
+    t.dataset.prev = t.value.trim();
+    kvaUpdate();
+  }
+  function kvaInput(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'kva' || !t || !t.id) return false;
+    if (t.id === 'kva-sh') { kvaShInput(t); return true; }
+    if (/^kvp-[mp]\d+$/.test(t.id)) { kvaUpdate(); return true; }
+    return false;
+  }
+  function kvaChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'kva' || !t) return false;
+    if (t.id === 'kva-ust' || t.id === 'kva-frei' || /^kvp-e\d+$/.test(t.id || '')) { kvaUpdate(); return true; }
+    return false;
+  }
+  function kvaAdd() {
+    var pos = kvaRead();
+    pos.push({ t: '', m: 1, e: 'Stk', p: null });
+    kvaRows(pos);
+    var el = $('#kvp-t' + (pos.length - 1));
+    if (el) { try { el.focus(); } catch (_) {} }
+  }
+  function kvaRm(i) {
+    var pos = kvaRead();
+    pos.splice(Number(i), 1);
+    if (!pos.length) pos.push({ t: '', m: 1, e: 'Stk', p: null });
+    kvaRows(pos);
+    var b = $('[data-act="kva-add"]');
+    if (b) { try { b.focus(); } catch (_) {} }
+  }
+  /* ---------- Rückruf-Check ---------- */
+  var RR_TRIGGER = 'trig_017HSwZncx2Gho9JuKxNwrUb';
+  var RR_Q = { quellen: [
+    { titel: 'ÖAMTC: Alle Rückrufaktionen', url: 'https://www.oeamtc.at/rueckrufaktionen' },
+    { titel: 'ÖAMTC: Rückrufaktion Takata-Airbag, mit Links zu den Rückruf-Abfragen der Hersteller', url: 'https://www.oeamtc.at/rueckrufaktionen/rueckrufaktion-takata-airbag-80378259' },
+    { titel: 'auto motor und sport: Rückrufaktionen, so reagieren Sie richtig', url: 'https://www.auto-motor-und-sport.de/ratgeber/rueckrufaktionen-so-reagieren-sie-richtig/' }
+  ] };
+  function rrA(i, label) { var q = RR_Q.quellen[i]; return '<a class="rr-a" href="' + esc(q.url) + '" target="_blank" rel="noopener noreferrer" title="' + esc(q.titel) + '">' + esc(label) + '</a>'; }
+  function rrDoc(carId) { var d = S.rr && S.rr.get(carId); return d && typeof d === 'object' ? d : null; }
+  function rrHits(d) { return arr(d && d.treffer).filter(function (t) { return t && typeof t === 'object' && t.titel; }); }
+  function rrDone(d) { return !!(d && (d.fertig || d.recherchiertAm)); }
+  /* Auftrag älter als 36 Stunden oder Lauf ohne Auftrag hängengeblieben: neu anfordern erlauben */
+  function rrStale(d) {
+    if (!d) return false;
+    var t = d.anfrage ? Date.parse(d.anfrage) : NaN;
+    if (isNaN(t)) return !!d.laeuft;
+    return Date.now() - t > 36 * 3600 * 1000;
+  }
+  function rrRep(carId, titel) {
+    var l = repList(carId).filter(function (p) { return p[1].rueckruf === titel; });
+    return l.filter(function (p) { return repOpen(p[1]); })[0] ||
+      l.sort(function (a, b) { return String(b[1].geaendert || b[1].erstellt || '').localeCompare(String(a[1].geaendert || a[1].erstellt || '')); })[0] || null;
+  }
+  function rrOpenN(carId) { var d = rrDoc(carId); return d ? rrHits(d).filter(function (t) { return !rrRep(carId, t.titel); }).length : 0; }
+  function rrWhen(s) { s = String(s || ''); return isDay(s) ? datum(s) : /^\d{4}-\d{2}$/.test(s) ? ymTxt(s) : s; }
+  function rrSec(id, car) {
+    if (car.archiviert) return '';
+    var d = rrDoc(id), can = canWrite(), hits = rrHits(d), firing = S.rrFiring === id;
+    var pending = !!(d && (d.anfrage || d.laeuft)) && !rrStale(d);
+    var h = '<div class="sh-sec rr-sec"><div class="vhead"><h3 class="sec">Rückrufe</h3>' +
+      (can && !pending && !firing ? '<button type="button" class="linkbtn" data-act="rr-req" data-id="' + esc(id) + '">' + (rrDone(d) ? 'Neu prüfen lassen' : 'Prüfen lassen') + '</button>' : '') + '</div>';
+    if (firing) h += '<p class="rstat run" role="status">Auftrag wird abgelegt …</p>';
+    else if (pending) h += '<p class="rstat run" role="status">' + esc(d.laeuft ? 'Rückruf-Check läuft …' : 'Auftrag abgelegt ' + fmtWhen(d.anfrage) + '. Claude prüft beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr).') + '</p>';
+    else if (d && (d.anfrage || d.laeuft) && rrStale(d)) h += '<p class="note">' + esc(d.anfrage ? 'Der Auftrag von ' + fmtWhen(d.anfrage) + ' ist noch offen. Du kannst ihn neu anfordern.' : 'Der letzte Check ist nicht fertig geworden. Du kannst ihn neu anfordern.') + '</p>';
+    if (!rrDone(d)) {
+      if (!firing && !pending) h += '<p class="note">Noch nicht geprüft. Claude sucht Rückrufaktionen für Modell und Baujahr, zum Beispiel in den ' + rrA(0, 'Rückrufmeldungen des ÖAMTC') + ', jeweils mit Quelle.</p>';
+    } else {
+      var stand = isDay(d.stand) ? d.stand : String(d.recherchiertAm || d.fertig || '').slice(0, 10);
+      h += '<p class="rr-st"><span class="wst ' + (hits.length ? 'bald' : 'ok') + '">' + (hits.length ? hits.length + ' Treffer' : 'keine Treffer') + '</span>' + (isDay(stand) ? '<span>' + esc('Stand ' + datum(stand)) + '</span>' : '') + '</p>';
+      if (d.kurz) h += '<p class="rtext">' + esc(d.kurz) + '</p>';
+      if (hits.length) h += '<ul class="rr-l">' + hits.map(function (t, i) {
+        var rp = rrRep(id, t.titel), rs = rp ? rp[1].status : null;
+        return '<li class="rr-i"><div class="rr-h"><b>' + esc(t.titel) + '</b>' + (t.status === 'unklar' ? '<span class="wst" title="Ob Modell oder Baujahr passen, ist aus der Quelle nicht eindeutig.">unklar</span>' : '') + '</div>' +
+          (t.betroffen ? '<p class="rr-x">' + esc('Betroffen: ' + t.betroffen) + '</p>' : '') +
+          (t.problem ? '<p class="rr-x">' + esc(t.problem) + '</p>' : '') +
+          (t.massnahme ? '<p class="rr-x">' + esc('Maßnahme: ' + t.massnahme) + '</p>' : '') +
+          '<p class="rr-x rr-q">' + esc(t.datum ? 'Gemeldet ' + rrWhen(t.datum) : 'Quelle') + srcRefs(d, t.quelle) + '</p>' +
+          (rp ? '<button type="button" class="linkbtn" data-act="open-rep" data-id="' + esc(rp[0]) + '">' + (rs === 'erledigt' ? 'Erledigt: ansehen' : rs === 'verworfen' ? 'Nicht betroffen: ansehen' : 'Eingeplant: ansehen') + '</button>'
+            : can ? '<button type="button" class="linkbtn" data-act="rr-plan" data-id="' + esc(id) + '" data-i="' + i + '">Prüfen einplanen</button>' : '') + '</li>';
+      }).join('') + '</ul>';
+      arr(d.hinweise).forEach(function (n) { if (n && (typeof n === 'string' || n.text)) h += '<p class="help">' + esc(typeof n === 'string' ? n : n.text) + (typeof n === 'string' ? '' : srcRefs(d, n.quelle)) + '</p>'; });
+      var qs = arr(d.quellen).filter(function (s) { return s && safeUrl(s.url); });
+      if (qs.length) h += '<details class="rr-src"><summary>' + esc('Quellen · ' + qs.length) + '</summary><ol class="rsrc">' + arr(d.quellen).map(function (s) {
+        if (!s || !safeUrl(s.url)) return '<li><span class="muted">–</span></li>';
+        return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">' + esc(s.titel || urlHost(s.url)) + '</a> <small>' + esc(urlHost(s.url)) + '</small></li>';
+      }).join('') + '</ol></details>';
+      if (isDay(stand) && dayNum(dayKey(new Date())) - dayNum(stand) > 365) h += '<p class="note">Die letzte Prüfung ist über ein Jahr her.</p>';
+    }
+    h += '<p class="help">Betroffene Halter bekommen in Österreich einen Brief über den Versicherungsverband (' + rrA(1, 'ÖAMTC') + '). Ob dieses Auto betroffen ist und ob ein Rückruf schon gemacht wurde, weiß der Hersteller oder Händler (' + rrA(2, 'auto motor und sport') +
+      '). Viele Hersteller haben dafür eine Abfrage im Internet, ' + rrA(1, 'Links dazu sammelt der ÖAMTC') + '.</p>';
+    if (S.rrMsg && S.rrMsg.car === id) h += '<p class="rstat ' + S.rrMsg.kind + '" role="status">' + esc(S.rrMsg.text) + '</p>';
+    return h + '</div>';
+  }
+  async function rrRequest(carId) {
+    if (!canWrite() || S.busy || S.rrFiring) return;
+    var car = S.cars.get(carId);
+    if (!car) return;
+    var now = new Date().toISOString(), had = !!rrDoc(carId);
+    var fuer = { name: car.name || null, baujahr: numOrNull(car.baujahr), erstzulassung: car.erstzulassung || null, kraftstoff: car.kraftstoff || null, leistungPs: numOrNull(car.leistungPs), hubraum: numOrNull(car.hubraum) };
+    S.rrFiring = carId; S.rrMsg = null; refreshSheet();
+    try {
+      await write(function () { var ref = S.db.doc('rueckrufe/' + carId); return had ? ref.update({ anfrage: now, fuer: fuer, laeuft: false }) : ref.set({ fahrzeug: carId, anfrage: now, fuer: fuer, laeuft: false }); });
+      S.rr.set(carId, Object.assign({}, rrDoc(carId) || { fahrzeug: carId }, { anfrage: now, fuer: fuer, laeuft: false }));
+    } catch (e) {
+      S.rrFiring = null;
+      writeError(e, function (m) { S.rrMsg = { car: carId, kind: 'warn', text: m }; });
+      refreshSheet();
+      return;
+    }
+    var res = null;
+    try { res = S.mcp ? await S.mcp.callTool('Claude Code Remote', 'fire_trigger', { trigger_id: RR_TRIGGER, text: 'Rückruf-Check für Fahrzeug-ID ' + carId + ' (' + String(car.name || '').slice(0, 80) + '). Angefordert aus der App am ' + now + '.' }, { cache: false }) : null; } catch (_) {}
+    S.rrFiring = null;
+    toast(res && res.queued === false ? 'Rückruf-Check gestartet.' : 'Auftrag abgelegt. Claude prüft die Rückrufe beim nächsten geplanten Lauf.');
+    refreshSheet(); renderAll();
+  }
+  function rrPlan(carId, i) {
+    var t = rrHits(rrDoc(carId))[Number(i)];
+    if (!t) { toast('Diesen Treffer gibt es nicht mehr.'); return; }
+    var rp = rrRep(carId, t.titel);
+    if (rp) { openRep(rp[0]); return; }
+    openRepForm(null, { fahrzeug: carId, titel: ('Rückruf prüfen: ' + t.titel).slice(0, 80), rueckruf: String(t.titel).slice(0, 200),
+      notiz: [t.betroffen ? 'Betroffen: ' + t.betroffen : '', t.problem || '', t.massnahme ? 'Maßnahme: ' + t.massnahme : '', 'Mit der FIN beim Hersteller oder Händler klären, ob dieses Auto betroffen ist.'].filter(Boolean).join(' · ').slice(0, 500) });
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -9710,6 +10173,13 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'wp-phase': wpSimple('phase', t.dataset.p); break;
       case 'wp-fertig': wpSimple('fertig'); break;
       case 'wp-edit': openWpEdit(); break;
+      case 'kva-open': openKva(t.dataset.id); break;
+      case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
+      case 'kva-save-pdf': saveKva(true); break;
+      case 'kva-add': kvaAdd(); break;
+      case 'kva-rm': kvaRm(t.dataset.i); break;
+      case 'rr-req': rrRequest(t.dataset.id); break;
+      case 'rr-plan': rrPlan(t.dataset.id, t.dataset.i); break;
       case 'ub-new': openUbForm(t.dataset.id, t.dataset.typ, null, { back: t.dataset.back || null }); break;
       case 'ub-edit': openUbForm(t.dataset.id, null, t.dataset.work, { back: t.dataset.back || null }); break;
       case 'ub-zone': openUbZone(t.dataset.id, t.dataset.z); break;
@@ -9768,6 +10238,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (etChange(t)) return;
     if (ubChange(t)) return;
     if (wpChange(t)) return;
+    if (kvaChange(t)) return;
     if (t.id === 'ka-kunde') { var kn = $('#ka-neu'); if (kn) kn.hidden = t.value !== '__neu'; return; }
     if (t.id === 'ki-kunde' || t.id === 'ki-car') { kdImportChange(t); return; }
     if (t.name === 'kl-car' || t.id === 'kl-car1') { klCarsChanged(); return; }
@@ -9824,6 +10295,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'reifenwechsel') { e.preventDefault(); saveReifenWechsel(); }
       else if (e.target.id === 'ubform') { e.preventDefault(); saveUb(); }
       else if (e.target.id === 'wpstart') { e.preventDefault(); saveWpStart(); }
+      else if (e.target.id === 'kvaform') { e.preventDefault(); saveKva(false); }
       else if (e.target.id === 'wpeditform') { e.preventDefault(); saveWpEdit(); }
       else if (e.target.id === 'kmallform') { e.preventDefault(); saveKmAll(); }
       else if (e.target.id === 'kundeform') { e.preventDefault(); saveKunde(); }
@@ -9836,6 +10308,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     document.addEventListener('input', function (e) {
       if (etInput(e.target)) return;
       if (ubInput(e.target)) return;
+      if (kvaInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
       if (e.target && e.target.classList && e.target.classList.contains('invq')) e.target.classList.toggle('diff', String(e.target.value).trim() !== e.target.dataset.orig);
       if (e.target && e.target.classList && e.target.classList.contains('kmq')) e.target.classList.remove('diff');
