@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "24.1", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "24.2", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1367,14 +1367,13 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .rf-card { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 5px; min-width: 0; padding: 11px 12px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); text-align: left; color: inherit; font: inherit; }
 .rf-card.leer { border-style: dashed; background: none; }
 .rf-card.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
-.rf-h { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.rf-h { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; min-width: 0; }
 .rf-h b { font-family: var(--f-display); font-weight: 800; font-size: 22px; line-height: 1; }
 .rf-i { flex: none; width: 22px; height: 22px; }
 .k-sommer .rf-h .rf-i, .rf-seg input[value="sommer"] + span .rf-i { color: var(--ro); }
 .k-winter .rf-h .rf-i, .rf-seg input[value="winter"] + span .rf-i { color: var(--wb); }
 .rf-seg input:checked + span .rf-i { color: inherit; }
-.rf-m { margin-left: auto; flex: none; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; line-height: 1.6; padding: 0 6px; border-radius: 4px; background: var(--surface-2); color: var(--muted); }
-.rf-m.on { background: var(--ink); color: var(--bg); }
+.rf-m { position: absolute; top: -9px; right: 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; line-height: 17px; padding: 0 7px; border-radius: 4px; background: var(--ink); color: var(--bg); }
 .rf-s { font-family: var(--f-mono); font-weight: 700; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
 .rf-b { font-size: 14px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
 .rf-x, .rf-l, .rf-e { font-size: 12.5px; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
@@ -6387,7 +6386,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
   function reifenCard(id, car, k) {
     var s = reifenSet(car, k), r = reifenDoc(car), on = r.montiert === k, can = canWrite();
-    var head = '<span class="rf-h">' + R_ICON[k] + '<b>' + RSET[k].k + '</b>' + (r.montiert ? '<span class="rf-m' + (on ? ' on' : '') + '">' + (on ? 'montiert' : 'eingelagert') + '</span>' : '') + '</span>';
+    var head = '<span class="rf-h">' + R_ICON[k] + '<b>' + RSET[k].k + '</b>' + (on ? '<span class="rf-m on">montiert</span>' : '') + '</span>';
     var tag = can ? 'button type="button" data-act="reifen-edit" data-id="' + esc(id) + '" data-set="' + k + '"' : 'div';
     var end = can ? 'button' : 'div';
     if (!reifenHas(s)) return '<' + tag + ' class="rf-card k-' + k + ' leer">' + head + '<span class="rf-e">' + (can ? 'Noch nicht eingetragen. Antippen und Größe, Marke, DOT und Profil eintragen.' : 'Noch nicht eingetragen.') + '</span></' + end + '>';
