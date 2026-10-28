@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "31", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "32", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1731,6 +1731,46 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .wp-hier { margin-top: 4px; }
 .wp-hier > .help { margin: 0 0 8px; }
 .wpt-b .btn { flex: 1 1 auto; }
+/* Bremsen */
+.br-g { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+@media (min-width: 560px) { .br-g { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.br-c { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); min-width: 0; }
+.br-c.bad { border-color: var(--kaufen); }
+.br-h { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.br-h b { font-size: 15px; }
+.br-c > span { font-size: 13.5px; line-height: 1.35; color: var(--muted); }
+.br-dl { margin: 2px 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; font-size: 14px; line-height: 1.35; }
+.br-dl dt { color: var(--muted); }
+.br-dl dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.br-dl dd.bad { color: var(--kaufen); }
+.br-act { display: flex; flex-wrap: wrap; gap: 8px; }
+.br-f { margin: 0; padding: 12px 0 0; border: 0; border-top: 1px solid var(--line); min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.br-f legend { padding: 0; font-family: var(--f-display); font-weight: 800; font-size: 21px; }
+.br-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; }
+.br-mh { margin-top: -4px; font-size: 12px; line-height: 1.3; color: var(--muted); }
+.car-s .br-ft b { color: var(--kaufen); }
+/* Pickerl-Vorcheck */
+.pvb.on { background: var(--surface); border-color: var(--line); }
+.pvb .wpb-i { color: var(--in); }
+.pv-sum { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); }
+.pv-sum b { font-size: 16px; }
+.pv-sum > span:not(.wp-bar) { font-size: 13.5px; color: var(--muted); }
+.pvl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.pvi { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line); }
+.pvi-r { display: grid; grid-template-columns: 3.3em minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.pvi-n { padding-top: 2px; font-size: 13px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pvi-t { padding-top: 1px; font-size: 15px; line-height: 1.3; overflow-wrap: anywhere; }
+.pvi-x { font-size: 13px; line-height: 1.4; color: var(--muted); padding-left: calc(3.3em + 8px); overflow-wrap: anywhere; }
+.pvi-x.warn { color: var(--kaufen); font-weight: 700; }
+.pvs { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.pvs-b { min-height: 36px; min-width: 46px; padding: 0 10px; border: 0; background: none; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--muted); }
+.pvs-b + .pvs-b { border-left: 1px solid var(--line); }
+.pvs-b.ok[aria-pressed="true"] { background: var(--in-soft); color: var(--in-text); }
+.pvs-b.mangel[aria-pressed="true"] { background: var(--kaufen-soft); color: var(--kaufen); }
+.pvs-b:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.pvm { padding-left: calc(3.3em + 8px); }
+.pvm { display: flex; flex-direction: column; gap: 8px; }
+.pv-sum .wp-bar { background: var(--line); }
 </style>
 
 <div class="wrap">
@@ -2266,7 +2306,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       S.db.collection('fahrzeuge').onSnapshot(function (snap) {
         var m = new Map();
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
-        S.cars = m; S.carsReady = true; wpReapply();
+        S.cars = m; S.carsReady = true; wpReapply(); pvReapply();
         renderAll(); refreshSheet(); kdTryOpen();
       }, function () { S.carsReady = true; renderAll(); });
       S.db.collection('kunden').onSnapshot(function (snap) {
@@ -3465,7 +3505,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 
   /* ---------- Blätter ---------- */
   function openSheet(type, data, html) {
-    wpFlush();
+    wpFlush(); pvFlush();
     S.sheet = Object.assign({ type: type }, data || {});
     var sh = $('#sheet'), back = $('#sheetback');
     sh._html = html; sh.innerHTML = html;
@@ -3475,7 +3515,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     sh.scrollTop = 0;
   }
   function closeSheet() {
-    wpFlush();
+    wpFlush(); pvFlush();
     S.sheet = null;
     var back = $('#sheetback');
     back.classList.remove('open'); back.hidden = true;
@@ -3793,8 +3833,10 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       (!cellId ? '<p class="note">Noch kein Fach auf der Karte: im Tab „Karte“ ein Fach antippen, „Fach einstellen“ und dieses Auto wählen.</p>' : '') +
       shBanner(id, car) +
       wpBanner(id, car) +
+      pvBanner(id, car) +
       carWartSec(id, car) +
       reifenSec(id, car) +
+      brSec(id, car) +
       ubSec(id, car) +
       rrSec(id, car) +
       carFotosSec(id, car) +
@@ -4197,7 +4239,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (r.fahrzeug && S.cars.has(r.fahrzeug) && S.cars.get(r.fahrzeug).archiviert) cars = cars.concat([[r.fahrzeug, S.cars.get(r.fahrzeug)]]).sort(carSort);
     var sel = (!r.fahrzeug || !S.cars.has(r.fahrzeug) ? '<option value="" selected disabled>Auto wählen …</option>' : '') +
       carOptList(cars, r.fahrzeug, function (p) { return String(p[1].name || 'Auto ohne Namen'); });
-    openSheet('repform', { id: id || null, wartung: (!id && pre.wartung) || null, problem: (!id && pre.problem) || null, rueckruf: (!id && pre.rueckruf) || null },
+    openSheet('repform', { id: id || null, wartung: (!id && pre.wartung) || null, problem: (!id && pre.problem) || null, rueckruf: (!id && pre.rueckruf) || null, extra: !id && pre.extra && typeof pre.extra === 'object' ? pre.extra : null },
       '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + (id ? 'Eintrag bearbeiten' : 'Anstehende Reparatur') + '</p>' +
       '<h2 class="sh-title' + (id && String(r.titel).length > 26 ? ' long' : '') + '" id="sheet-title">' + (id ? esc(r.titel) : 'Was steht an?') + '</h2></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
@@ -4237,7 +4279,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         setBusy(false); openRep(s.id); toast('Gespeichert.');
       } else {
         var ref = S.db.collection('reparaturen').doc();
-        var full = Object.assign({ status: 'offen', recherche: null, erstellt: now }, s.wartung ? { wartung: s.wartung } : {}, s.problem ? { problem: s.problem } : {}, s.rueckruf ? { rueckruf: s.rueckruf } : {}, data);
+        var full = Object.assign({ status: 'offen', recherche: null, erstellt: now }, s.wartung ? { wartung: s.wartung } : {}, s.problem ? { problem: s.problem } : {}, s.rueckruf ? { rueckruf: s.rueckruf } : {}, s.extra || {}, data);
         await write(function () { return ref.set(full); });
         if (!S.reps.has(ref.id)) S.reps.set(ref.id, full);
         setBusy(false); openRep(ref.id); renderAll(); toast('Eingetragen: ' + data.titel);
@@ -5349,7 +5391,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var h = '<div class="sh-sec"><h3 class="sec">Pickerl (§57a)</h3><ul class="wlist"><li class="wp wp-pk' + cls + '">' + pkSvg(pk) + '<div class="wp-pkt">';
     if (!pk) h += '<div class="wp-h"><span class="wp-n">Monat noch nicht eingetragen</span></div><p class="wp-l">Er steht gelocht auf der Plakette.</p>';
     else h += '<div class="wp-h"><span class="wp-n">Fällig ' + esc(ymTxt(pk.due)) + '</span>' + pkChip(pk) + '</div><p class="wp-l">' + esc(pkWindow(pk)) + srcRefs(PICKERL_Q, pk.neu ? [2] : [1]) + '</p>';
-    if (can) h += '<div class="wp-a"><button type="button" class="linkbtn" data-act="pickerl-edit" data-id="' + esc(carId) + '">' + (pk ? 'Monat ändern' : 'Monat eintragen') + '</button></div>';
+    if (can) h += '<div class="wp-a"><button type="button" class="linkbtn" data-act="pickerl-edit" data-id="' + esc(carId) + '">' + (pk ? 'Monat ändern' : 'Monat eintragen') + '</button><button type="button" class="linkbtn" data-act="pv-open" data-id="' + esc(carId) + '">Vorcheck</button></div>';
     return h + '</div></li></ul></div>';
   }
   function openPickerlForm(carId) {
@@ -6151,6 +6193,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (st.works.length - st.preN) foot.push('<span>Arbeiten <b>' + (st.works.length - st.preN) + '</b></span>');
     if (nRep) foot.push('<span>Anstehend <b>' + nRep + '</b></span>');
     if (st.waitN) foot.push('<span>Teile wartend <b>' + st.waitN + '</b></span>');
+    if (!arch && brBad(car)) foot.push('<span class="br-ft">Bremse <b>tauschen</b></span>');
     if (!arch && rrOpenN(id)) foot.push('<span class="rr-f">Rückruf offen <b>' + rrOpenN(id) + '</b></span>');
     if (arch) foot.push('<span>archiviert</span>');
     foot.push('<span class="car-sum">Gesamt <b>' + esc(eur(st.total)) + '</b></span>');
@@ -7123,6 +7166,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       toast(errs.length ? errs[0] : prepared.length === 1 ? 'Hinzugefügt. Wird beim Speichern hochgeladen.' : prepared.length + ' Dateien hinzugefügt. Werden beim Speichern hochgeladen.');
       return;
     }
+    if (ctx.indexOf('pv:') === 0) { await pvAddPhotos(ctx, prepared); if (errs.length) setTimeout(function () { toast(errs[0]); }, 2600); return; }
     await blDirect(ctx, prepared);
     if (errs.length) setTimeout(function () { toast(errs[0]); }, 2600);
   }
@@ -7189,6 +7233,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var p = String(ctx || '').split(':'), car = S.cars.get(p[1]);
     if (!car) return [];
     if (p[0] === 'c') return blList(car.fotos);
+    if (p[0] === 'pv') return pvPhotos(car, p[2]);
     if (p[0] === 'w') { var w = arr(car.arbeiten).filter(function (x) { return x && x.id === p[2]; })[0]; return w ? blList(w.belege) : []; }
     return [];
   }
@@ -7296,6 +7341,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var drop = function (l) { return blList(l).filter(function (x) { return x.pfad !== r.pfad; }); }, now = new Date().toISOString(), patch = { geaendert: now };
       if (p[0] === 'c') patch.fotos = drop(car.fotos);
       else if (p[0] === 'w') patch.arbeiten = arr(car.arbeiten).map(function (w) { return w && w.id === p[2] ? Object.assign({}, w, { belege: drop(w.belege) }) : w; });
+      else if (p[0] === 'pv') { pvFlush(); car = S.cars.get(carId) || car; patch.pickerlCheck = pvDropPhoto(car, p[2], r.pfad); }
       else return;
       setBusy(true);
       try {
@@ -7303,6 +7349,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         S.cars.set(carId, Object.assign({}, car, patch));
         setBusy(false);
         refreshSheet(); renderAll();
+        if (p[0] === 'pv') pvRerender();
         toast('Entfernt. Die Datei selbst bleibt im Daten-Repository.');
       } catch (e) { setBusy(false); writeError(e); return; } finally { if (S.busy) setBusy(false); }
     }
@@ -10072,6 +10119,405 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); wpTippsMark(carId); }
     catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
   }
+  /* ---------- Bremsen: Messprotokoll je Achse ---------- */
+  var BR_Q = { quellen: [
+    { titel: 'HELLA: Mindestdicke der Bremsscheibe prüfen', url: 'https://hella.com/techworld/de/ti/pdf/mindestdicke-der-bremsscheibe-pruefen/mindestdicke_der_bremsscheibe_pruefen.pdf' },
+    { titel: 'HELLA: Bremsverschleißanzeige erklärt', url: 'https://hella.com/techworld/de/ti/pdf/bremsverschleissanzeige-erklaert/bremsverschleissanzeige_erklaert.pdf' },
+    { titel: 'HELLA PAGID: Einbauhinweise für die Bremsenreparatur', url: 'https://kfztech.de/kfztechnik/fahrwerk/bremsen/HELLA_PAGID_Bremsenreparatur.pdf' }
+  ] };
+  var BR_ACH = [['va', 'Vorne'], ['ha', 'Hinten']];
+  var BR_SEITE = [['l', 'links'], ['r', 'rechts']];
+  var BR_BELAG = 2;
+  function brDoc(car) { var b = car && car.bremsen; return b && typeof b === 'object' ? b : {}; }
+  function brAch(car, a) { var x = brDoc(car).ach; x = x && typeof x === 'object' ? x[a] : null; return x && typeof x === 'object' ? x : {}; }
+  function brLog(car) { return arr(brDoc(car).log).filter(function (m) { return m && typeof m === 'object' && isDay(m.am); }).sort(function (a, b) { return a.am < b.am ? -1 : a.am > b.am ? 1 : 0; }); }
+  function brLast(car) { var l = brLog(car); return l.length ? l[l.length - 1] : null; }
+  function brAxHas(m, a) { return BR_SEITE.some(function (sd) { return brVal(m, a, sd[0], 's') !== null || brVal(m, a, sd[0], 'b') !== null; }); }
+  /* letzte Messung, die für diese Achse Werte hat */
+  function brLastAx(car, a) { var l = brLog(car); for (var i = l.length - 1; i >= 0; i--) if (brAxHas(l[i], a)) return l[i]; return null; }
+  function brVal(m, a, s, k) { var x = m && m[a] && m[a][s]; return x ? numOrNull(x[k]) : null; }
+  function brTyp(car, a) { return brAch(car, a).typ === 'trommel' ? 'trommel' : 'scheibe'; }
+  /* Scheibe an MIN TH oder Trommel am maximalen Durchmesser: tauschen; Belag an der Verschleißgrenze */
+  function brState(car, a, m) {
+    m = m || brLastAx(car, a);
+    var out = { scheibe: null, belag: null, has: false }, typ = brTyp(car, a), lim = numOrNull(brAch(car, a).min);
+    BR_SEITE.forEach(function (sd) {
+      var v = brVal(m, a, sd[0], 's'), b = brVal(m, a, sd[0], 'b');
+      if (v !== null || b !== null) out.has = true;
+      if (v !== null && lim !== null) { var bad = typ === 'trommel' ? v >= lim : v <= lim; if (bad) out.scheibe = 'tauschen'; else if (out.scheibe !== 'tauschen') out.scheibe = 'ok'; }
+      if (b !== null && typ === 'scheibe') { if (b <= BR_BELAG) out.belag = 'grenze'; else if (out.belag !== 'grenze') out.belag = 'ok'; }
+    });
+    return out;
+  }
+  function brBad(car) { return !car.archiviert && BR_ACH.some(function (p) { var st = brState(car, p[0]); return st.scheibe === 'tauschen' || st.belag === 'grenze'; }); }
+  /* Rechnerische Restlaufleistung aus zwei Messungen mit km-Stand (gleiche Abnutzung angenommen) */
+  function brRest(car, a, k) {
+    var all = brLog(car).filter(function (m) { return brAxHas(m, a); }), l = all.filter(function (m) { return numOrNull(m.km) !== null; });
+    if (l.length < 2 || l[l.length - 1] !== all[all.length - 1]) return null;
+    var stx = brState(car, a);
+    if ((k === 's' && stx.scheibe === 'tauschen') || (k === 'b' && stx.belag === 'grenze')) return null;
+    var first = l[0], last = l[l.length - 1], dkm = num(last.km) - num(first.km), best = null;
+    if (dkm < 500) return null;
+    var lim = k === 's' ? numOrNull(brAch(car, a).min) : BR_BELAG, typ = brTyp(car, a);
+    if (lim === null || typ === 'trommel') return null;
+    BR_SEITE.forEach(function (sd) {
+      var v0 = brVal(first, a, sd[0], k), v1 = brVal(last, a, sd[0], k);
+      if (v0 === null || v1 === null || v1 >= v0 || v1 <= lim) return;
+      var km = Math.round((v1 - lim) / ((v0 - v1) / dkm) / 100) * 100;
+      if (best === null || km < best) best = km;
+    });
+    return best;
+  }
+  function brMm(v) { return v === null ? '–' : nfIn.format(round2(v)); }
+  function brCard(id, car, a, lab) {
+    var m = brLastAx(car, a), st = brState(car, a, m), typ = brTyp(car, a), lim = numOrNull(brAch(car, a).min), last = brLast(car);
+    var vs = BR_SEITE.map(function (sd) { return brVal(m, a, sd[0], 's'); }), bs = BR_SEITE.map(function (sd) { return brVal(m, a, sd[0], 'b'); });
+    var chip = st.scheibe === 'tauschen' ? '<span class="wst faellig">' + (typ === 'trommel' ? 'Trommel tauschen' : 'Scheiben tauschen') + '</span>'
+      : st.belag === 'grenze' ? '<span class="wst faellig">Beläge tauschen</span>' : st.has ? '<span class="wst ok">OK</span>' : '';
+    var rows = [];
+    if (vs[0] !== null || vs[1] !== null) {
+      rows.push([typ === 'trommel' ? 'Trommel-Ø' : 'Scheibe', brMm(vs[0]) + ' · ' + brMm(vs[1]), st.scheibe === 'tauschen']);
+      rows.push([typ === 'trommel' ? 'max. Ø' : 'MIN TH', lim !== null ? brMm(lim) : 'fehlt', false]);
+    }
+    if (bs[0] !== null || bs[1] !== null) rows.push(['Belag', brMm(bs[0]) + ' · ' + brMm(bs[1]), st.belag === 'grenze']);
+    var rs = brRest(car, a, 's'), rb = brRest(car, a, 'b');
+    if (rs !== null) rows.push(['Scheibe reicht', 'ca. ' + nf.format(rs) + ' km', false]);
+    if (rb !== null) rows.push(['Belag reicht', 'ca. ' + nf.format(rb) + ' km', false]);
+    if (m && last && m !== last) rows.push(['Gemessen', datum(m.am), false]);
+    return '<div class="br-c' + (st.scheibe === 'tauschen' || st.belag === 'grenze' ? ' bad' : '') + '"><div class="br-h"><b>' + lab + '</b>' + chip + '</div>' +
+      (rows.length ? '<dl class="br-dl">' + rows.map(function (x) { return '<dt>' + esc(x[0]) + '</dt><dd' + (x[2] ? ' class="bad"' : '') + '>' + esc(x[1]) + '</dd>'; }).join('') + '</dl>' : '<span class="muted">Noch nicht gemessen</span>') + '</div>';
+  }
+  function brSec(id, car) {
+    if (car.archiviert) return '';
+    var can = canWrite(), m = brLast(car), bad = brBad(car);
+    var h = '<div class="sh-sec br-sec"><div class="vhead"><h3 class="sec">Bremsen</h3>' + (can ? '<button type="button" class="linkbtn" data-act="br-open" data-id="' + esc(id) + '">Messung eintragen</button>' : '') + '</div>';
+    if (!m) return h + '<p class="note">Noch nichts gemessen. Trag Scheibendicke und Restbelag je Achse ein, dann warnt die App an der Mindestdicke.</p></div>';
+    h += '<div class="br-g">' + BR_ACH.map(function (p) { return brCard(id, car, p[0], p[1]); }).join('') + '</div>';
+    h += '<p class="note">' + esc('Werte in mm, links · rechts. Gemessen am ' + datum(m.am) + (numOrNull(m.km) !== null ? ' bei ' + nf.format(num(m.km)) + ' km' : '') + (brLog(car).length > 1 ? ', ' + brLog(car).length + ' Messungen' : '') + (brRest(car, 'va', 's') !== null || brRest(car, 'ha', 's') !== null || brRest(car, 'va', 'b') !== null || brRest(car, 'ha', 'b') !== null ? '. „Reicht“ ist rechnerisch, bei gleicher Abnutzung wie seit der ersten Messung' : '') + '.') + blClipCount(m.fotos) + '</p>';
+    if (bad && can) h += '<div class="br-act">' + BR_ACH.filter(function (p) { var st = brState(car, p[0]); return st.scheibe === 'tauschen' || st.belag === 'grenze'; }).map(function (p) {
+      var pl = brPlanned(id, p[0]);
+      return pl ? '<button type="button" class="linkbtn" data-act="open-rep" data-id="' + esc(pl[0]) + '">' + esc('Bremse ' + p[1].toLowerCase() + ' eingeplant: ansehen') + '</button>'
+        : '<button type="button" class="btn small" data-act="br-plan" data-id="' + esc(id) + '" data-a="' + p[0] + '">' + esc('Bremse ' + p[1].toLowerCase() + ' einplanen') + '</button>';
+    }).join('') + '</div>';
+    return h + '<p class="help">Die Mindestdicke steht als „MIN TH“ auf der Scheibe. Ist sie erreicht, werden die Scheiben paarweise getauscht' + srcRefs(BR_Q, [1]) +
+      '. Scheibenbremsbeläge haben ihre Verschleißgrenze in der Regel bei 2 mm' + srcRefs(BR_Q, [2]) + ', maßgeblich ist die Angabe des Herstellers. Neue Beläge kommen nur auf Scheiben, die bis zum Verschleißende der neuen Beläge über der Mindestdicke bleiben' + srcRefs(BR_Q, [3]) + '.</p></div>';
+  }
+  function brPlanned(carId, a) { return repList(carId).filter(function (p) { return repOpen(p[1]) && p[1].bremse === a; })[0] || null; }
+  function brPlan(carId, a) {
+    var car = S.cars.get(carId), lab = (BR_ACH.filter(function (p) { return p[0] === a; })[0] || [a, a])[1];
+    if (!car) return;
+    var pl = brPlanned(carId, a);
+    if (pl) { openRep(pl[0]); return; }
+    var st = brState(car, a), m = brLast(car), typ = brTyp(car, a);
+    var was = st.scheibe === 'tauschen' ? (typ === 'trommel' ? 'Bremstrommeln und Bremsbacken' : 'Bremsscheiben und Beläge') : 'Bremsbeläge';
+    var vals = BR_SEITE.map(function (sd) { var v = brVal(m, a, sd[0], 's'), b = brVal(m, a, sd[0], 'b'); return sd[1] + ' ' + (v !== null ? (typ === 'trommel' ? 'Ø ' : 'Scheibe ') + brMm(v) + ' mm' : '') + (b !== null ? (v !== null ? ', ' : '') + 'Belag ' + brMm(b) + ' mm' : ''); }).join(' · ');
+    openRepForm(null, { fahrzeug: carId, titel: (was + ' ' + lab.toLowerCase() + ' tauschen').slice(0, 80), notiz: ('Gemessen am ' + datum(m.am) + ': ' + vals + '.' + (numOrNull(brAch(car, a).min) !== null ? (typ === 'trommel' ? ' Max. Ø ' : ' MIN TH ') + brMm(numOrNull(brAch(car, a).min)) + ' mm.' : '')).slice(0, 500), extra: { bremse: a } });
+  }
+  function openBremsForm(carId, back) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car) return;
+    var last = brLast(car), ck = curKmEst(car), today = dayKey(new Date());
+    var nv = function (v) { return v === null ? '' : nfIn.format(v); };
+    var ax = BR_ACH.map(function (p) {
+      var a = p[0], typ = brTyp(car, a), lim = numOrNull(brAch(car, a).min), tr = typ === 'trommel';
+      return '<fieldset class="br-f" data-a="' + a + '"><legend>' + p[1] + '</legend>' +
+        '<div class="row2"><label class="f"><span>Bremse</span><select id="br-' + a + '-typ"><option value="scheibe"' + (tr ? '' : ' selected') + '>Scheibenbremse</option><option value="trommel"' + (tr ? ' selected' : '') + '>Trommelbremse</option></select></label>' +
+        '<label class="f"><span id="br-' + a + '-ml">' + (tr ? 'Max. Ø (mm)' : 'MIN TH (mm)') + '</span><input id="br-' + a + '-min" inputmode="decimal" value="' + nv(lim) + '" placeholder="' + (tr ? 'z. B. 229' : 'z. B. 20') + '" autocomplete="off"></label></div>' +
+        '<small class="br-mh" id="br-' + a + '-mh">' + (tr ? 'Maximaler Innendurchmesser der Trommel laut Trommel oder Herstellerangabe.' : 'Steht als „MIN TH“ auf dem Rand oder Topf der Scheibe.') + '</small>' +
+        '<div class="br-grid">' + BR_SEITE.map(function (sd) {
+          var s = sd[0], ps = brVal(last, a, s, 's'), pb = brVal(last, a, s, 'b');
+          return '<label class="f"><span id="br-' + a + '-' + s + '-sl">' + (tr ? 'Ø ' : 'Scheibe ') + sd[1] + ' (mm)</span><input id="br-' + a + '-' + s + '-s" inputmode="decimal" placeholder="' + esc(ps !== null ? 'zuletzt ' + brMm(ps) : '–') + '" autocomplete="off"></label>' +
+            '<label class="f"><span>Belag ' + sd[1] + ' (mm)</span><input id="br-' + a + '-' + s + '-b" inputmode="decimal" placeholder="' + esc(pb !== null ? 'zuletzt ' + brMm(pb) : '–') + '" autocomplete="off"></label>';
+        }).join('') + '</div></fieldset>';
+    }).join('');
+    openSheet('bremsform', { id: carId, back: back || null, bl: BL ? { keep: [], pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Bremsen · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">Messung eintragen</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="bremsform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Gemessen am</span><input type="date" id="br-d" value="' + today + '"></label>' +
+      '<label class="f"><span>Kilometerstand</span><input id="br-km" inputmode="numeric" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'optional') + '" autocomplete="off"></label></div>' +
+      '<p class="help">Leere Felder bleiben leer. Die Scheibendicke misst du mit einer Bremsscheiben-Messlehre' + srcRefs(BR_Q, [1]) + '.</p>' +
+      ax + blField([], 'z. B. Scheibe mit MIN TH, Riefen oder Belag.') +
+      '<label class="f"><span>Notiz</span><textarea id="br-no" rows="2" maxlength="300" placeholder="z. B. Riefen hinten links, Führungen gängig"></textarea></label>' +
+      '<p class="err" id="br-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="br-back">Zurück</button></div></form>');
+  }
+  function brChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'bremsform' || !t || !/^br-(va|ha)-typ$/.test(t.id || '')) return false;
+    var a = t.id.slice(3, 5), tr = t.value === 'trommel';
+    var ml = $('#br-' + a + '-ml'), mh = $('#br-' + a + '-mh'), mi = $('#br-' + a + '-min');
+    if (ml) ml.textContent = tr ? 'Max. Ø (mm)' : 'MIN TH (mm)';
+    if (mh) mh.textContent = tr ? 'Maximaler Innendurchmesser der Trommel laut Trommel oder Herstellerangabe.' : 'Steht als „MIN TH“ auf dem Rand oder Topf der Scheibe.';
+    if (mi) mi.placeholder = tr ? 'z. B. 229' : 'z. B. 20';
+    BR_SEITE.forEach(function (sd) { var l = $('#br-' + a + '-' + sd[0] + '-sl'); if (l) l.textContent = (tr ? 'Ø ' : 'Scheibe ') + sd[1] + ' (mm)'; });
+    return true;
+  }
+  async function saveBremsen() {
+    var s = S.sheet;
+    if (!s || s.type !== 'bremsform' || S.busy) return;
+    var car = S.cars.get(s.id), err = function (m) { var el = $('#br-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!car) { err('Dieses Auto gibt es nicht mehr.'); return; }
+    var d = g('br-d'), km = parseNum(g('br-km')), today = dayKey(new Date());
+    if (!isDay(d) || d > today) { err('Bitte das Messdatum eintragen, nicht in der Zukunft.'); return; }
+    if (km !== null && (isNaN(km) || km < 0)) { err('Den Kilometerstand bitte als Zahl eintragen.'); return; }
+    var ach = {}, m = { am: d, km: km === null ? null : Math.round(km), notiz: g('br-no').slice(0, 300) }, any = false;
+    for (var i = 0; i < BR_ACH.length; i++) {
+      var a = BR_ACH[i][0], lab = BR_ACH[i][1], typ = g('br-' + a + '-typ') === 'trommel' ? 'trommel' : 'scheibe', lim = parseNum(g('br-' + a + '-min'));
+      if (lim !== null && (isNaN(lim) || lim <= 0 || lim > 600)) { err(lab + ': Den Grenzwert bitte in mm eintragen, z. B. ' + (typ === 'trommel' ? '229' : '20') + '.'); return; }
+      ach[a] = { typ: typ, min: lim === null ? null : round2(lim) };
+      m[a] = {};
+      for (var j = 0; j < BR_SEITE.length; j++) {
+        var sd = BR_SEITE[j][0], v = parseNum(g('br-' + a + '-' + sd + '-s')), b = parseNum(g('br-' + a + '-' + sd + '-b'));
+        if (v !== null && (isNaN(v) || v <= 0 || v > 600)) { err(lab + ' ' + BR_SEITE[j][1] + ': ' + (typ === 'trommel' ? 'Den Durchmesser' : 'Die Scheibendicke') + ' bitte in mm eintragen.'); return; }
+        if (b !== null && (isNaN(b) || b < 0 || b > 40)) { err(lab + ' ' + BR_SEITE[j][1] + ': Den Restbelag bitte in mm eintragen, z. B. 6,5.'); return; }
+        if (v !== null || b !== null) any = true;
+        m[a][sd] = { s: v === null ? null : round2(v), b: b === null ? null : round2(b) };
+      }
+    }
+    if (!any) { err('Bitte mindestens einen Messwert eintragen.'); return; }
+    setBusy(true);
+    try {
+      var fotos = BL ? await blCommitForm(s.id, 'Bremsen') : null;
+      if (fotos && fotos.length) m.fotos = fotos;
+      car = S.cars.get(s.id) || car;
+      var now = new Date().toISOString();
+      var patch = { bremsen: { ach: ach, log: brLog(car).concat([m]).slice(-30) }, geaendert: now };
+      if (m.km !== null && (numOrNull(car.km) === null || m.km >= num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) { patch.km = m.km; patch.kmDatum = d; patch.kmLog = kmLogWith(car, d, m.km); }
+      await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
+      S.cars.set(s.id, Object.assign({}, car, patch));
+      setBusy(false);
+      var bad = brBad(S.cars.get(s.id));
+      brBack(s);
+      renderAll();
+      toast(bad ? 'Gespeichert. Achtung: eine Bremse ist an der Verschleißgrenze.' : 'Messung gespeichert.');
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  function brBack(s) { if (s && s.back === 'pv') openPv(s.id); else if (s) openCar(s.id); else closeSheet(); }
+  /* ---------- Pickerl-Vorcheck nach der §57a-Mängelliste ---------- */
+  var PV_Q = { quellen: [
+    { titel: 'WKO: § 57a Mängelliste', url: 'https://news.wko.at/oe/gewerbe-handwerk/fahrzeugtechnik/paragraph-57a-maengelliste.pdf' },
+    { titel: 'WKO: § 57a, die Überprüfung im Detail', url: 'https://www.wko.at/paragraph-57a/die-ueberpruefung-im-detail' },
+    { titel: 'WKO: § 57a, Vorgehen und Weiterverfolgung von Mängeln', url: 'https://www.wko.at/ooe/gewerbe-handwerk/fahrzeugtechnik/paragraph-57a-vorgehen-weiterverfolgung-maengel' },
+    { titel: 'ÖAMTC: Kfz-Umbauten und Tuning', url: 'https://www.oeamtc.at/thema/techniktipps/kfz-umbauten-tuning-46957533' }
+  ] };
+  var PV_G = [
+    { n: '0', t: 'Identifizierung des Fahrzeuges', d: 'Kennzeichnungen, die als Besitznachweis dienen.', items: [['0.1', 'Kennzeichen(tafeln)'], ['0.2', 'Fahrzeugidentifizierungs-, Fahrgestell- oder Seriennummer'], ['0.4', 'Übereinstimmung mit dem Genehmigungsdokument']] },
+    { n: '1', t: 'Bremsanlage', d: 'Geprüft werden die Teile beider unabhängiger Bremssysteme, mehr als 30 Positionen.', items: [['1.1.12', 'Flexible Bremsschläuche'], ['1.1.13', 'Bremsbeläge und Bremsklötze'], ['1.1.14', 'Bremstrommeln, Bremsscheiben'], ['1.8', 'Bremsflüssigkeit']] },
+    { n: '2', t: 'Lenkung', d: 'Endanschlag, Gängigkeit, Lenkgestänge, Lenkgelenke und Lenksäule. Spiel wird hier nicht toleriert.', items: [['2.1.3', 'Zustand des Lenkgestänges und der Lenkgelenke'], ['2.2.1', 'Zustand des Lenkrads'], ['2.3', 'Lenkungsspiel'], ['2.4', 'Spureinstellung']] },
+    { n: '3', t: 'Sicht', d: 'Außenspiegel und Windschutzscheibe, auch die Sicht bei Vereisung (Defroster).', items: [['3.1', 'Sichtfeld'], ['3.2', 'Scheibenzustand'], ['3.4', 'Scheibenwischer'], ['3.5', 'Scheibenwaschanlage']] },
+    { n: '4', t: 'Leuchten, Reflektoren und elektrische Anlagen', d: 'Funktion der Lampen, Scheinwerfereinstellung und Verschmutzung.', items: [['4.1.1', 'Scheinwerfer: Zustand und Funktion'], ['4.3.1', 'Bremsleuchten: Zustand und Funktion'], ['4.4.1', 'Blinker und Warnblinker: Zustand und Funktion'], ['4.4.4', 'Blinkfrequenz']] },
+    { n: '5', t: 'Achsen, Räder, Reifen und Aufhängungen', d: 'Achsen, Reifen, Stoßdämpfer, Federung und Felgen, zum Beispiel auf Haarrisse.', items: [['5.1.3', 'Radlager'], ['5.2.2', 'Räder'], ['5.2.3', 'Reifen'], ['5.3.2', 'Stoßdämpfer']] },
+    { n: '6', t: 'Fahrgestell und daran befestigte Teile', d: 'Grundgerüst des Fahrzeugs und Durchrostungen.', items: [['6.1.1', 'Allgemeiner Zustand'], ['6.1.2', 'Auspuffrohre und Schalldämpfer'], ['6.1.3', 'Kraftstofftank und Kraftstoffleitungen'], ['6.1.4', 'Stoßstangen und Unterfahrschutz']] },
+    { n: '7', t: 'Sonstige Ausstattungen, soweit vorgeschrieben', d: 'Sicherheitsgurte, Airbag, Warndreieck mit E-Prüfzeichen und Verbandszeug.', items: [['7.1.2', 'Zustand der Sicherheitsgurte und Gurtschlösser'], ['7.4', 'Warndreieck'], ['7.5', 'Verbandskasten'], ['7.7', 'Hupe (akustische Warnvorrichtung)']] },
+    { n: '8', t: 'Umweltbelastung', d: 'Auspuff, Flüssigkeitsleitungen, Luftfilter, Motoreinstellung und Katalysator.', items: [['8.1', 'Lärmentwicklung'], ['8.4.1', 'Flüssigkeitsverlust'], ['8.4.2', 'Sichtbarer Rauch']] }
+  ];
+  var PV_ALL = [];
+  PV_G.forEach(function (g) { g.items.forEach(function (it) { PV_ALL.push(it); }); });
+  var PV_T = {};
+  PV_ALL.forEach(function (it) { PV_T[it[0]] = it[1]; });
+  function pvAll(car) { var c = car && car.pickerlCheck; return c && typeof c === 'object' ? c : null; }
+  /* Vorcheck gehört zum aktuellen Pickerl-Monat; nach der Begutachtung beginnt ein neuer */
+  function pvDoc(car) { var c = pvAll(car); if (!c) return null; return (c.fuer || null) === (isYm(car.pickerl) ? car.pickerl : null) ? c : null; }
+  function pvItems(c) { var m = c && c.items; return m && typeof m === 'object' ? m : {}; }
+  function pvItem(c, pos) { var x = pvItems(c)[pos]; return x && typeof x === 'object' ? x : {}; }
+  function pvCount(c) {
+    var it = pvItems(c), n = 0, mg = 0;
+    PV_ALL.forEach(function (p) { var x = it[p[0]]; if (x && (x.st === 'ok' || x.st === 'mangel')) { n++; if (x.st === 'mangel') mg++; } });
+    return { n: n, m: mg, total: PV_ALL.length };
+  }
+  function pvBanner(id, car) {
+    if (car.archiviert) return '';
+    var pk = pickerlInfo(car), c = pvDoc(car);
+    if (!c && !(pk && pk.status !== 'ok')) return '';
+    if (!c && !canWrite()) return '';
+    var cnt = c ? pvCount(c) : null;
+    var line = [pk ? 'Pickerl fällig ' + ymTxt(pk.due) : '', cnt ? cnt.n + ' von ' + cnt.total + ' angesehen' : 'Prüfpunkte vorher selbst durchgehen'].filter(Boolean).join(' · ');
+    return '<button type="button" class="wpb pvb' + (c ? ' on' : ' off') + '" data-act="pv-open" data-id="' + esc(id) + '">' + PV_ICON +
+      '<span class="wpb-t"><b>Pickerl-Vorcheck</b><span>' + esc(line) + '</span></span>' + (cnt && cnt.m ? '<span class="wst faellig">' + cnt.m + (cnt.m === 1 ? ' Mangel' : ' Mängel') + '</span>' : c && c.fertig ? '<span class="wst ok">fertig</span>' : '') + '</button>';
+  }
+  var PV_ICON = '<svg class="wpb-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M7.8 12.2l2.8 2.8 5.6-6"></path></g></svg>';
+  /* Hinweise aus dem, was die App schon weiß */
+  function pvHint(carId, car, pos) {
+    if (pos === '1.1.13' || pos === '1.1.14') {
+      var m = brLast(car);
+      if (!m) return { t: 'Noch keine Bremsmessung in der App.', br: true };
+      var bad = BR_ACH.filter(function (p) { var st = brState(car, p[0]); return pos === '1.1.13' ? st.belag === 'grenze' : st.scheibe === 'tauschen'; }).map(function (p) { return p[1].toLowerCase(); });
+      return { t: (bad.length ? 'Laut Messung vom ' + datum(m.am) + ' ' + (pos === '1.1.13' ? 'Belag an der Verschleißgrenze: ' : 'Scheibe oder Trommel am Grenzwert: ') + bad.join(', ') + '.' : 'Messung vom ' + datum(m.am) + ': kein Grenzwert erreicht.'), warn: bad.length > 0, br: true };
+    }
+    if (pos === '1.8') {
+      var r = wartRows(carId).filter(function (x) { return x.p && x.p.art === 'bremsfluessigkeit'; })[0];
+      if (!r) return null;
+      if (r.status === 'offen' && !r.last) return { t: 'Wartungsplan: Wann die Bremsflüssigkeit zuletzt gewechselt wurde, ist nicht bekannt.' };
+      return { t: 'Wartungsplan: ' + WST[r.status] + (shortNext(r) ? ', ' + shortNext(r) : '') + '.', warn: r.status === 'faellig' };
+    }
+    if (pos === '5.2.3') {
+      var k = reifenDoc(car).montiert, s = k && RSET[k] ? reifenSet(car, k) : null;
+      if (!s) return { t: 'Welche Reifen montiert sind, steht noch nicht in der App.' };
+      var w = reifenWarn(k, s);
+      return { t: RSET[k].n + ': ' + (w.length ? w.map(function (x, i) { return i ? x.t.charAt(0).toLowerCase() + x.t.slice(1) : x.t; }).join('; ') : 'keine Warnung in der App') + '.', warn: w.some(function (x) { return x.lv === 'bad'; }) };
+    }
+    if (pos === '6.1.1') {
+      var st = ubState(car), z = Object.keys(st).filter(function (k2) { return st[k2].st === 'durch' || st[k2].st === 'rost'; });
+      if (!Object.keys(st).length) return null;
+      return { t: z.length ? 'Unterboden laut letzter Prüfung: ' + z.map(function (k2) { return ubZoneLabel(k2) + (st[k2].st === 'durch' ? ' (durchgerostet)' : ' (Rost)'); }).join(', ') + '.' : 'Unterboden laut letzter Prüfung ohne Rost.', warn: z.some(function (k2) { return st[k2].st === 'durch'; }) };
+    }
+    if (pos === '0.4') return { t: 'Zum Beispiel müssen Reifen und Felgen dem Genehmigungsdokument entsprechen.', q: [4] };
+    return null;
+  }
+  function openPv(carId, back) {
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car) { toast('Dieses Auto gibt es nicht mehr.'); return; }
+    openSheet('pv', { id: carId, back: back || (S.sheet && S.sheet.type === 'wartung' ? 'wart' : null) }, sheetPv(carId, car));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function sheetPv(carId, car) {
+    var pk = pickerlInfo(car), c = pvDoc(car), can = canWrite(), all = pvAll(car);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Pickerl-Vorcheck · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + esc(pk ? 'Pickerl fällig ' + ymTxt(pk.due) : 'Pickerl-Vorcheck') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    h += '<p class="rtext">Die Prüfpunkte aus der offiziellen Mängelliste, die du vorher selbst ansehen kannst' + srcRefs(PV_Q, [1]) + '. Was dir auffällt, planst du gleich als Arbeit ein. Der Vorcheck ersetzt die Begutachtung nicht.</p>';
+    if (!pk) h += '<p class="note">Der Pickerl-Monat fehlt noch. Du kannst trotzdem prüfen; mit Monat erinnert die App rechtzeitig.</p>';
+    if (!c && all && all.fuer && pk && all.fuer !== pk.due) h += '<p class="note">' + esc('Der letzte Vorcheck war für ' + ymTxt(all.fuer) + (pvCount(all).m ? ' mit ' + pvCount(all).m + (pvCount(all).m === 1 ? ' Mangel' : ' Mängeln') : '') + '. Für ' + ymTxt(pk.due) + ' beginnt ein neuer.') + '</p>';
+    var cnt = c ? pvCount(c) : { n: 0, m: 0, total: PV_ALL.length };
+    h += '<div class="pv-sum"><b>' + cnt.n + ' von ' + cnt.total + ' angesehen</b><span>' + (cnt.m ? cnt.m + (cnt.m === 1 ? ' Mangel' : ' Mängel') : 'keine Mängel eingetragen') + '</span>' + wpBar(cnt.n, cnt.total) + '</div>';
+    h += PV_G.map(function (g) {
+      return '<div class="sh-sec pv-g"><h3 class="sec">' + esc(g.n + ' · ' + g.t) + '</h3><p class="help">' + esc(g.d) + srcRefs(PV_Q, [2]) + '</p><ul class="pvl">' + g.items.map(function (it) {
+        var pos = it[0], x = pvItem(c, pos), st = x.st === 'ok' || x.st === 'mangel' ? x.st : '', hint = pvHint(carId, car, pos), pl = st === 'mangel' ? pvPlanned(carId, pos, c) : null, fotos = blList(x.fotos);
+        return '<li class="pvi' + (st ? ' ' + st : '') + '"><div class="pvi-r"><span class="pvi-n">' + esc(pos) + '</span><b class="pvi-t">' + esc(it[1]) + '</b>' +
+          '<span class="pvs">' + [['ok', 'OK', 'in Ordnung'], ['mangel', 'Mangel', 'Mangel']].map(function (o) {
+            return '<button type="button" class="pvs-b ' + o[0] + '" data-act="pv-st" data-pos="' + esc(pos) + '" data-v="' + o[0] + '" aria-pressed="' + (st === o[0]) + '" aria-label="' + esc(pos + ' ' + it[1] + ': ' + o[2]) + '"' + (can ? '' : ' disabled') + '>' + o[1] + '</button>';
+          }).join('') + '</span></div>' +
+          (hint ? '<small class="pvi-x' + (hint.warn ? ' warn' : '') + '">' + esc(hint.t) + (hint.q ? srcRefs(PV_Q, hint.q) : '') + (hint.br && can ? ' <button type="button" class="linkbtn inl" data-act="br-open" data-id="' + esc(carId) + '" data-back="pv">Messen</button>' : '') + '</small>' : '') +
+          (st === 'mangel' ? '<div class="pvm"><label class="f"><span class="vh">' + esc('Notiz zu ' + pos) + '</span><textarea rows="2" maxlength="300" data-pvn="' + esc(pos) + '" placeholder="Was ist dir aufgefallen?"' + (can ? '' : ' disabled') + '>' + esc(x.notiz || '') + '</textarea></label>' +
+            (BL ? '<div class="bl-s">' + fotos.map(function (r, i) { return blTile(r, 'pv:' + carId + ':' + pos, i, false); }).join('') + (can ? blAddTile('pv:' + carId + ':' + pos, fotos.length ? 'Foto' : 'Foto machen') : '') + '</div>' : '') +
+            (pl ? '<button type="button" class="linkbtn" data-act="open-rep" data-id="' + esc(pl[0]) + '">Eingeplant: ansehen</button>' : can ? '<button type="button" class="linkbtn" data-act="pv-plan" data-pos="' + esc(pos) + '">Als Arbeit einplanen</button>' : '') + '</div>' : '') +
+          '</li>';
+      }).join('') + '</ul></div>';
+    }).join('');
+    h += '<p class="help">Nach einem schweren Mangel darf das Auto höchstens zwei Monate weiterfahren, längstens bis die alte Plakette abläuft. Bei Gefahr im Verzug wird die Behörde verständigt' + srcRefs(PV_Q, [3]) + '.</p>';
+    h += '<div class="sh-foot">' + (can && c && !c.fertig && cnt.n ? '<button type="button" class="btn" data-act="pv-fertig">Vorcheck abschließen</button>' : '') +
+      (c && c.fertig ? '<p class="note">' + esc('Abgeschlossen am ' + datum(c.fertig) + '. Nach der Begutachtung den neuen Monat eintragen, dann beginnt der nächste Vorcheck.') + '</p>' : '') +
+      '<button type="button" class="btn ghost" data-act="pv-back">Zurück</button></div>';
+    return h;
+  }
+  function pvPlanned(carId, pos, c) {
+    var fuer = c ? c.fuer || null : null;
+    return repList(carId).filter(function (p) { var k = p[1].pickerl; return k && typeof k === 'object' && k.pos === pos && (k.fuer || null) === fuer && p[1].status !== 'verworfen'; })[0] || null;
+  }
+  /* Änderungen sammeln und gebündelt speichern (wie bei der Winterpause) */
+  var PVQ = { t: 0, car: null, c: null };
+  function pvReapply() { if (PVQ.car && PVQ.c && S.cars.has(PVQ.car)) S.cars.set(PVQ.car, Object.assign({}, S.cars.get(PVQ.car), { pickerlCheck: PVQ.c })); }
+  function pvFlush() {
+    clearTimeout(PVQ.t);
+    var carId = PVQ.car, c = PVQ.c;
+    PVQ.car = null; PVQ.c = null;
+    if (!carId || !c) return null;
+    return write(function () { return S.db.doc('fahrzeuge/' + carId).update({ pickerlCheck: c, geaendert: new Date().toISOString() }); }).catch(function (e) { writeError(e); });
+  }
+  function pvBase(car) {
+    var c = pvDoc(car);
+    if (c) return Object.assign({}, c, { items: Object.assign({}, pvItems(c)) });
+    return { fuer: isYm(car.pickerl) ? car.pickerl : null, start: dayKey(new Date()), items: {}, fertig: null };
+  }
+  function pvSet(carId, fn, rerender) {
+    var car = S.cars.get(carId);
+    if (!car || !canWrite()) return;
+    var c = pvBase(car);
+    fn(c);
+    if (PVQ.car && PVQ.car !== carId) pvFlush();
+    S.cars.set(carId, Object.assign({}, car, { pickerlCheck: c }));
+    PVQ.car = carId; PVQ.c = c;
+    clearTimeout(PVQ.t);
+    PVQ.t = setTimeout(pvFlush, 900);
+    if (rerender) pvRerender();
+    renderAll();
+  }
+  function pvRerender(focusSel) {
+    var s = S.sheet;
+    if (!s || s.type !== 'pv') return;
+    var sh = $('#sheet'), car = S.cars.get(s.id);
+    if (!sh || !car) return;
+    var top = sh.scrollTop;
+    setHTML(sh, sheetPv(s.id, car));
+    sh.scrollTop = top;
+    if (focusSel) { var el = $(focusSel); if (el) { try { el.focus({ preventScroll: true }); } catch (_) {} } }
+  }
+  function pvChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'pv' || !t) return false;
+    if (t.dataset && t.dataset.pvn !== undefined) {
+      var p2 = t.dataset.pvn, val = String(t.value || '').slice(0, 300);
+      pvSet(s.id, function (c) { c.items[p2] = Object.assign({}, pvItem(c, p2), { notiz: val }); }, false);
+      return true;
+    }
+    return false;
+  }
+  /* OK oder Mangel; nochmal tippen setzt den Punkt auf offen zurück */
+  function pvSt(pos, v) {
+    var s = S.sheet;
+    if (!s || s.type !== 'pv' || !PV_T[pos] || !canWrite()) return;
+    var car = S.cars.get(s.id), cur = pvItem(pvDoc(car), pos).st;
+    pvSet(s.id, function (c) { var x = Object.assign({}, pvItem(c, pos)); if (cur === v) { delete x.st; delete x.am; } else { x.st = v; x.am = dayKey(new Date()); } c.items[pos] = x; c.fertig = null; }, false);
+    pvRerender('#sheet [data-act="pv-st"][data-pos="' + pos + '"][data-v="' + v + '"]');
+  }
+  function pvPlan(pos) {
+    var s = S.sheet;
+    if (!s || s.type !== 'pv') return;
+    var car = S.cars.get(s.id), c = pvDoc(car);
+    if (!car) return;
+    pvFlush();
+    var x = pvItem(c, pos), pk = pickerlInfo(car);
+    openRepForm(null, { fahrzeug: s.id, titel: ('Pickerl ' + pos + ': ' + (PV_T[pos] || '')).slice(0, 80), notiz: (x.notiz || '').slice(0, 500),
+      faellig: pk ? pk.due + '-01' : null, faelligGenau: pk ? 'monat' : null, extra: { pickerl: { pos: pos, fuer: c ? c.fuer || null : null } } });
+  }
+  async function pvFertig() {
+    var s = S.sheet;
+    if (!s || s.type !== 'pv' || !canWrite()) return;
+    pvSet(s.id, function (c) { c.fertig = dayKey(new Date()); }, true);
+    await pvFlush();
+    toast('Vorcheck abgeschlossen.');
+  }
+  function pvBack(s) {
+    pvFlush();
+    if (s && s.back === 'wart') openWart(s.id); else if (s) openCar(s.id); else closeSheet();
+  }
+  /* Fotos zu einem Mangel: sofort hochladen und am Prüfpunkt speichern */
+  function pvPhotos(car, pos) { return blList(pvItem(pvDoc(car), pos).fotos); }
+  async function pvAddPhotos(ctx, prepared) {
+    var p = ctx.split(':'), carId = p[1], pos = p[2], refs = [];
+    if (!S.cars.has(carId) || !PV_T[pos]) return;
+    if (S.busy) { toast('Bitte kurz warten, es wird noch gespeichert.'); return; }
+    await pvFlush();
+    setBusy(true);
+    try {
+      for (var i = 0; i < prepared.length; i++) {
+        toast(prepared.length > 1 ? 'Lade hoch: ' + (i + 1) + ' von ' + prepared.length + ' …' : 'Lade hoch …');
+        refs.push(await blUpload(carId, prepared[i], 'Pickerl-Vorcheck ' + pos));
+      }
+      var car = S.cars.get(carId), c = pvBase(car);
+      c.items[pos] = Object.assign({}, pvItem(c, pos), { fotos: blList(pvItem(c, pos).fotos).concat(refs) });
+      var patch = { pickerlCheck: c, geaendert: new Date().toISOString() };
+      await write(function () { return S.db.doc('fahrzeuge/' + carId).update(patch); });
+      S.cars.set(carId, Object.assign({}, car, patch));
+      setBusy(false);
+      pvRerender(); renderAll();
+      toast(refs.length === 1 ? 'Foto gespeichert.' : refs.length + ' Fotos gespeichert.');
+    } catch (e) {
+      setBusy(false);
+      if (refs.length && e && e.code !== 'bl_file' && !(e.code === 'unavailable' && e.network)) writeError(e);
+      else toast(blErrText(e, refs.length));
+    } finally { if (S.busy) setBusy(false); }
+  }
+  function pvDropPhoto(car, pos, pfad) {
+    var c = pvBase(car);
+    c.items[pos] = Object.assign({}, pvItem(c, pos), { fotos: blList(pvItem(c, pos).fotos).filter(function (x) { return x.pfad !== pfad; }) });
+    return c;
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -10426,6 +10872,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'kva-rm': kvaRm(t.dataset.i); break;
       case 'rr-req': rrRequest(t.dataset.id); break;
       case 'rr-plan': rrPlan(t.dataset.id, t.dataset.i); break;
+      case 'br-open': openBremsForm(t.dataset.id, t.dataset.back || null); break;
+      case 'br-back': brBack(s); break;
+      case 'br-plan': brPlan(t.dataset.id, t.dataset.a); break;
+      case 'pv-open': openPv(t.dataset.id, t.dataset.back || null); break;
+      case 'pv-back': pvBack(s); break;
+      case 'pv-plan': pvPlan(t.dataset.pos); break;
+      case 'pv-st': pvSt(t.dataset.pos, t.dataset.v); break;
+      case 'pv-fertig': pvFertig(); break;
       case 'ub-new': openUbForm(t.dataset.id, t.dataset.typ, null, { back: t.dataset.back || null }); break;
       case 'ub-edit': openUbForm(t.dataset.id, null, t.dataset.work, { back: t.dataset.back || null }); break;
       case 'ub-zone': openUbZone(t.dataset.id, t.dataset.z); break;
@@ -10486,6 +10940,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (t.id === 'wp-kl') { wpSetKl(t.checked); return; }
     if (wpChange(t)) return;
     if (kvaChange(t)) return;
+    if (brChange(t)) return;
+    if (pvChange(t)) return;
     if (t.id === 'ka-kunde') { var kn = $('#ka-neu'); if (kn) kn.hidden = t.value !== '__neu'; return; }
     if (t.id === 'ki-kunde' || t.id === 'ki-car') { kdImportChange(t); return; }
     if (t.name === 'kl-car' || t.id === 'kl-car1') { klCarsChanged(); return; }
@@ -10517,7 +10973,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     document.addEventListener('change', onChange);
     document.addEventListener('keydown', onKey);
     document.addEventListener('keydown', ubKey);
-    document.addEventListener('visibilitychange', function () { if (document.hidden) wpFlush(); });
+    document.addEventListener('visibilitychange', function () { if (document.hidden) { wpFlush(); pvFlush(); } });
     $('#lookup').addEventListener('submit', onLookup);
     $('#q').addEventListener('input', function () { renderHits(false); });
     $('#fq').addEventListener('input', function (e) { S.fq = e.target.value; renderBestand(); });
@@ -10543,6 +10999,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'ubform') { e.preventDefault(); saveUb(); }
       else if (e.target.id === 'wpstart') { e.preventDefault(); saveWpStart(); }
       else if (e.target.id === 'kvaform') { e.preventDefault(); saveKva(false); }
+      else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'wpeditform') { e.preventDefault(); saveWpEdit(); }
       else if (e.target.id === 'kmallform') { e.preventDefault(); saveKmAll(); }
       else if (e.target.id === 'kundeform') { e.preventDefault(); saveKunde(); }
