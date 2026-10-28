@@ -6161,7 +6161,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!rows.length) return null;
     var facts = wartFacts(carId, wartPostenFor(carId)), today = dayKey(new Date()), pts = kmPoints(car), rate = kmRate(pts);
     var K = isDay(car.kaufdatum) ? { d: car.kaufdatum, g: car.kaufdatumGenau || 'tag', km: numOrNull(car.kaufKm) !== null && !car.kaufKmCa ? num(car.kaufKm) : null } : null;
-    var t0 = K ? K.d : null, lines = [];
+    var t0 = K ? K.d : null, lines = [], noKm = numOrNull(car.km) === null;
     rows.forEach(function (r) {
       var ev = [], undated = false;
       facts.forEach(function (f) {
@@ -6205,7 +6205,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         if (!next && d1 > today) seg('next', today, d1);
       });
       var lv = nowLv === 'bad' || gapBad ? 'bad' : nowLv || (gaps ? 'warn' : !ev.length || lastUnk ? 'unk' : 'ok');
-      var txt = nowLv ? (nowLv === 'bad' ? 'überfällig' : 'über deiner Vorgabe') : gaps ? (gaps === 1 ? '1 Lücke' : gaps + ' Lücken') : !ev.length ? (ln.undated ? 'Eintrag ohne Datum' : 'kein Eintrag') : lastUnk ? 'unklar' : 'im Intervall';
+      var txt = nowLv ? (nowLv === 'bad' ? 'überfällig' : 'über deiner Vorgabe') : gaps ? (gaps === 1 ? '1 Lücke' : gaps + ' Lücken') : !ev.length ? (ln.undated ? 'Eintrag ohne Datum' : 'kein Eintrag') : lastUnk ? (noKm && L.bad && L.bad.km !== null ? 'km-Stand fehlt' : 'unklar') : 'im Intervall';
       return { name: ln.r.p.name, i: ln.r.i, lv: lv, txt: txt, segs: segs, dots: ev.map(function (e) { return { x: X(e.d), via: e.via }; }) };
     });
     var rk = { bad: 0, warn: 1, unk: 2, ok: 3 };
