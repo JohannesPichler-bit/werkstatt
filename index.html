@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "23", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "24", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1358,6 +1358,41 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .shtl-lg .sw-via { background: transparent; box-shadow: inset 0 0 0 2px var(--ink); }
 .shtl-lg .sw-k, .shtl-lg .sw-h { width: 0; height: 13px; border-radius: 0; border-left: 2px solid var(--ink); }
 .shtl-lg .sw-k { border-left-style: dotted; border-left-color: var(--muted); }
+/* Reifen: Sommer- und Winterreifen */
+.seg.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rf-seg span { gap: 8px; }
+.rf-seg .rf-i { width: 20px; height: 20px; }
+.rf-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 359px) { .rf-g { grid-template-columns: minmax(0, 1fr); } }
+.rf-card { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 5px; min-width: 0; padding: 11px 12px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); text-align: left; color: inherit; font: inherit; }
+.rf-card.leer { border-style: dashed; background: none; }
+.rf-card.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.rf-h { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.rf-h b { font-family: var(--f-display); font-weight: 800; font-size: 22px; line-height: 1; }
+.rf-i { flex: none; width: 22px; height: 22px; }
+.k-sommer .rf-h .rf-i, .rf-seg input[value="sommer"] + span .rf-i { color: var(--ro); }
+.k-winter .rf-h .rf-i, .rf-seg input[value="winter"] + span .rf-i { color: var(--wb); }
+.rf-seg input:checked + span .rf-i { color: inherit; }
+.rf-m { margin-left: auto; flex: none; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; line-height: 1.6; padding: 0 6px; border-radius: 4px; background: var(--surface-2); color: var(--muted); }
+.rf-m.on { background: var(--ink); color: var(--bg); }
+.rf-s { font-family: var(--f-mono); font-weight: 700; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
+.rf-b { font-size: 14px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+.rf-x, .rf-l, .rf-e { font-size: 12.5px; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.rf-w { font-size: 12.5px; font-weight: 700; line-height: 1.35; }
+.rf-w.lv-bad { color: var(--kaufen); }
+.rf-w.lv-warn { color: var(--ro-text); }
+.rf-tr { position: relative; display: block; height: 8px; margin: 3px 0 1px; border-radius: 4px; background: var(--surface-2); }
+.rf-tf { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--in); }
+.rf-tr.lv-warn .rf-tf { background: var(--ro); }
+.rf-tr.lv-bad .rf-tf { background: var(--kaufen); }
+.rf-tm { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 2px solid var(--ink); }
+.rf-pf { margin: 0; padding: 0; border: 0; min-width: 0; }
+.rf-pf legend { padding: 0; margin-bottom: 4px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.rf-pg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.rf-pg label { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.rf-pg span { font-size: 11px; line-height: 1.2; color: var(--muted); }
+.rf-pg input { width: 100%; min-height: 44px; padding: 8px 6px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); text-align: center; font-variant-numeric: tabular-nums; }
+@media (max-width: 380px) { .rf-pg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>
 
 <div class="wrap">
@@ -3386,6 +3421,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       (!cellId ? '<p class="note">Noch kein Fach auf der Karte: im Tab „Karte“ ein Fach antippen, „Fach einstellen“ und dieses Auto wählen.</p>' : '') +
       shBanner(id, car) +
       carWartSec(id, car) +
+      reifenSec(id, car) +
       '<div class="sh-sec"><div class="vhead"><h3 class="sec">Anstehend · ' + reps.length + '</h3>' +
       (canWrite() ? '<button type="button" class="linkbtn" data-act="rep-new" data-car="' + esc(id) + '">+ Eintragen</button>' : '') + '</div>' +
       (repHtml ? '<ul class="works">' + repHtml + '</ul>' : '<p class="note">Nichts geplant.</p>') + '</div>' +
@@ -5061,6 +5097,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         var pnow = pk.status === 'faellig' || pk.status === 'ueber';
         if (pnow || pk.due < until) ev.push({ kind: 'pickerl', car: cid, carName: name, title: 'Pickerl (§57a)', d: pnow ? today : pk.due + '-01', now: pnow, pk: pk });
       } else if (!car.fremd) noPk.push(p);
+      var rsz = car.fremd ? null : reifenSaison(car);
+      if (rsz && (rsz.now || rsz.d.slice(0, 7) < until)) ev.push({ kind: 'reifen', car: cid, carName: name, title: rsz.title, d: rsz.d, now: rsz.now, auf: rsz.auf });
     });
     repList(null).forEach(function (p) {
       var r = p[1];
@@ -5080,8 +5118,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     ohne.sort(function (a, b) { return coll.compare(a.carName, b.carName) || coll.compare(String(a.title), String(b.title)); });
     return { ev: ev, ohne: ohne, offen: offen, noPk: noPk, until: until, missingKm: activeCars().filter(function (p) { return !p[1].fremd && numOrNull(p[1].km) === null; }) };
   }
-  var ZP_KIND = { wart: 'Wartung', pickerl: 'Pickerl', rep: 'Arbeit' };
+  var ZP_KIND = { wart: 'Wartung', pickerl: 'Pickerl', rep: 'Arbeit', reifen: 'Reifen' };
   function zpSub(e) {
+    if (e.kind === 'reifen') return e.auf === 'winter' ? 'Winterreifenpflicht bei Schnee, Schneematsch oder Eis vom 1.11. bis 15.4.' : 'Die Winterreifenpflicht endet am 15.4.';
     if (e.kind === 'wart') return (shortNext(e.r) || 'laut Wartungsplan') + (e.est ? ' · Termin geschätzt aus deiner Fahrleistung' : '') + (e.plan ? ' · schon eingeplant' : '');
     if (e.kind === 'pickerl') return 'fällig ' + ymTxt(e.pk.due) + (e.pk.neu ? ', möglich ab ' + ymTxt(e.pk.from) : ', möglich bis ' + ymTxt(e.pk.to));
     var x = repResearch(e.r), ps = x ? repPartsSum(x) : null, z = zeitRange(x);
@@ -5095,6 +5134,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     } else if (e.kind === 'pickerl') {
       act = 'data-act="wart-open" data-id="' + esc(e.car) + '"';
       chip = pkChip(e.pk);
+    } else if (e.kind === 'reifen') {
+      act = 'data-act="reifen-wechsel" data-id="' + esc(e.car) + '"';
+      chip = '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Reifen</span>';
     } else {
       act = 'data-act="open-rep" data-id="' + esc(e.id) + '"';
       chip = '<span class="wst plan">Arbeit</span>';
@@ -5104,7 +5146,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function sheetZeitplan() {
     var d = zeitplanData(), can = canWrite(), h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Arbeitsplanung · alle Autos</p>' +
       '<h2 class="sh-title" id="sheet-title">Zeitplan: 12 Monate</h2>' +
-      '<p class="buy">' + esc('Wartung, Pickerl und anstehende Arbeiten bis ' + ymLong(ymAdd(d.until, -1)) + ', nach Monat sortiert.') + '</p></div>' +
+      '<p class="buy">' + esc('Wartung, Pickerl, Reifenwechsel und anstehende Arbeiten bis ' + ymLong(ymAdd(d.until, -1)) + ', nach Monat sortiert.') + '</p></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
     var now = d.ev.filter(function (e) { return e.now; }), later = d.ev.filter(function (e) { return !e.now; });
     if (now.length) h += zpMonth('jetzt', 'Jetzt fällig', now);
@@ -5732,9 +5774,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!list.length) return '';
     return '<div class="vhead"><h2 class="sec">Als Nächstes</h2><button type="button" class="linkbtn" data-act="zeitplan">Zeitplan</button></div><ul class="nu">' + list.map(function (e) {
       var car = S.cars.get(e.car), bar = e.kind === 'wart' && car ? wbarHtml(e.r, car, true) : '';
-      var chip = e.kind === 'wart' ? wstHtml(e.r) : e.kind === 'pickerl' ? pkChip(e.pk) : '<span class="wst plan">Arbeit</span>';
-      var act = e.kind === 'rep' ? 'data-act="open-rep" data-id="' + esc(e.id) + '"' : e.kind === 'wart' && e.plan && S.reps.has(e.plan) ? 'data-act="open-rep" data-id="' + esc(e.plan) + '"' : 'data-act="wart-open" data-id="' + esc(e.car) + '"';
-      var lv = e.now || (e.kind === 'wart' && (e.r.over || e.r.status === 'faellig')) || (e.kind === 'pickerl' && (e.pk.status === 'faellig' || e.pk.status === 'ueber')) ? 'faellig'
+      var chip = e.kind === 'wart' ? wstHtml(e.r) : e.kind === 'pickerl' ? pkChip(e.pk) : e.kind === 'reifen' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Reifen</span>' : '<span class="wst plan">Arbeit</span>';
+      var act = e.kind === 'reifen' ? 'data-act="reifen-wechsel" data-id="' + esc(e.car) + '"' : e.kind === 'rep' ? 'data-act="open-rep" data-id="' + esc(e.id) + '"' : e.kind === 'wart' && e.plan && S.reps.has(e.plan) ? 'data-act="open-rep" data-id="' + esc(e.plan) + '"' : 'data-act="wart-open" data-id="' + esc(e.car) + '"';
+      var lv = e.kind === 'reifen' ? (e.now ? 'bald' : 'plan') : e.now || (e.kind === 'wart' && (e.r.over || e.r.status === 'faellig')) || (e.kind === 'pickerl' && (e.pk.status === 'faellig' || e.pk.status === 'ueber')) ? 'faellig'
         : (e.kind === 'wart' && e.r.status === 'bald') || (e.kind === 'pickerl' && e.pk.status === 'bald') ? 'bald' : e.kind === 'rep' ? 'plan' : 'ok';
       return '<li><button type="button" class="nu-b lvl-' + lv + '" ' + act + '><span class="nu-t"><span class="nu-c">' + esc(e.carName) + '</span>' + chip + '</span>' +
         '<span class="nu-n">' + esc(e.title) + '</span>' + bar + '<span class="nu-x">' + esc(zpSub(e)) + '</span></button></li>';
@@ -6264,12 +6306,12 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function erinnerungenData() {
     var monEnd = function (d) { return addDays(addMonths(d.slice(0, 7) + '-01', 1), -1); };
     return zeitplanData().ev.map(function (e) {
-      var key = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : 'rep-' + e.id;
+      var key = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : e.kind === 'reifen' ? 'reifen-' + e.car + '-' + e.auf : 'rep-' + e.id;
       /* Datum für die 14-Tage-Grenze. Geschätzte Termine nur auf den Monat genau, sonst ändert sich die Datei jeden Tag.
          Arbeiten mit „bis Monat/Jahr“ zählen bis zum Ende des Monats bzw. Jahres. */
       var datum = e.now ? null : e.est ? e.d.slice(0, 7) + '-01'
         : e.kind === 'rep' && e.r.faelligGenau === 'jahr' ? e.d.slice(0, 4) + '-12-31' : e.kind === 'rep' && e.r.faelligGenau === 'monat' ? monEnd(e.d) : e.d;
-      var wann = e.now ? 'jetzt fällig' : e.kind === 'pickerl' ? 'fällig ' + ymTxt(e.pk.due) : e.kind === 'rep' ? 'bis ' + repDue(e.r) : (e.est ? 'ca. ' : 'bis ') + fmtGenau(e.d, 'monat') + (e.est ? ' (geschätzt)' : '');
+      var wann = e.kind === 'reifen' ? (e.now ? 'jetzt' : e.auf === 'winter' ? 'Winterreifenpflicht ab 1.11.' : 'ab 16.4.') : e.now ? 'jetzt fällig' : e.kind === 'pickerl' ? 'fällig ' + ymTxt(e.pk.due) : e.kind === 'rep' ? 'bis ' + repDue(e.r) : (e.est ? 'ca. ' : 'bis ') + fmtGenau(e.d, 'monat') + (e.est ? ' (geschätzt)' : '');
       return { key: key, art: e.kind, auto: e.carName, was: String(e.title || ''), jetzt: !!e.now, datum: datum, wann: wann, geschaetzt: !!e.est, info: zpSub(e) };
     });
   }
@@ -6285,6 +6327,217 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         return S.db.doc('meta/erinnerungen').set({ stand: new Date().toISOString(), hinweis: 'Von der App geschrieben: anstehende Termine der nächsten 12 Monate. Der geplante Lauf meldet daraus Fälliges per Push.', termine: list });
       }).catch(function () { ERI.last = null; });
     }, 4000);
+  }
+  /* ---------- Reifen: Sommer- und Winterreifen je Auto ---------- */
+  var REIFEN_Q = { quellen: [
+    { titel: 'oesterreich.gv.at: Mindestprofiltiefe von Reifen', url: 'https://www.oesterreich.gv.at/themen/mobilitaet/kfz/10/Seite.063320.html' },
+    { titel: 'ÖAMTC: Winterausrüstungspflicht – welche Bestimmungen gelten', url: 'https://www.oeamtc.at/thema/vorschriften-strafen/winterausruestungspflicht-welche-bestimmungen-gelten-16186948' },
+    { titel: 'Continental: Reifenschäden und Reifenalter', url: 'https://www.continental-tires.com/at/de/b2c/tire-knowledge/replacing-tires' }
+  ] };
+  var RSET = { sommer: { n: 'Sommerreifen', k: 'Sommer', min: 1.6, rec: 3 }, winter: { n: 'Winterreifen', k: 'Winter', min: 4, rec: null } };
+  var RPOS = [['vl', 'vorne links'], ['vr', 'vorne rechts'], ['hl', 'hinten links'], ['hr', 'hinten rechts']];
+  var R_ICON = {
+    sommer: '<svg class="rf-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.2" fill="currentColor"></circle><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"></path></g></svg>',
+    winter: '<svg class="rf-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5"></path><path d="M9.4 4.3 12 6.6l2.6-2.3M9.4 19.7 12 17.4l2.6 2.3M4.2 10.4l3.3-1 .7-3.4M19.8 13.6l-3.3 1-.7 3.4M4.2 13.6l3.3 1 .7 3.4M19.8 10.4l-3.3-1-.7-3.4"></path></g></svg>'
+  };
+  function reifenDoc(car) { var r = car && car.reifen; return r && typeof r === 'object' ? r : {}; }
+  function reifenSet(car, k) { var s = reifenDoc(car)[k]; return s && typeof s === 'object' ? s : null; }
+  function reifenMin(s) {
+    var p = s && s.profil;
+    if (!p || typeof p !== 'object') return null;
+    var v = RPOS.map(function (x) { return numOrNull(p[x[0]]); }).filter(function (x) { return x !== null; });
+    return v.length ? Math.min.apply(null, v) : null;
+  }
+  function reifenHas(s) { return !!s && !!(s.groesse || s.marke || s.modell || s.dot || s.felge || s.lager || reifenMin(s) !== null); }
+  /* DOT: die letzten vier Ziffern = Produktionswoche und -jahr (z. B. 2714 = Woche 27/2014) */
+  function dotInfo(dot) {
+    var m = /^(\d{2})(\d{2})$/.exec(String(dot || '').replace(/\s/g, ''));
+    if (!m) return null;
+    var wk = Number(m[1]), year = 2000 + Number(m[2]);
+    if (wk < 1 || wk > 53) return null;
+    var d = new Date(Date.UTC(year, 0, 4)), wd = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() - wd + 1 + (wk - 1) * 7);
+    var age = (Date.now() - d.getTime()) / (365.25 * 86400000);
+    return age < -0.05 ? null : { wk: wk, year: year, age: Math.max(0, age) };
+  }
+  function ageTxt(a) { var y = Math.floor(a + 1e-9); return y < 1 ? 'unter 1 Jahr' : y === 1 ? '1 Jahr' : y + ' Jahre'; }
+  function mmTxt(v) { return nfIn.format(round2(v)).replace('.', ',') + ' mm'; }
+  function reifenWarn(k, s) {
+    var out = [], min = reifenMin(s), lim = RSET[k], d = dotInfo(s && s.dot);
+    if (min !== null && min < lim.min) out.push({ lv: 'bad', t: k === 'winter' ? 'Unter 4 mm, zählt nicht mehr als Winterreifen' : 'Unter 1,6 mm, unter dem gesetzlichen Mindestprofil', q: k === 'winter' ? [1, 2] : [1] });
+    else if (min !== null && lim.rec && min < lim.rec) out.push({ lv: 'warn', t: 'Unter 3 mm, Continental rät zum Tausch', q: [3] });
+    if (d && d.age >= 10) out.push({ lv: 'bad', t: 'Älter als 10 Jahre, Continental rät zum Tausch', q: [3] });
+    return out;
+  }
+  /* Nächster Reifenwechsel: Winterreifenpflicht bei winterlichen Verhältnissen vom 1.11. bis 15.4. */
+  function reifenSaison(car) {
+    var r = reifenDoc(car), m = r.montiert === 'sommer' || r.montiert === 'winter' ? r.montiert : null;
+    if (!m || r.winterAbgestellt) return null;
+    var today = dayKey(new Date()), y = Number(today.slice(0, 4)), md = today.slice(5);
+    /* Sommerreifen drauf: ab 1.11. bis 15.4. jetzt fällig, sonst Termin 1.11. Winterreifen drauf: Mitte April bis Ende September
+       jetzt fällig (wer im Oktober schon umsteckt, wird nicht gemahnt), sonst Termin 16.4. */
+    if (m === 'sommer') return md >= '11-01' || md <= '04-15' ? { auf: 'winter', title: 'Winterreifen montieren', d: today, now: true } : { auf: 'winter', title: 'Winterreifen montieren', d: y + '-11-01', now: false };
+    return md >= '04-16' && md <= '09-30' ? { auf: 'sommer', title: 'Sommerreifen montieren', d: today, now: true } : { auf: 'sommer', title: 'Sommerreifen montieren', d: (md >= '10-01' ? y + 1 : y) + '-04-16', now: false };
+  }
+  function reifenGauge(k, s) {
+    var min = reifenMin(s), lim = RSET[k];
+    if (min === null) return '';
+    var lv = min < lim.min ? 'bad' : lim.rec && min < lim.rec ? 'warn' : 'ok', max = 9;
+    return '<span class="rf-tr lv-' + lv + '" aria-hidden="true"><span class="rf-tf" style="width:' + (Math.max(0.03, Math.min(1, min / max)) * 100).toFixed(1) + '%"></span><span class="rf-tm" style="left:' + (lim.min / max * 100).toFixed(1) + '%"></span></span>';
+  }
+  function reifenCard(id, car, k) {
+    var s = reifenSet(car, k), r = reifenDoc(car), on = r.montiert === k, can = canWrite();
+    var head = '<span class="rf-h">' + R_ICON[k] + '<b>' + RSET[k].k + '</b>' + (r.montiert ? '<span class="rf-m' + (on ? ' on' : '') + '">' + (on ? 'montiert' : 'eingelagert') + '</span>' : '') + '</span>';
+    var tag = can ? 'button type="button" data-act="reifen-edit" data-id="' + esc(id) + '" data-set="' + k + '"' : 'div';
+    var end = can ? 'button' : 'div';
+    if (!reifenHas(s)) return '<' + tag + ' class="rf-card k-' + k + ' leer">' + head + '<span class="rf-e">' + (can ? 'Noch nicht eingetragen. Antippen und Größe, Marke, DOT und Profil eintragen.' : 'Noch nicht eingetragen.') + '</span></' + end + '>';
+    var min = reifenMin(s), d = dotInfo(s.dot), meta = [];
+    if (min !== null) meta.push('Profil min. ' + mmTxt(min));
+    if (d) meta.push('DOT ' + String(d.wk).padStart(2, '0') + '/' + String(d.year).slice(2) + ', ' + ageTxt(d.age));
+    var w = reifenWarn(k, s);
+    return '<' + tag + ' class="rf-card k-' + k + (on ? ' on' : '') + '">' + head +
+      (s.groesse ? '<span class="rf-s">' + esc(s.groesse) + '</span>' : '') +
+      (s.marke || s.modell ? '<span class="rf-b">' + esc([s.marke, s.modell].filter(Boolean).join(' ')) + '</span>' : '') +
+      reifenGauge(k, s) + (meta.length ? '<span class="rf-x">' + esc(meta.join(' · ')) + '</span>' : '') +
+      w.map(function (x) { return '<span class="rf-w lv-' + x.lv + '">' + esc(x.t) + '</span>'; }).join('') +
+      (s.felge || s.lager ? '<span class="rf-l">' + esc([s.felge ? 'Felgen: ' + s.felge : '', !on && s.lager ? 'Lager: ' + s.lager : ''].filter(Boolean).join(' · ')) + '</span>' : '') +
+      '</' + end + '>';
+  }
+  function reifenSec(id, car) {
+    if (car.archiviert) return '';
+    var r = reifenDoc(car), sz = reifenSaison(car), can = canWrite(), log = arr(r.log).filter(function (x) { return x && isDay(x.d); });
+    var last = log.length ? log[log.length - 1] : null;
+    var h = '<div class="sh-sec rf-sec"><div class="vhead"><h3 class="sec">Reifen</h3>' + (can ? '<button type="button" class="linkbtn" data-act="reifen-wechsel" data-id="' + esc(id) + '">Reifenwechsel eintragen</button>' : '') + '</div>' +
+      '<div class="rf-g">' + reifenCard(id, car, 'sommer') + reifenCard(id, car, 'winter') + '</div>';
+    var info = [];
+    if (last) info.push('Zuletzt gewechselt ' + datum(last.d) + (numOrNull(last.km) !== null ? ' bei ' + nf.format(num(last.km)) + ' km' : '') + ' auf ' + (last.auf === 'winter' ? 'Winterreifen' : 'Sommerreifen') + '.');
+    if (sz && sz.now) info.push(sz.auf === 'winter' ? 'Sommerreifen drauf: Bei Schnee, Schneematsch oder Eis gilt vom 1.11. bis 15.4. die Winterreifenpflicht.' : 'Winterreifen drauf: Die Winterreifenpflicht endet am 15.4.');
+    if (r.winterAbgestellt) info.push('Steht im Winter, keine Erinnerung zum Reifenwechsel.');
+    if (info.length) h += '<p class="note">' + esc(info.join(' ')) + '</p>';
+    h += '<p class="help">Winterreifen brauchen M+S und mindestens 4 mm Profil' + srcRefs(REIFEN_Q, [1, 2]) + ', Sommerreifen mindestens 1,6 mm' + srcRefs(REIFEN_Q, [1]) + '. Continental rät, Sommerreifen schon bei 3 mm und Reifen nach 10 Jahren zu tauschen' + srcRefs(REIFEN_Q, [3]) + '.</p>';
+    return h + '</div>';
+  }
+  function openReifenForm(carId, k) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car || !RSET[k]) return;
+    var s = reifenSet(car, k) || {}, p = s.profil && typeof s.profil === 'object' ? s.profil : {};
+    var nv = function (v) { return numOrNull(v) === null ? '' : nfIn.format(v).replace('.', ','); };
+    openSheet('reifenform', { id: carId, set: k },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Reifen · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + RSET[k].n + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="reifenform" novalidate>' +
+      '<label class="f"><span>Größe</span><input id="r-gr" value="' + esc(s.groesse || '') + '" maxlength="40" placeholder="z. B. 205/55 R16 91V" autocomplete="off" autocapitalize="characters" spellcheck="false"><small>Steht auf der Reifenflanke.</small></label>' +
+      '<div class="row2"><label class="f"><span>Marke</span><input id="r-ma" value="' + esc(s.marke || '') + '" maxlength="40" placeholder="z. B. Continental" autocomplete="off"></label>' +
+      '<label class="f"><span>Modell</span><input id="r-mo" value="' + esc(s.modell || '') + '" maxlength="40" placeholder="z. B. WinterContact TS 870" autocomplete="off"></label></div>' +
+      '<label class="f"><span>DOT (Herstellwoche und -jahr)</span><input id="r-dot" inputmode="numeric" value="' + esc(s.dot || '') + '" maxlength="4" placeholder="z. B. 2319" autocomplete="off"><small>Die letzten vier Ziffern der DOT-Nummer auf der Flanke: 2319 heißt Woche 23 im Jahr 2019.</small></label>' +
+      '<fieldset class="f rf-pf"><legend>Profiltiefe in mm</legend><div class="rf-pg">' + RPOS.map(function (x) {
+        return '<label><span>' + x[1] + '</span><input id="r-p-' + x[0] + '" inputmode="decimal" value="' + nv(p[x[0]]) + '" placeholder="–" autocomplete="off"></label>';
+      }).join('') + '</div><small>' + esc(isDay(p.am) ? 'Zuletzt gemessen am ' + datum(p.am) + '. Geänderte Werte zählen ab heute.' : 'Geänderte Werte zählen als heute gemessen.') + '</small></fieldset>' +
+      '<div class="row2"><label class="f"><span>Felgen</span><input id="r-fe" value="' + esc(s.felge || '') + '" maxlength="40" placeholder="z. B. Alu 7×16 ET47" autocomplete="off"></label>' +
+      '<label class="f"><span>Lagerort</span><input id="r-la" value="' + esc(s.lager || '') + '" maxlength="40" placeholder="z. B. Reifenregal links" autocomplete="off"></label></div>' +
+      '<label class="f"><span>Notiz</span><textarea id="r-no" rows="2" maxlength="300" placeholder="z. B. hinten links Nagel repariert">' + esc(s.notiz || '') + '</textarea></label>' +
+      '<p class="err" id="rf-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
+      '<button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Zurück</button></div></form>');
+  }
+  async function saveReifen() {
+    var s = S.sheet;
+    if (!s || s.type !== 'reifenform' || S.busy) return;
+    var car = S.cars.get(s.id), showErr = function (m) { var el = $('#rf-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    showErr('');
+    if (!car) { showErr('Dieses Auto gibt es nicht mehr.'); return; }
+    if (!canWrite()) { showErr('Du kannst dieses Inventar nur ansehen.'); return; }
+    var dot = g('r-dot').replace(/\s/g, '');
+    if (dot && !dotInfo(dot)) { showErr('Die DOT bitte als vier Ziffern eintragen, Woche und Jahr, z. B. 2319.'); return; }
+    var old = reifenSet(car, s.set) || {}, op = old.profil && typeof old.profil === 'object' ? old.profil : {}, prof = {}, changed = false, bad = false;
+    RPOS.forEach(function (x) {
+      var v = parseNum(g('r-p-' + x[0]));
+      if (v !== null && (isNaN(v) || v < 0 || v > 20)) { bad = true; return; }
+      prof[x[0]] = v === null ? null : round2(v);
+      if (prof[x[0]] !== (numOrNull(op[x[0]]) === null ? null : round2(num(op[x[0]])))) changed = true;
+    });
+    if (bad) { showErr('Die Profiltiefe bitte in mm eintragen, z. B. 6,5.'); return; }
+    var any = RPOS.some(function (x) { return prof[x[0]] !== null; });
+    prof.am = any ? (changed || !isDay(op.am) ? dayKey(new Date()) : op.am) : null;
+    var set = Object.assign({}, old, { groesse: g('r-gr').slice(0, 40) || null, marke: g('r-ma').slice(0, 40) || null, modell: g('r-mo').slice(0, 40) || null, dot: dot || null,
+      profil: prof, felge: g('r-fe').slice(0, 40) || null, lager: g('r-la').slice(0, 40) || null, notiz: g('r-no').slice(0, 300) || null });
+    var rd = Object.assign({}, reifenDoc(car)), now = new Date().toISOString();
+    rd[s.set] = set;
+    var patch = { reifen: rd, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
+      S.cars.set(s.id, Object.assign({}, car, patch));
+      setBusy(false);
+      openCar(s.id); renderAll();
+      toast(RSET[s.set].n + ' gespeichert.');
+    } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
+  }
+  function openReifenWechsel(carId) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car) return;
+    var r = reifenDoc(car), auf = r.montiert === 'winter' ? 'sommer' : r.montiert === 'sommer' ? 'winter' : (function () { var md = dayKey(new Date()).slice(5); return md >= '09-15' || md <= '02-28' ? 'winter' : 'sommer'; })();
+    var ab = auf === 'winter' ? 'sommer' : 'winter', ck = curKmEst(car), back = S.sheet && S.sheet.type === 'zeitplan' ? 'zeitplan' : 'car';
+    openSheet('reifenwechsel', { id: carId, back: back },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Reifen · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">Reifenwechsel</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="reifenwechsel" novalidate>' +
+      '<div class="f"><span id="rw-auf-l">Jetzt montiert</span><div class="seg two rf-seg" role="radiogroup" aria-labelledby="rw-auf-l">' +
+      ['sommer', 'winter'].map(function (k) { return '<label><input type="radio" name="rw-auf" value="' + k + '"' + (k === auf ? ' checked' : '') + '><span>' + R_ICON[k] + RSET[k].n + '</span></label>'; }).join('') + '</div></div>' +
+      '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="rw-d" value="' + dayKey(new Date()) + '"></label>' +
+      '<label class="f"><span>Kilometerstand</span><input id="rw-km" inputmode="numeric" value="' + (numOrNull(car.km) === null ? '' : String(car.km)) + '" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'optional') + '" autocomplete="off"></label></div>' +
+      '<fieldset class="f rf-pf"><legend id="rw-pl">' + esc('Profil der abmontierten ' + RSET[ab].n + ' (optional)') + '</legend><div class="rf-pg">' + RPOS.map(function (x) {
+        return '<label><span>' + x[1] + '</span><input id="rw-p-' + x[0] + '" inputmode="decimal" placeholder="–" autocomplete="off"></label>';
+      }).join('') + '</div><small>Gleich beim Abnehmen messen, dann ist der Satz fürs Einlagern dokumentiert.</small></fieldset>' +
+      '<label class="f"><span>Kosten (€)</span><input id="rw-k" inputmode="decimal" placeholder="leer = selbst gemacht, 0 €" autocomplete="off"></label>' +
+      '<label class="check"><input type="checkbox" id="rw-ab"' + (r.winterAbgestellt ? ' checked' : '') + '><span>Auto steht im Winter (keine Erinnerung zum Reifenwechsel)</span></label>' +
+      '<p class="help">Wird als Arbeit im Serviceheft eingetragen.</p>' +
+      '<p class="err" id="rw-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Eintragen</button>' +
+      '<button type="button" class="btn ghost" data-act="' + (back === 'zeitplan' ? 'zeitplan' : 'back-car') + '" data-id="' + esc(carId) + '">Zurück</button></div></form>');
+  }
+  function reifenWechselLabel() {
+    var c = $('input[name="rw-auf"]:checked'), el = $('#rw-pl');
+    if (c && el) el.textContent = 'Profil der abmontierten ' + RSET[c.value === 'winter' ? 'sommer' : 'winter'].n + ' (optional)';
+  }
+  async function saveReifenWechsel() {
+    var s = S.sheet;
+    if (!s || s.type !== 'reifenwechsel' || S.busy) return;
+    var car = S.cars.get(s.id), showErr = function (m) { var el = $('#rw-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    showErr('');
+    if (!car) { showErr('Dieses Auto gibt es nicht mehr.'); return; }
+    if (!canWrite()) { showErr('Du kannst dieses Inventar nur ansehen.'); return; }
+    var c = $('input[name="rw-auf"]:checked'), auf = c ? c.value : null, d = g('rw-d'), km = parseNum(g('rw-km')), k = parseNum(g('rw-k'));
+    if (auf !== 'sommer' && auf !== 'winter') { showErr('Bitte wählen, welche Reifen jetzt montiert sind.'); return; }
+    if (!isDay(d) || d > dayKey(new Date())) { showErr('Bitte ein gültiges Datum eintragen, nicht in der Zukunft.'); return; }
+    if (km !== null && (isNaN(km) || km < 0)) { showErr('Den Kilometerstand bitte als Zahl eintragen.'); return; }
+    if (k !== null && (isNaN(k) || k < 0)) { showErr('Die Kosten bitte als Zahl eintragen, z. B. 40.'); return; }
+    var ab = auf === 'winter' ? 'sommer' : 'winter', prof = {}, bad = false, any = false;
+    RPOS.forEach(function (x) { var v = parseNum(g('rw-p-' + x[0])); if (v !== null && (isNaN(v) || v < 0 || v > 20)) bad = true; else { prof[x[0]] = v === null ? null : round2(v); if (v !== null) any = true; } });
+    if (bad) { showErr('Die Profiltiefe bitte in mm eintragen, z. B. 6,5.'); return; }
+    var now = new Date().toISOString(), rd = Object.assign({}, reifenDoc(car));
+    rd.montiert = auf;
+    rd.winterAbgestellt = !!(($('#rw-ab') || {}).checked);
+    rd.log = arr(rd.log).concat([{ d: d, km: km === null ? null : Math.round(km), auf: auf }]).slice(-40);
+    if (any) { prof.am = d; rd[ab] = Object.assign({}, reifenSet(car, ab) || {}, { profil: prof }); }
+    var work = { id: rid(10), erstellt: now, titel: 'Reifenwechsel auf ' + RSET[auf].n, datum: d, datumGenau: 'tag', kosten: k === null ? 0 : round2(k), km: km === null ? null : Math.round(km), kmCa: false, notiz: any ? 'Profil ' + RSET[ab].n + ': ' + RPOS.filter(function (x) { return prof[x[0]] !== null; }).map(function (x) { return x[0].toUpperCase() + ' ' + mmTxt(prof[x[0]]); }).join(', ') : '', wartung: [], reifen: auf };
+    var patch = { reifen: rd, arbeiten: arr(car.arbeiten).concat([work]), geaendert: now };
+    if (work.km !== null && (numOrNull(car.km) === null || work.km > num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) { patch.km = work.km; patch.kmDatum = d; patch.kmLog = kmLogWith(car, d, work.km); }
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
+      S.cars.set(s.id, Object.assign({}, car, patch));
+      setBusy(false);
+      if (s.back === 'zeitplan') openZeitplan(); else openCar(s.id);
+      renderAll();
+      toast(RSET[auf].n + ' montiert, im Serviceheft eingetragen.');
+    } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
   }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
@@ -6303,7 +6556,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var d = zeitplanData(), stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
     var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Werkstatt-Inventar//DE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Werkstatt'];
     d.ev.forEach(function (e) {
-      var uid = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : 'rep-' + e.id;
+      var uid = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : e.kind === 'reifen' ? 'reifen-' + e.car + '-' + e.auf + '-' + e.d.slice(0, 4) : 'rep-' + e.id;
       var title = e.carName + ': ' + e.title;
       lines.push('BEGIN:VEVENT', 'UID:' + icsEsc(uid) + '@werkstatt-inventar', 'DTSTAMP:' + stamp,
         'DTSTART;VALUE=DATE:' + e.d.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + addDays(e.d, 1).replace(/-/g, ''),
@@ -6619,6 +6872,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'back-cell': if (s && (s.type === 'cellform' || s.type === 'cell' || s.type === 'inventur')) openCell(s.lager, s.cell); break;
       case 'inv-start': if (s && s.type === 'cell') openInv(s.lager, s.cell); break;
       case 'pickerl-edit': openPickerlForm(t.dataset.id); break;
+      case 'reifen-edit': openReifenForm(t.dataset.id, t.dataset.set); break;
+      case 'reifen-wechsel': openReifenWechsel(t.dataset.id); break;
       case 'pickerl-plus': var pm = $('#p-mon'); if (pm && isYm(t.dataset.val)) pm.value = t.dataset.val; break;
       case 'zeitplan': openZeitplan(); break;
       case 'zeitplan-csv': saveZeitplanCsv(); break;
@@ -6635,6 +6890,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function onChange(e) {
     var t = e.target;
     if (!t) return;
+    if (t.name === 'rw-auf') { reifenWechselLabel(); return; }
     if (t.name === 'f-bereich') {
       var f = $('#editform');
       if (f) f.dataset.bereich = t.value;
@@ -6682,6 +6938,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'lendform') { e.preventDefault(); saveLend(); }
       else if (e.target.id === 'invform') { e.preventDefault(); saveInv(); }
       else if (e.target.id === 'pickerlform') { e.preventDefault(); savePickerl(); }
+      else if (e.target.id === 'reifenform') { e.preventDefault(); saveReifen(); }
+      else if (e.target.id === 'reifenwechsel') { e.preventDefault(); saveReifenWechsel(); }
       else if (e.target.id === 'kmallform') { e.preventDefault(); saveKmAll(); }
     });
     document.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'repdone') S.repDoneOpen = e.target.open; }, true);
