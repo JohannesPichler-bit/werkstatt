@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "24", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "24.1", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -6412,7 +6412,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var info = [];
     if (last) info.push('Zuletzt gewechselt ' + datum(last.d) + (numOrNull(last.km) !== null ? ' bei ' + nf.format(num(last.km)) + ' km' : '') + ' auf ' + (last.auf === 'winter' ? 'Winterreifen' : 'Sommerreifen') + '.');
     if (sz && sz.now) info.push(sz.auf === 'winter' ? 'Sommerreifen drauf: Bei Schnee, Schneematsch oder Eis gilt vom 1.11. bis 15.4. die Winterreifenpflicht.' : 'Winterreifen drauf: Die Winterreifenpflicht endet am 15.4.');
+    else if (sz) info.push('Nächster Wechsel: ' + (sz.auf === 'winter' ? 'Winterreifen' : 'Sommerreifen') + ' ab ' + datum(sz.d) + '.');
     if (r.winterAbgestellt) info.push('Steht im Winter, keine Erinnerung zum Reifenwechsel.');
+    else if (!r.montiert && !car.fremd && (reifenHas(reifenSet(car, 'sommer')) || reifenHas(reifenSet(car, 'winter')))) info.push('Hake beim Reifensatz „gerade montiert“ an, dann erinnert die App an den nächsten Wechsel.');
     if (info.length) h += '<p class="note">' + esc(info.join(' ')) + '</p>';
     h += '<p class="help">Winterreifen brauchen M+S und mindestens 4 mm Profil' + srcRefs(REIFEN_Q, [1, 2]) + ', Sommerreifen mindestens 1,6 mm' + srcRefs(REIFEN_Q, [1]) + '. Continental rät, Sommerreifen schon bei 3 mm und Reifen nach 10 Jahren zu tauschen' + srcRefs(REIFEN_Q, [3]) + '.</p>';
     return h + '</div>';
@@ -6438,6 +6440,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<div class="row2"><label class="f"><span>Felgen</span><input id="r-fe" value="' + esc(s.felge || '') + '" maxlength="40" placeholder="z. B. Alu 7×16 ET47" autocomplete="off"></label>' +
       '<label class="f"><span>Lagerort</span><input id="r-la" value="' + esc(s.lager || '') + '" maxlength="40" placeholder="z. B. Reifenregal links" autocomplete="off"></label></div>' +
       '<label class="f"><span>Notiz</span><textarea id="r-no" rows="2" maxlength="300" placeholder="z. B. hinten links Nagel repariert">' + esc(s.notiz || '') + '</textarea></label>' +
+      '<label class="check"><input type="checkbox" id="r-mon"' + (reifenDoc(car).montiert === k ? ' checked' : '') + '><span>Diese Reifen sind gerade montiert</span></label>' +
+      (car.fremd ? '' : '<p class="help">Dann erinnert die App rechtzeitig an den nächsten Wechsel.</p>') +
       '<p class="err" id="rf-err" role="alert"></p>' +
       '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
       '<button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Zurück</button></div></form>');
@@ -6464,8 +6468,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     prof.am = any ? (changed || !isDay(op.am) ? dayKey(new Date()) : op.am) : null;
     var set = Object.assign({}, old, { groesse: g('r-gr').slice(0, 40) || null, marke: g('r-ma').slice(0, 40) || null, modell: g('r-mo').slice(0, 40) || null, dot: dot || null,
       profil: prof, felge: g('r-fe').slice(0, 40) || null, lager: g('r-la').slice(0, 40) || null, notiz: g('r-no').slice(0, 300) || null });
-    var rd = Object.assign({}, reifenDoc(car)), now = new Date().toISOString();
+    var rd = Object.assign({}, reifenDoc(car)), now = new Date().toISOString(), mon = !!(($('#r-mon') || {}).checked);
     rd[s.set] = set;
+    if (mon) rd.montiert = s.set; else if (rd.montiert === s.set) rd.montiert = null;
     var patch = { reifen: rd, geaendert: now };
     setBusy(true);
     try {
