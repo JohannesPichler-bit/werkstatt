@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "26.1", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "27", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1521,6 +1521,21 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .kl-cars { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .kl-cars legend { padding: 0; margin-bottom: 4px; font-size: 14px; font-weight: 700; color: var(--muted); }
 .kl-cars small { font-size: 12px; line-height: 1.3; color: var(--muted); }
+/* Service-Aufkleber */
+.et-prev { display: flex; flex-direction: column; gap: 12px; align-items: center; padding: 16px 12px; border-radius: 12px; background: var(--surface-2); }
+.et-p { margin: 0; width: 100%; max-width: 330px; }
+.et-svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18)); }
+.et-sel { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.et-sel legend { padding: 0; margin-bottom: 4px; font-size: 14px; font-weight: 700; color: var(--muted); }
+.et-grid { display: grid; gap: 4px; max-width: 270px; padding: 8px; border-radius: 6px; background: #ffffff; border: 1px solid var(--line); }
+.et-c { aspect-ratio: 63.5 / 33.9; min-height: 0; padding: 0; border-radius: 3px; border: 1px solid #c4ccd1; background: #f4f6f7; color: #ffffff; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.et-c.used { background: repeating-linear-gradient(135deg, #d5dbdf 0 4px, #f4f6f7 4px 8px); }
+.et-c.on { background: #172024; border-color: #172024; }
+.et-c:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+.et-eigen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.et-eigen .help { grid-column: 1 / -1; }
+.et-adj summary { padding: 6px 0; font-weight: 700; cursor: pointer; }
+.et-adj[open] summary { margin-bottom: 6px; }
 </style>
 
 <div class="wrap">
@@ -3664,6 +3679,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
       (pre.repair ? '<button type="button" class="btn ghost" data-act="open-rep" data-id="' + esc(pre.repair) + '">Zurück</button>'
         : '<button type="button" class="btn ghost" data-act="' + (pre.back === 'wart' ? 'wart-open' : pre.back === 'sh' ? 'sh-open' : 'back-car') + '" data-id="' + esc(carId) + '">Zurück</button>') +
+      (workId ? etButton(carId, w) : '') +
       (workId ? '<button type="button" class="btn ghost" data-act="work-del">Entfernen</button>' : '') +
       '</div></form>');
     setTimeout(function () { var f = $('#w-titel'); if (f && !workId) { try { f.focus(); } catch (_) {} } }, 80);
@@ -7727,6 +7743,226 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       toast('Übernommen: ' + d.p.n + ', ' + carName(cid) + '.');
     } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
   }
+  /* ---------- Service-Aufkleber zum Ausdrucken (PDF für Etikettenbögen) ---------- */
+  var ET_FMT = {
+    l4773: { n: '63,5 × 33,9 mm, 24 je Bogen (z. B. Avery Zweckform L4773 wetterfest)', w: 63.5, h: 33.9, cols: 3, rows: 8, top: 12.9, left: 7.25, px: 66.0, py: 33.9 }
+  };
+  var ET_TITEL = { oel: 'Ölwechsel', luft: 'Luftfilter', innenraum: 'Innenraumfilter', kraftstoff: 'Kraftstofffilter', zuendkerzen: 'Zündkerzen', gluehkerzen: 'Glühkerzen', zahnriemen: 'Zahnriemen', steuerkette: 'Steuerkette', keilriemen: 'Keilrippenriemen', wasserpumpe: 'Wasserpumpe', bremsfluessigkeit: 'Bremsflüssigkeit', kuehlmittel: 'Kühlmittel', getriebeoel: 'Getriebeöl', atf: 'Automatikgetriebeöl', differential: 'Differentialöl', servo: 'Servoöl', ventilspiel: 'Ventilspiel' };
+  var ET_EIGEN = ['w', 'h', 'cols', 'rows', 'top', 'left', 'px', 'py'];
+  var ET_EIGEN_N = { w: 'Breite', h: 'Höhe', cols: 'Spalten', rows: 'Zeilen', top: 'Rand oben', left: 'Rand links', px: 'Abstand waagrecht (von Etikett zu Etikett)', py: 'Abstand senkrecht (von Etikett zu Etikett)' };
+  function etSettings() {
+    var o = null;
+    try { o = JSON.parse(lsGet('etiketten') || 'null'); } catch (_) {}
+    o = o && typeof o === 'object' ? o : {};
+    var e = o.eigen && typeof o.eigen === 'object' ? o.eigen : {};
+    var eigen = {};
+    ET_EIGEN.forEach(function (k) { var v = Number(e[k]); eigen[k] = isFinite(v) && (v > 0 || (v === 0 && (k === 'top' || k === 'left'))) ? v : ET_FMT.l4773[k]; });
+    var clamp = function (v) { v = Number(v); return isFinite(v) ? Math.max(-10, Math.min(10, v)) : 0; };
+    return { fmt: o.fmt === 'eigen' ? 'eigen' : 'l4773', dx: clamp(o.dx), dy: clamp(o.dy), eigen: eigen, name: typeof o.name === 'string' ? o.name.slice(0, 40) : null };
+  }
+  function etSaveSettings(st) { lsSet('etiketten', JSON.stringify(st)); }
+  function etFormat(st) {
+    if (st.fmt !== 'eigen') return ET_FMT.l4773;
+    var e = st.eigen;
+    return { n: 'Eigenes Format', w: e.w, h: e.h, cols: Math.max(1, Math.min(10, Math.round(e.cols))), rows: Math.max(1, Math.min(20, Math.round(e.rows))), top: e.top, left: e.left, px: e.px, py: e.py };
+  }
+  /* Wartungspunkte des Eintrags mit Intervall; nächster Termin = km und Datum des Eintrags plus Intervall */
+  function etItems(carId, w) {
+    if (!w) return [];
+    var rows = wartRows(carId), posten = wartPostenFor(carId);
+    var ids = Array.isArray(w.wartung) ? w.wartung : wartMatch(w.titel, true, posten);
+    var km = numOrNull(w.km), d = isDay(w.datum) ? w.datum : null;
+    return rows.filter(function (r) { return ids.indexOf(r.p.id) >= 0 && (r.iv.km !== null || r.iv.monate !== null); }).map(function (r) {
+      var mat = arr(r.p.material)[0];
+      return {
+        id: r.p.id, titel: ET_TITEL[r.p.art] || String(r.p.name || 'Service'), name: String(r.p.name || ''),
+        km: km, kmCa: !!w.kmCa, d: d, g: w.datumGenau || 'tag',
+        nKm: km !== null && r.iv.km !== null ? km + r.iv.km : null, nYm: d && r.iv.monate !== null ? addMonths(d.slice(0, 7) + '-01', r.iv.monate).slice(0, 7) : null,
+        mat: mat ? [mat.name, mat.menge].filter(Boolean).join(', ') : ''
+      };
+    });
+  }
+  function etNext(it) {
+    var a = [];
+    if (it.nKm !== null) a.push((it.kmCa ? 'ca. ' : '') + nf.format(it.nKm) + ' km');
+    if (it.nYm) a.push(ymTxt(it.nYm));
+    return a.join(' oder ');
+  }
+  function etDone(it) {
+    var d = it.d ? (it.g === 'jahr' ? it.d.slice(0, 4) : it.g === 'monat' ? ymTxt(it.d.slice(0, 7)) : datum(it.d)) : '';
+    return { d: d, km: it.km !== null ? (it.kmCa ? 'ca. ' : '') + nf.format(it.km) + ' km' : '' };
+  }
+  function etDefaultFoot(carId) {
+    var st = etSettings(), car = S.cars.get(carId) || {}, nm = st.name !== null ? st.name : klConf().name;
+    return [nm, car.kennzeichen || car.name || ''].filter(Boolean).join(' · ').slice(0, 60);
+  }
+  /* Vorschau als SVG in mm */
+  function etSvg(it, txt, foot, f) {
+    var w = f.w, h = f.h, k = Math.min(w / 63.5, h / 33.9), m = 2.2 * k, hb = 7.4 * k, dn = etDone(it), nx = etNext(it);
+    var t = function (x, y, s, size, weight, fill, anchor, ls) { return '<text x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" font-size="' + size.toFixed(2) + '" font-weight="' + weight + '" fill="' + fill + '"' + (anchor ? ' text-anchor="' + anchor + '"' : '') + (ls ? ' letter-spacing="' + ls + '"' : '') + ' font-family="Helvetica, Arial, sans-serif">' + esc(s) + '</text>'; };
+    var pt = 0.3528;
+    return '<svg class="et-svg" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + esc(it.titel + ', nächster ' + nx) + '">' +
+      '<rect x="0.15" y="0.15" width="' + (w - 0.3) + '" height="' + (h - 0.3) + '" rx="' + (2 * k).toFixed(2) + '" fill="#fff" stroke="#c4ccd1" stroke-width="0.3"></rect>' +
+      '<rect x="' + m + '" y="' + m + '" width="' + (w - 2 * m) + '" height="' + hb + '" rx="' + (1.2 * k).toFixed(2) + '" fill="#111"></rect>' +
+      t(m + 2 * k, m + hb * 0.7, it.titel.toUpperCase(), 11 * pt * k, 700, '#fff', '', 0.25 * k) +
+      (dn.d ? t(w - m - 2 * k, m + hb * 0.68, dn.d, 8 * pt * k, 400, '#fff', 'end') : '') +
+      t(m + 0.4 * k, m + hb + 4.2 * k, (dn.km ? 'Erledigt bei ' + dn.km : 'Erledigt') + (txt ? ' · ' + txt : ''), 7 * pt * k, 400, '#111') +
+      '<line x1="' + m + '" y1="' + (m + hb + 6.6 * k) + '" x2="' + (w - m) + '" y2="' + (m + hb + 6.6 * k) + '" stroke="#111" stroke-width="' + (0.25 * k).toFixed(2) + '"></line>' +
+      t(m + 0.4 * k, m + hb + 10.2 * k, 'NÄCHSTER WECHSEL', 6 * pt * k, 700, '#111', '', 0.3 * k) +
+      t(m + 0.4 * k, m + hb + 15.6 * k, nx || 'Intervall fehlt', 12.5 * pt * k, 700, '#111') +
+      (foot ? t(m + 0.4 * k, h - m - 0.2 * k, foot, 6.5 * pt * k, 400, '#333') : '') + '</svg>';
+  }
+  function etFit(doc, s, maxW, size, minSize) {
+    var z = size;
+    doc.setFontSize(z);
+    while (z > minSize && doc.getTextWidth(s) > maxW) { z -= 0.25; doc.setFontSize(z); }
+    if (doc.getTextWidth(s) > maxW) { while (s.length > 1 && doc.getTextWidth(s + '…') > maxW) s = s.slice(0, -1); s += '…'; }
+    return s;
+  }
+  function etDraw(doc, x, y, f, it, txt, foot, T) {
+    var w = f.w, h = f.h, k = Math.min(w / 63.5, h / 33.9), m = 2.2 * k, hb = 7.4 * k, dn = etDone(it), nx = etNext(it), inner = w - 2 * m - 0.8 * k;
+    doc.setFillColor(17, 17, 17);
+    doc.roundedRect(x + m, y + m, w - 2 * m, hb, 1.2 * k, 1.2 * k, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'normal');
+    var dw = 0;
+    if (dn.d) { doc.setFontSize(8 * k); dw = doc.getTextWidth(T(dn.d)) + 3 * k; doc.text(T(dn.d), x + w - m - 2 * k, y + m + hb * 0.68, { align: 'right' }); }
+    doc.setFont('helvetica', 'bold');
+    doc.setCharSpace(0.25 * k);
+    var title = etFit(doc, T(it.titel.toUpperCase()), w - 2 * m - 4 * k - dw, 11 * k, 7 * k);
+    doc.text(title, x + m + 2 * k, y + m + hb * 0.7);
+    doc.setCharSpace(0);
+    doc.setTextColor(17, 17, 17);
+    doc.setFont('helvetica', 'normal');
+    var l2 = etFit(doc, T((dn.km ? 'Erledigt bei ' + dn.km : 'Erledigt') + (txt ? ' · ' + txt : '')), inner, 7 * k, 5.5 * k);
+    doc.text(l2, x + m + 0.4 * k, y + m + hb + 4.2 * k);
+    doc.setDrawColor(17, 17, 17); doc.setLineWidth(0.25 * k);
+    doc.line(x + m, y + m + hb + 6.6 * k, x + w - m, y + m + hb + 6.6 * k);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(6 * k); doc.setCharSpace(0.3 * k);
+    doc.text(T('NÄCHSTER WECHSEL'), x + m + 0.4 * k, y + m + hb + 10.2 * k);
+    doc.setCharSpace(0);
+    var nv = etFit(doc, T(nx || 'Intervall fehlt'), inner, 12.5 * k, 8 * k);
+    doc.text(nv, x + m + 0.4 * k, y + m + hb + 15.6 * k);
+    if (foot) {
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(51, 51, 51);
+      doc.text(etFit(doc, T(foot), inner, 6.5 * k, 5 * k), x + m + 0.4 * k, y + h - m - 0.2 * k);
+    }
+  }
+  function etPdfT(s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/[^\u0000-ÿ€…–—„“”‘’·]/g, '?'); }
+  /* ---------- Bildschirm ---------- */
+  function openEtiketten(carId, workId) {
+    var car = S.cars.get(carId), w = car ? arr(car.arbeiten).filter(function (x) { return x && x.id === workId; })[0] : null;
+    if (!w) { toast('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var items = etItems(carId, w);
+    if (!items.length) { toast('Dieser Eintrag zählt für keinen Wartungspunkt mit Intervall. Im Eintrag unter „Zählt im Wartungsplan“ anhaken.'); return; }
+    var txt = {};
+    items.forEach(function (i) { txt[i.id] = i.mat ? i.mat.slice(0, 48) : ''; });
+    var st = { car: carId, work: workId, items: items, sel: items.map(function (i) { return i.id; }), start: 0, copies: 1, txt: txt, foot: etDefaultFoot(carId) };
+    openSheet('etiketten', st, sheetEtiketten(st));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+    loadJsPdf().catch(function () {});
+  }
+  function etSelItems(s) { return s.items.filter(function (i) { return s.sel.indexOf(i.id) >= 0; }); }
+  function etPrevHtml(s) {
+    var st = etSettings(), f = etFormat(st), list = etSelItems(s);
+    return list.length ? list.map(function (it) { return '<figure class="et-p">' + etSvg(it, s.txt[it.id] || '', s.foot, f) + '</figure>'; }).join('') : '<p class="note">Bitte mindestens einen Aufkleber wählen.</p>';
+  }
+  function etGridHtml(s) {
+    var st = etSettings(), f = etFormat(st), n = f.cols * f.rows, need = etSelItems(s).length * s.copies, h = '';
+    for (var i = 0; i < n; i++) {
+      var on = i >= s.start && i < s.start + need;
+      h += '<button type="button" class="et-c' + (i < s.start ? ' used' : '') + (on ? ' on' : '') + '" data-act="et-start" data-i="' + i + '" aria-label="' + esc('Start bei Etikett ' + (i + 1)) + '"' + (i === s.start ? ' aria-pressed="true"' : '') + '>' + (on ? (i - s.start + 1) : '') + '</button>';
+    }
+    var over = s.start + need > n;
+    return '<div class="et-grid" style="grid-template-columns:repeat(' + f.cols + ',minmax(0,1fr))">' + h + '</div>' +
+      '<p class="help">' + esc('Tipp auf das erste freie Etikett. Grau = schon verbraucht' + (over ? '. Passt nicht auf einen Bogen, der Rest kommt auf einen zweiten.' : '.')) + '</p>';
+  }
+  function sheetEtiketten(st0) {
+    var s = st0 || S.sheet, car = S.cars.get(s.car) || {}, st = etSettings(), f = etFormat(st);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Service-Aufkleber · ' + (car.name || 'Auto')) + '</p><h2 class="sh-title" id="sheet-title">Aufkleber drucken</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div><div class="form">';
+    h += '<div class="et-prev" id="et-prev">' + etPrevHtml(s) + '</div>';
+    if (s.items.length > 1) h += '<fieldset class="et-sel"><legend>Welche Aufkleber?</legend>' + s.items.map(function (it) { return '<label class="check"><input type="checkbox" name="et-it" value="' + esc(it.id) + '"' + (s.sel.indexOf(it.id) >= 0 ? ' checked' : '') + '><span>' + esc(it.titel + ' · nächster ' + (etNext(it) || 'offen')) + '</span></label>'; }).join('') + '</fieldset>';
+    h += s.items.map(function (it) { return '<label class="f"><span>' + esc(s.items.length > 1 ? 'Zusatz beim Aufkleber ' + it.titel : 'Zusatz in Zeile 2') + '</span><input id="et-txt-' + esc(it.id) + '" data-it="' + esc(it.id) + '" value="' + esc(s.txt[it.id] || '') + '" maxlength="48" placeholder="' + (it.id === 'oel' || /oel/.test(it.id) ? 'z. B. 5W-30 LL-01, 4,5 l' : 'optional') + '" autocomplete="off"></label>'; }).join('') +
+      '<p class="help">Zum Beispiel das verwendete Öl oder die Teilenummer. Vorgeschlagen ist der Wert aus dem Wartungsplan.</p>' +
+      '<label class="f"><span>Fußzeile</span><input id="et-foot" value="' + esc(s.foot) + '" maxlength="60" autocomplete="off"><small>Dein Name und das Kennzeichen, falls eingetragen.</small></label>' +
+      '<label class="f"><span>Anzahl je Aufkleber</span><select id="et-copies">' + [1, 2, 3, 4].map(function (n) { return '<option' + (n === s.copies ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>';
+    h += '<div class="f"><span>Etikettenbogen</span><select id="et-fmt"><option value="l4773"' + (st.fmt === 'l4773' ? ' selected' : '') + '>' + esc(ET_FMT.l4773.n) + '</option><option value="eigen"' + (st.fmt === 'eigen' ? ' selected' : '') + '>Eigenes Format (Maße selbst eintragen)</option></select></div>';
+    if (st.fmt === 'eigen') h += '<div class="et-eigen">' + ET_EIGEN.map(function (k) { return '<label class="f"><span>' + esc(ET_EIGEN_N[k]) + (k === 'cols' || k === 'rows' ? '' : ' (mm)') + '</span><input id="et-e-' + k + '" inputmode="decimal" value="' + esc(nfIn.format(st.eigen[k]).replace('.', ',')) + '" autocomplete="off"></label>'; }).join('') + '<p class="help">Die Maße stehen auf der Packung oder auf der Hersteller-Seite der Etiketten.</p></div>';
+    h += '<div class="f"><span>Erstes freies Etikett auf dem Bogen</span><div id="et-gridbox">' + etGridHtml(s) + '</div></div>';
+    h += '<details class="et-adj"' + (st.dx || st.dy ? ' open' : '') + '><summary>Druck anpassen</summary>' +
+      '<p class="help">Erst die Probeseite auf normales Papier drucken, auf einen Etikettenbogen legen und gegen das Licht halten. Sitzen die Rahmen verschoben, hier den Versatz in mm eintragen (nach rechts bzw. unten positiv).</p>' +
+      '<div class="row2"><label class="f"><span>nach rechts (mm)</span><input id="et-dx" inputmode="decimal" value="' + esc(String(st.dx).replace('.', ',')) + '" autocomplete="off"></label>' +
+      '<label class="f"><span>nach unten (mm)</span><input id="et-dy" inputmode="decimal" value="' + esc(String(st.dy).replace('.', ',')) + '" autocomplete="off"></label></div></details>';
+    h += '<p class="help">' + (st.fmt === 'eigen' ? '' : 'Maße: 3 × 8 Etiketten, Rand oben 12,9 mm, links 7,25 mm, Abstand 66,0 × 33,9 mm (Vorlage für 63,5 × 33,9 mm wie Avery L7159). Vor dem ersten Druck die Probeseite nehmen. ') + 'Beim Drucken „Tatsächliche Größe“ bzw. 100 % wählen, nicht „An Seite anpassen“. Für wetterfeste Folienetiketten einen Laserdrucker nehmen.</p>';
+    h += '<p class="err" id="et-err" role="alert"></p><div class="sh-foot">' + (S.dl ? '<button type="button" class="btn" data-act="et-pdf">PDF erstellen</button><button type="button" class="btn ghost" data-act="et-test">Probeseite</button>' : '<p class="note">Speichern geht in dieser Ansicht nicht.</p>') +
+      '<button type="button" class="btn ghost" data-act="work-edit" data-id="' + esc(s.car) + '" data-work="' + esc(s.work) + '">Zurück</button></div></div>';
+    return h;
+  }
+  function etRefresh(full) {
+    var s = S.sheet;
+    if (!s || s.type !== 'etiketten') return;
+    if (full) { var sh = $('#sheet'), top = sh.scrollTop; setHTML(sh, sheetEtiketten()); sh.scrollTop = top; return; }
+    var p = $('#et-prev'), g = $('#et-gridbox');
+    if (p) p.innerHTML = etPrevHtml(s);
+    if (g) g.innerHTML = etGridHtml(s);
+  }
+  function etInput(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'etiketten' || !t || !t.id) return false;
+    if (/^et-txt-/.test(t.id) && t.dataset.it) { s.txt[t.dataset.it] = t.value.slice(0, 48); etRefresh(false); return true; }
+    if (t.id === 'et-foot') { s.foot = t.value.slice(0, 60); etRefresh(false); return true; }
+    if (t.id === 'et-dx' || t.id === 'et-dy') { var st = etSettings(), v = parseNum(t.value); if (v === null || !isNaN(v)) { st[t.id === 'et-dx' ? 'dx' : 'dy'] = v === null ? 0 : Math.max(-10, Math.min(10, v)); etSaveSettings(st); } return true; }
+    if (/^et-e-/.test(t.id)) { var st2 = etSettings(), k = t.id.slice(5), v2 = parseNum(t.value); if (v2 !== null && !isNaN(v2) && (v2 > 0 || (v2 === 0 && (k === 'top' || k === 'left')))) { st2.eigen[k] = v2; etSaveSettings(st2); etRefresh(false); } return true; }
+    return false;
+  }
+  function etChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'etiketten') return false;
+    if (t.name === 'et-it') { s.sel = $$('input[name="et-it"]').filter(function (c) { return c.checked; }).map(function (c) { return c.value; }); etRefresh(false); return true; }
+    if (t.id === 'et-copies') { s.copies = Math.max(1, Math.min(4, Number(t.value) || 1)); etRefresh(false); return true; }
+    if (t.id === 'et-fmt') { var st = etSettings(); st.fmt = t.value === 'eigen' ? 'eigen' : 'l4773'; etSaveSettings(st); s.start = 0; etRefresh(true); return true; }
+    return false;
+  }
+  function etStart(i) { var s = S.sheet; if (!s || s.type !== 'etiketten') return; s.start = Math.max(0, Number(i) || 0); etRefresh(false); }
+  async function etPdf(test) {
+    var s = S.sheet, err = function (m) { var el = $('#et-err'); if (el) el.textContent = m; else toast(m); };
+    if (!s || s.type !== 'etiketten') return;
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var list = etSelItems(s);
+    if (!test && !list.length) { err('Bitte mindestens einen Aufkleber wählen.'); return; }
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var st = etSettings(), f = etFormat(st), n = f.cols * f.rows, car = S.cars.get(s.car) || {};
+    if (f.left + (f.cols - 1) * f.px + f.w > 210.5 || f.top + (f.rows - 1) * f.py + f.h > 297.5) { err('Das Format passt nicht auf A4. Bitte die Maße prüfen.'); return; }
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true }), T = etPdfT;
+    doc.setProperties({ title: test ? 'Probeseite Etiketten' : 'Service-Aufkleber ' + (car.name || ''), creator: 'Werkstatt-Inventar' });
+    var pos = function (i) { return { x: f.left + (i % f.cols) * f.px + st.dx, y: f.top + Math.floor(i / f.cols) * f.py + st.dy }; };
+    if (test) {
+      doc.setDrawColor(120, 130, 136); doc.setLineWidth(0.2); doc.setTextColor(86, 99, 108); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+      for (var i = 0; i < n; i++) { var p = pos(i); doc.roundedRect(p.x, p.y, f.w, f.h, 1.5, 1.5, 'S'); doc.text(String(i + 1), p.x + f.w / 2, p.y + f.h / 2 + 1, { align: 'center' }); }
+      doc.setDrawColor(17, 17, 17); doc.setLineWidth(0.4); doc.line(55, 148.5, 155, 148.5); doc.line(55, 146.5, 55, 150.5); doc.line(155, 146.5, 155, 150.5);
+      doc.setTextColor(17, 17, 17); doc.setFontSize(9);
+      doc.text(T('Diese Linie muss genau 10 cm lang sein.'), 105, 145, { align: 'center' });
+      doc.text(T('Auf einen Etikettenbogen legen und gegen das Licht halten.'), 105, 155, { align: 'center' });
+    } else {
+      var labels = [];
+      list.forEach(function (it) { for (var c = 0; c < s.copies; c++) labels.push(it); });
+      var at = s.start;
+      labels.forEach(function (it) {
+        if (at >= n) { doc.addPage(); at = 0; }
+        var p = pos(at);
+        etDraw(doc, p.x, p.y, f, it, s.txt[it.id] || '', s.foot, T);
+        at++;
+      });
+    }
+    var name = test ? 'Probeseite Etiketten.pdf' : 'Aufkleber ' + fileSafe(car.name || 'Auto') + ' ' + dayKey(new Date()) + '.pdf';
+    try { await S.dl.save({ filename: name, data: doc.output('blob') }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
+  function etButton(carId, w) {
+    return w && S.dl && etItems(carId, w).length ? '<button type="button" class="btn ghost" data-act="et-open" data-id="' + esc(carId) + '" data-work="' + esc(w.id) + '">Aufkleber drucken</button>' : '';
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -8087,6 +8323,10 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'kl-copy': klCopy(klCurrentText(), 'Kopiert. Jetzt in WhatsApp oder in eine SMS einfügen.'); break;
       case 'kd-paste': openKdPaste(); break;
       case 'kd-clip': kdPasteClip(); break;
+      case 'et-open': openEtiketten(t.dataset.id, t.dataset.work); break;
+      case 'et-start': etStart(t.dataset.i); break;
+      case 'et-pdf': etPdf(false); break;
+      case 'et-test': etPdf(true); break;
       case 'zeitplan-csv': saveZeitplanCsv(); break;
       case 'zeitplan-ics': saveZeitplanIcs(); break;
       case 'km-all': openKmAll(); break;
@@ -8103,6 +8343,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!t) return;
     if (t.name === 'rw-auf') { reifenWechselLabel(); return; }
     if (t.dataset && t.dataset.blAdd !== undefined) { blAddFiles(t); return; }
+    if (etChange(t)) return;
     if (t.id === 'ka-kunde') { var kn = $('#ka-neu'); if (kn) kn.hidden = t.value !== '__neu'; return; }
     if (t.id === 'ki-kunde' || t.id === 'ki-car') { kdImportChange(t); return; }
     if (t.name === 'kl-car' || t.id === 'kl-car1') { klCarsChanged(); return; }
@@ -8164,6 +8405,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     });
     document.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'repdone') S.repDoneOpen = e.target.open; }, true);
     document.addEventListener('input', function (e) {
+      if (etInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
       if (e.target && e.target.classList && e.target.classList.contains('invq')) e.target.classList.toggle('diff', String(e.target.value).trim() !== e.target.dataset.orig);
       if (e.target && e.target.classList && e.target.classList.contains('kmq')) e.target.classList.remove('diff');
