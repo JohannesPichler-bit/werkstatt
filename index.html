@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "27", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "28", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1536,6 +1536,118 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .et-eigen .help { grid-column: 1 / -1; }
 .et-adj summary { padding: 6px 0; font-weight: 700; cursor: pointer; }
 .et-adj[open] summary { margin-bottom: 6px; }
+/* Unterboden */
+.ub-top { display: grid; grid-template-columns: minmax(118px, 44%) minmax(0, 1fr); gap: 14px; align-items: start; margin-top: 2px; }
+.ub-map { min-width: 0; }
+.ubd { display: block; width: 100%; height: auto; max-height: 380px; overflow: visible; }
+.ubd-l { font-family: var(--f-body); font-size: 11px; font-weight: 700; fill: var(--muted); letter-spacing: 0.04em; }
+.ubd-b { fill: var(--bg); stroke: var(--muted); stroke-width: 1.4; }
+.ubd-z { stroke: var(--surface); stroke-width: 1.6; cursor: pointer; transition: filter 120ms; }
+.ubd-z:hover { filter: brightness(1.08); }
+.ubd-z:focus { outline: none; }
+.ubd-z:focus-visible { stroke: var(--focus); stroke-width: 4; }
+.ubd-z.st-leer { fill: var(--surface-2); }
+.ubd-z.st-ok { fill: var(--in); }
+.ubd-z.st-ober { fill: var(--z-verbrauch-mid); }
+.ubd-z.st-rost { fill: var(--ro); }
+.ubd-z.st-durch { fill: var(--out); }
+.ubd-z.tr { stroke: var(--wb); stroke-width: 2.6; stroke-dasharray: 4 3; }
+.ubd-z.tr:focus-visible { stroke: var(--focus); stroke-dasharray: none; stroke-width: 4; }
+.ubd-w { fill: var(--upright); pointer-events: none; }
+.ubd-sp { fill: none; stroke: var(--surface); stroke-width: 1.4; stroke-dasharray: 3 2; pointer-events: none; }
+.ub-side { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.ub-empty { margin: 0; font-weight: 700; font-size: 15px; }
+.ub-sx { margin: 0; font-size: 13.5px; line-height: 1.4; color: var(--muted); }
+.ub-kv { margin: 0; display: grid; gap: 1px; }
+.ub-kv dt { font-size: 12.5px; color: var(--muted); line-height: 1.3; }
+.ub-kv dt:not(:first-child) { margin-top: 7px; }
+.ub-kv dd { margin: 0; font-weight: 700; font-size: 15px; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.ub-kv dd small { font-weight: 400; font-size: 13px; color: var(--muted); }
+.ub-kv dd .wst { vertical-align: 1px; }
+.ub-lg { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; line-height: 1.3; }
+.ub-lg li { display: flex; align-items: center; gap: 7px; }
+.ub-lg b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.ub-dot { flex: none; display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.ub-dot.st-ok { background: var(--in); box-shadow: none; }
+.ub-dot.st-ober { background: var(--z-verbrauch-mid); box-shadow: none; }
+.ub-dot.st-rost { background: var(--ro); box-shadow: none; }
+.ub-dot.st-durch { background: var(--out); box-shadow: none; }
+.ub-dot.tr { background: none; box-shadow: none; border: 2px dashed var(--wb); }
+.wst.st-ok { background: var(--in-soft); color: var(--in-text); }
+.wst.st-ober { background: var(--z-verbrauch); color: var(--z-verbrauch-ink); }
+.wst.st-rost { background: var(--ro-soft); color: var(--ro-text); }
+.wst.st-durch { background: var(--kaufen-soft); color: var(--kaufen); }
+.ub-cr { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+.ub-cl { font-size: 13px; font-weight: 700; color: var(--muted); }
+.ub-cs { display: flex; flex-wrap: wrap; gap: 6px; }
+.ub-c { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 6px 12px 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; }
+.ub-c.tr { border: 2px dashed var(--wb); padding: 5px 11px 5px 9px; }
+.ub-h4 { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: var(--muted); }
+.ub-af { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ub-afb { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 9px 12px 10px; border-radius: 10px; border: 1px solid var(--line); border-left: 6px solid var(--surface-2); background: var(--bg); color: var(--ink); font: inherit; text-align: left; }
+.ub-afb.st-ober { border-left-color: var(--z-verbrauch-mid); }
+.ub-afb.st-rost { border-left-color: var(--ro); }
+.ub-afb.st-durch { border-left-color: var(--out); }
+.ub-afn { font-weight: 700; font-size: 15px; line-height: 1.3; }
+.ub-afn .wst { margin-left: 4px; vertical-align: 1px; }
+.ub-afx { font-size: 13px; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
+.ub-act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.ub-more { margin-top: 6px; border-top: 1px solid var(--line); }
+.ub-more summary { padding: 10px 0 6px; font-weight: 700; cursor: pointer; }
+.ub-more[open] summary { margin-bottom: 4px; }
+.ub-pl, .ub-tips { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.45; }
+.ub-pl b { font-weight: 700; }
+@media (max-width: 359px) { .ub-top { grid-template-columns: minmax(0, 1fr); } .ubd { max-width: 220px; margin: 0 auto; } }
+/* Zone: Verlauf */
+.ub-now { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+.ub-now .ub-dot { width: 18px; height: 18px; margin-top: 2px; border-radius: 4px; }
+.ub-now > span:last-child { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ub-now b { font-size: 17px; }
+.ub-now small { font-size: 13.5px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.ubh { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ubh-i { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line); }
+.ubh-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ubh-d { font-weight: 700; font-variant-numeric: tabular-nums; }
+.ubh-t { margin: 0; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+/* Formular */
+.ub-fs { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.ub-fs legend { padding: 0; margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.ub-fh { font-size: 12px; color: var(--muted); line-height: 1.3; }
+.ub-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.ub-pill { position: relative; display: inline-flex; cursor: pointer; }
+.ub-pill input { position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; pointer-events: none; }
+.ub-pill span { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); font-size: 14px; font-weight: 700; line-height: 1.2; }
+.ub-pill input:checked + span { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.ub-pill input:checked + span::before { content: "✓"; margin-right: 6px; }
+.ub-pill input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+.ub-zh { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.ub-s2 { margin-top: 8px; }
+.ub-gh { margin: 8px 0 0; font-size: 14px; font-weight: 700; color: var(--ink); }
+.ubz { display: flex; flex-direction: column; gap: 2px; padding: 9px 0 4px; border-top: 1px solid var(--line); }
+.ubz-h { display: flex; align-items: flex-start; gap: 10px; }
+.ubz-l { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.ubz-n { min-width: 0; font-weight: 700; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
+.ubz-n small { display: block; margin-top: 2px; font-weight: 400; font-size: 12.5px; line-height: 1.3; color: var(--muted); }
+.ubz-b span { display: flex; flex-direction: column; }
+.ubz-s { flex: none; width: 47%; max-width: 230px; min-height: 46px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); border-left-width: 7px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14.5px; }
+.ubz-s.st-leer { border-left-color: var(--line); color: var(--muted); }
+.ubz-s.st-ok { border-left-color: var(--in); }
+.ubz-s.st-ober { border-left-color: var(--z-verbrauch-mid); }
+.ubz-s.st-rost { border-left-color: var(--ro); }
+.ubz-s.st-durch { border-left-color: var(--out); }
+.ubz-t { display: block; min-height: 32px; padding: 6px 0 4px; border: 0; background: none; color: var(--wb); font: inherit; font-size: 13.5px; font-weight: 700; line-height: 1.35; text-align: left; }
+.ubz.b .ubz-t { margin-left: 32px; }
+.ubz-c { margin-left: 8px; font-weight: 400; color: var(--muted); }
+.ubz-c:empty { display: none; }
+.ubz-x { display: flex; flex-direction: column; gap: 8px; padding: 2px 0 8px; }
+.ubz.b .ubz-x { padding-left: 32px; }
+.ubz-x[hidden] { display: none; }
+.ub-q { display: flex; flex-wrap: wrap; gap: 6px; }
+.ubm { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.1fr) minmax(0, 0.7fr); gap: 8px; }
+.ubm + .ubm { padding-top: 8px; border-top: 1px dashed var(--line); }
+@media (max-width: 480px) { .ubm { grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr); } .ubm-nf { grid-column: 1 / -1; } }
+#ub-auffr[hidden], #ubaf-unterboden[hidden], #ubaf-hohlraum[hidden] { display: none; }
+@media (max-width: 400px) { #ub-auffr { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
 <div class="wrap">
@@ -3384,7 +3496,13 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!S.sheet) return;
     var sh = $('#sheet'), top = sh.scrollTop;
     if (S.sheet.type === 'item') updateItemSheet();
-    else if (S.sheet.type === 'car' && S.cars.has(S.sheet.id)) { setHTML(sh, sheetCar(S.sheet.id, S.cars.get(S.sheet.id))); sh.scrollTop = top; }
+    else if (S.sheet.type === 'car' && S.cars.has(S.sheet.id)) {
+      var cod = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; });
+      setHTML(sh, sheetCar(S.sheet.id, S.cars.get(S.sheet.id)));
+      $$('details[data-k]', sh).forEach(function (d) { if (cod.indexOf(d.dataset.k) >= 0) d.open = true; });
+      sh.scrollTop = top;
+    }
+    else if (S.sheet.type === 'ubzone' && S.cars.has(S.sheet.id)) { setHTML(sh, sheetUbZone(S.sheet.id, S.cars.get(S.sheet.id), S.sheet.z)); sh.scrollTop = top; }
     else if (S.sheet.type === 'cell' && cellInfo(S.sheet.lager, S.sheet.cell)) { setHTML(sh, sheetCell(S.sheet.lager, S.sheet.cell)); sh.scrollTop = top; }
     else if (S.sheet.type === 'rep' && S.reps.has(S.sheet.id)) { setHTML(sh, sheetRep(S.sheet.id, S.reps.get(S.sheet.id))); sh.scrollTop = top; }
     else if (S.sheet.type === 'wartung' && S.cars.has(S.sheet.id)) {
@@ -3583,6 +3701,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       shBanner(id, car) +
       carWartSec(id, car) +
       reifenSec(id, car) +
+      ubSec(id, car) +
       carFotosSec(id, car) +
       '<div class="sh-sec"><div class="vhead"><h3 class="sec">Anstehend · ' + reps.length + '</h3>' +
       (canWrite() ? '<button type="button" class="linkbtn" data-act="rep-new" data-car="' + esc(id) + '">+ Eintragen</button>' : '') + '</div>' +
@@ -3656,6 +3775,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!car) return;
     var w = workId ? arr(car.arbeiten).filter(function (x) { return x && x.id === workId; })[0] : null;
     if (workId && !w) { toast('Diesen Eintrag gibt es nicht mehr.'); return; }
+    if (w && ubOk(w)) { openUbForm(carId, w.ub.typ, workId, { back: pre && pre.back ? pre.back : null }); return; }
     pre = pre || {};
     w = w || { titel: pre.titel || '', datum: pre.datum || null, kosten: null, km: null, notiz: '' };
     openSheet('workform', { car: carId, work: workId || null, repair: pre.repair || null, wartung: pre.wartung || null, back: pre.back || null, bl: BL ? { keep: blList(w.belege), pend: [] } : null },
@@ -5265,6 +5385,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       } else if (!car.fremd) noPk.push(p);
       var rsz = car.fremd ? null : reifenSaison(car);
       if (rsz && (rsz.now || rsz.d.slice(0, 7) < until)) ev.push({ kind: 'reifen', car: cid, carName: name, title: rsz.title, d: rsz.d, now: rsz.now, auf: rsz.auf });
+      ubEvents(cid, car, name, today, until).forEach(function (x) { ev.push(x); });
     });
     repList(null).forEach(function (p) {
       var r = p[1];
@@ -5284,8 +5405,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     ohne.sort(function (a, b) { return coll.compare(a.carName, b.carName) || coll.compare(String(a.title), String(b.title)); });
     return { ev: ev, ohne: ohne, offen: offen, noPk: noPk, until: until, missingKm: activeCars().filter(function (p) { return !p[1].fremd && numOrNull(p[1].km) === null; }) };
   }
-  var ZP_KIND = { wart: 'Wartung', pickerl: 'Pickerl', rep: 'Arbeit', reifen: 'Reifen' };
+  var ZP_KIND = { wart: 'Wartung', pickerl: 'Pickerl', rep: 'Arbeit', reifen: 'Reifen', ub: 'Unterboden' };
   function zpSub(e) {
+    if (e.kind === 'ub') return e.info || '';
     if (e.kind === 'reifen') return e.auf === 'winter' ? 'Winterreifenpflicht bei Schnee, Schneematsch oder Eis vom 1.11. bis 15.4.' : 'Die Winterreifenpflicht endet am 15.4.';
     if (e.kind === 'wart') return (shortNext(e.r) || 'laut Wartungsplan') + (e.est ? ' · Termin geschätzt aus deiner Fahrleistung' : '') + (e.plan ? ' · schon eingeplant' : '');
     if (e.kind === 'pickerl') return 'fällig ' + ymTxt(e.pk.due) + (e.pk.neu ? ', möglich ab ' + ymTxt(e.pk.from) : ', möglich bis ' + ymTxt(e.pk.to));
@@ -5303,6 +5425,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     } else if (e.kind === 'reifen') {
       act = 'data-act="reifen-wechsel" data-id="' + esc(e.car) + '"';
       chip = '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Reifen</span>';
+    } else if (e.kind === 'ub') {
+      act = 'data-act="ub-new" data-id="' + esc(e.car) + '" data-typ="' + (e.sub === 'pruef' ? 'pruefung' : 'behandlung') + '" data-back="zeitplan"';
+      chip = '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Unterboden</span>';
     } else {
       act = 'data-act="open-rep" data-id="' + esc(e.id) + '"';
       chip = '<span class="wst plan">Arbeit</span>';
@@ -5312,7 +5437,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function sheetZeitplan() {
     var d = zeitplanData(), can = canWrite(), h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Arbeitsplanung · alle Autos</p>' +
       '<h2 class="sh-title" id="sheet-title">Zeitplan: 12 Monate</h2>' +
-      '<p class="buy">' + esc('Wartung, Pickerl, Reifenwechsel und anstehende Arbeiten bis ' + ymLong(ymAdd(d.until, -1)) + ', nach Monat sortiert.') + '</p></div>' +
+      '<p class="buy">' + esc('Wartung, Pickerl, Reifenwechsel, Unterboden und anstehende Arbeiten bis ' + ymLong(ymAdd(d.until, -1)) + ', nach Monat sortiert.') + '</p></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
     var now = d.ev.filter(function (e) { return e.now; }), later = d.ev.filter(function (e) { return !e.now; });
     if (now.length) h += zpMonth('jetzt', 'Jetzt fällig', now);
@@ -5940,9 +6065,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!list.length) return '';
     return '<div class="vhead"><h2 class="sec">Als Nächstes</h2><button type="button" class="linkbtn" data-act="zeitplan">Zeitplan</button></div><ul class="nu">' + list.map(function (e) {
       var car = S.cars.get(e.car), bar = e.kind === 'wart' && car ? wbarHtml(e.r, car, true) : '';
-      var chip = e.kind === 'wart' ? wstHtml(e.r) : e.kind === 'pickerl' ? pkChip(e.pk) : e.kind === 'reifen' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Reifen</span>' : '<span class="wst plan">Arbeit</span>';
-      var act = e.kind === 'reifen' ? 'data-act="reifen-wechsel" data-id="' + esc(e.car) + '"' : e.kind === 'rep' ? 'data-act="open-rep" data-id="' + esc(e.id) + '"' : e.kind === 'wart' && e.plan && S.reps.has(e.plan) ? 'data-act="open-rep" data-id="' + esc(e.plan) + '"' : 'data-act="wart-open" data-id="' + esc(e.car) + '"';
-      var lv = e.kind === 'reifen' ? (e.now ? 'bald' : 'plan') : e.now || (e.kind === 'wart' && (e.r.over || e.r.status === 'faellig')) || (e.kind === 'pickerl' && (e.pk.status === 'faellig' || e.pk.status === 'ueber')) ? 'faellig'
+      var chip = e.kind === 'wart' ? wstHtml(e.r) : e.kind === 'pickerl' ? pkChip(e.pk) : e.kind === 'reifen' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Reifen</span>' : e.kind === 'ub' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Unterboden</span>' : '<span class="wst plan">Arbeit</span>';
+      var act = e.kind === 'ub' ? 'data-act="ub-new" data-id="' + esc(e.car) + '" data-typ="' + (e.sub === 'pruef' ? 'pruefung' : 'behandlung') + '"' : e.kind === 'reifen' ? 'data-act="reifen-wechsel" data-id="' + esc(e.car) + '"' : e.kind === 'rep' ? 'data-act="open-rep" data-id="' + esc(e.id) + '"' : e.kind === 'wart' && e.plan && S.reps.has(e.plan) ? 'data-act="open-rep" data-id="' + esc(e.plan) + '"' : 'data-act="wart-open" data-id="' + esc(e.car) + '"';
+      var lv = e.kind === 'reifen' || e.kind === 'ub' ? (e.now ? 'bald' : 'plan') : e.now || (e.kind === 'wart' && (e.r.over || e.r.status === 'faellig')) || (e.kind === 'pickerl' && (e.pk.status === 'faellig' || e.pk.status === 'ueber')) ? 'faellig'
         : (e.kind === 'wart' && e.r.status === 'bald') || (e.kind === 'pickerl' && e.pk.status === 'bald') ? 'bald' : e.kind === 'rep' ? 'plan' : 'ok';
       return '<li><button type="button" class="nu-b lvl-' + lv + '" ' + act + '><span class="nu-t"><span class="nu-c">' + esc(e.carName) + '</span>' + chip + '</span>' +
         '<span class="nu-n">' + esc(e.title) + '</span>' + bar + '<span class="nu-x">' + esc(zpSub(e)) + '</span></button></li>';
@@ -6481,12 +6606,12 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function erinnerungenData() {
     var monEnd = function (d) { return addDays(addMonths(d.slice(0, 7) + '-01', 1), -1); };
     return zeitplanData().ev.map(function (e) {
-      var key = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : e.kind === 'reifen' ? 'reifen-' + e.car + '-' + e.auf : 'rep-' + e.id;
+      var key = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : e.kind === 'reifen' ? 'reifen-' + e.car + '-' + e.auf : e.kind === 'ub' ? 'ub-' + e.car + '-' + e.sub : 'rep-' + e.id;
       /* Datum für die 14-Tage-Grenze. Geschätzte Termine nur auf den Monat genau, sonst ändert sich die Datei jeden Tag.
          Arbeiten mit „bis Monat/Jahr“ zählen bis zum Ende des Monats bzw. Jahres. */
       var datum = e.now ? null : e.est ? e.d.slice(0, 7) + '-01'
         : e.kind === 'rep' && e.r.faelligGenau === 'jahr' ? e.d.slice(0, 4) + '-12-31' : e.kind === 'rep' && e.r.faelligGenau === 'monat' ? monEnd(e.d) : e.d;
-      var wann = e.kind === 'reifen' ? (e.now ? 'jetzt' : e.auf === 'winter' ? 'Winterreifenpflicht ab 1.11.' : 'ab 16.4.') : e.now ? 'jetzt fällig' : e.kind === 'pickerl' ? 'fällig ' + ymTxt(e.pk.due) : e.kind === 'rep' ? 'bis ' + repDue(e.r) : (e.est ? 'ca. ' : 'bis ') + fmtGenau(e.d, 'monat') + (e.est ? ' (geschätzt)' : '');
+      var wann = e.kind === 'ub' ? (e.now ? 'jetzt fällig' : 'ab ' + ymTxt(e.d.slice(0, 7))) : e.kind === 'reifen' ? (e.now ? 'jetzt' : e.auf === 'winter' ? 'Winterreifenpflicht ab 1.11.' : 'ab 16.4.') : e.now ? 'jetzt fällig' : e.kind === 'pickerl' ? 'fällig ' + ymTxt(e.pk.due) : e.kind === 'rep' ? 'bis ' + repDue(e.r) : (e.est ? 'ca. ' : 'bis ') + fmtGenau(e.d, 'monat') + (e.est ? ' (geschätzt)' : '');
       return { key: key, art: e.kind, auto: e.carName, was: String(e.title || ''), jetzt: !!e.now, datum: datum, wann: wann, geschaetzt: !!e.est, info: zpSub(e) };
     });
   }
@@ -6887,6 +7012,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       catch (e) { errs.push(String(files[i].name || 'Datei') + ': ' + ((e && e.message) || 'nicht lesbar')); }
     }
     if (!prepared.length) { toast(errs[0] || 'Die Datei ließ sich nicht lesen.'); return; }
+    if (ctx.indexOf('z:') === 0) { ubZoneAdd(ctx.slice(2), prepared, errs); return; }
     if (ctx === 'f') {
       if (!S.sheet || !S.sheet.bl) return;
       S.sheet.bl.pend = S.sheet.bl.pend.concat(prepared);
@@ -6957,6 +7083,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
   function blCtxList(ctx) {
     if (ctx === 'f') return blFormList();
+    if (String(ctx).indexOf('z:') === 0) return ubZoneFormList(String(ctx).slice(2));
+    if (String(ctx).indexOf('uz:') === 0) { var uq = String(ctx).split(':'); return ubZonePhotos(uq[1], uq[2]).map(function (x) { return x.r; }); }
     var p = String(ctx || '').split(':'), car = S.cars.get(p[1]);
     if (!car) return [];
     if (p[0] === 'c') return blList(car.fotos);
@@ -7014,7 +7142,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       (n > 1 ? '<button type="button" class="bv-nav l" data-act="bv-prev" aria-label="Vorherige Datei">‹</button><button type="button" class="bv-nav r" data-act="bv-next" aria-label="Nächste Datei">›</button>' : '') +
       '<div class="bv-bot"><span class="bv-m">' + esc(meta) + (pdf || BV.zoom ? '' : '<span class="bv-h">Zum Vergrößern aufs Bild tippen.</span>') + '</span><span class="bv-a">' +
       (S.dl ? '<button type="button" class="btn ghost small" data-act="bv-save">Teilen</button>' : '') +
-      (canWrite() ? '<button type="button" class="btn ghost small" data-act="bv-rm">' + (BV.arm > Date.now() ? 'Wirklich entfernen?' : 'Entfernen') + '</button>' : '') + '</span></div>';
+      (canWrite() && String(BV.ctx).indexOf('uz:') !== 0 ? '<button type="button" class="btn ghost small" data-act="bv-rm">' + (BV.arm > Date.now() ? 'Wirklich entfernen?' : 'Entfernen') + '</button>' : '') + '</span></div>';
     if (!pdf && !u) {
       blLoad(r).then(function () { if (BV && BV.list[BV.i] === r) blViewRender(); }, function (e) {
         var st2 = $('#bv-st');
@@ -7060,6 +7188,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     BV.arm = 0;
     var ctx = BV.ctx, r = BV.list[BV.i];
     if (ctx === 'f') { blFormRemove(BV.i); }
+    else if (ctx.indexOf('z:') === 0) { ubZoneRemove(ctx.slice(2), BV.i); }
     else {
       var p = ctx.split(':'), carId = p[1], car = S.cars.get(carId);
       if (!car || S.busy) return;
@@ -7134,7 +7263,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var out = { list: [], ids: {}, failed: 0 };
     for (var i = 0; i < works.length; i++) {
       var w = works[i], item = { id: w.id, title: w.titel, sub: [workDate(w) || 'ohne Datum', numOrNull(w.km) !== null ? (w.kmCa ? 'ca. ' : '') + nf.format(num(w.km)) + ' km' : '', shWho(w), numOrNull(w.kosten) !== null ? eur(w.kosten) : ''].filter(Boolean).join(' · '), imgs: [], pdfs: [] };
-      var refs = blList(w.belege);
+      var refs = blList(w.belege).filter(function (r) { return !r.zone; });
       for (var k = 0; k < refs.length; k++) {
         var r = refs[k];
         if (r.typ === 'pdf') { item.pdfs.push(r.name || 'PDF'); continue; }
@@ -7181,7 +7310,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function shBlPdfOpt(car) {
     if (!BL) return '';
     var n = 0;
-    arr(car.arbeiten).forEach(function (w) { if (w && w.titel && !blOffen(w)) n += blList(w.belege).filter(function (r) { return r.typ !== 'pdf'; }).length; });
+    arr(car.arbeiten).forEach(function (w) { if (w && w.titel && !blOffen(w)) n += blList(w.belege).filter(function (r) { return r.typ !== 'pdf' && !r.zone; }).length; });
     return n ? '<label class="check sh-blopt"><input type="checkbox" id="sh-pdf-bl" checked><span>' + esc('Fotos der Belege ans PDF anhängen (' + n + ')') + '</span></label>' : '';
   }
   function blAusFormNote(w) {
@@ -7963,6 +8092,945 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function etButton(carId, w) {
     return w && S.dl && etItems(carId, w).length ? '<button type="button" class="btn ghost" data-act="et-open" data-id="' + esc(carId) + '" data-work="' + esc(w.id) + '">Aufkleber drucken</button>' : '';
   }
+  /* ---------- Unterboden: Zustand je Zone, Konservierung mit Fotos vorher/nachher, Erinnerung, Protokoll ---------- */
+  var UB_Q = { quellen: [
+    { titel: 'Kfz-Meisterbetrieb Dietrich: Oldtimer-Unterboden, Zustand vorher und nachher', url: 'https://kfz-dietrich.com/blog/unterbodenversiegelung-oldtimer-vor-nach-zustand/' },
+    { titel: 'Kfz-Meisterbetrieb Dietrich: Fluid Film, wie oft erneuern?', url: 'https://kfz-dietrich.com/blog/unterbodenversiegelung-fluid-film-intervall/' },
+    { titel: 'Kfz-Meisterbetrieb Dietrich: Unterbodenschutz aus Wachs, Bitumen, Fett oder PVC', url: 'https://kfz-dietrich.com/blog/unterbodenschutz-material-wachs-bitumen-fett-pvc/' },
+    { titel: 'Kfz-Meisterbetrieb Dietrich: Rost früh erkennen, 8 Werkstatt-Checkpoints', url: 'https://kfz-dietrich.com/blog/auto-rost-frueh-erkennen-werkstatt-checkpoints/' },
+    { titel: 'AutoScout24: Unterbodenschutz erneuern', url: 'https://www.autoscout24.at/informieren/ratgeber/autoreparatur/unterbodenschutz-erneuern-beachtenswertes/' },
+    { titel: 'AutoScout24: Hohlraumversiegelung erneuern', url: 'https://www.autoscout24.at/informieren/ratgeber/autopflege/hohlraumversiegelung-erneuern-tipps/' },
+    { titel: 'VW Reparaturleitfaden: Hohlraumkonservierung und Unterbodenschutz (1972)', url: 'https://vag-klassik.lima-city.de/vw/doc/RepLf-Hohlraumkonservierung.pdf' },
+    { titel: 'ADAC Oldtimer-Ratgeber 2024/25: Pflege und Wartung', url: 'https://res.cloudinary.com/adacmkv/image/upload/ADAC%20Klassik/%C3%9Cber%20uns/Oldtimer-Ratgeber/2024_2025/ADAC_Oldtimer_Ratgeber_2024_25_Kapitel_10_Pflege_und_Wartung_250dpi_ruv0dx.pdf' },
+    { titel: 'ÖAMTC: Tipps für den Frühjahrsputz beim Auto (2025)', url: 'https://www.oeamtc.at/presse/oeamtc-tipps-fuer-den-fruehjahrsputz-beim-auto-77933015' },
+    { titel: 'Mike Sander: Korrosionsschutzfett, Produktinformation', url: 'https://allbrit.de/downloads/Produktinfo/Mike_Sanders_Korrosionsschutzfett.pdf' },
+    { titel: 'WKO: Katalog der Prüfpositionen zum Pickerl, Fahrgestell', url: 'https://www.wko.at/ktn/gewerbe-handwerk/fahrzeugtechnik/6-fahrgestell-pruefpositionen.pdf' }
+  ] };
+  var UB_GR = [['v', 'Vorne'], ['m', 'Mitte'], ['h', 'Hinten'], ['a', 'Leitungen und Anbauteile'], ['r', 'Hohlräume']];
+  var UB_Z = [
+    { id: 'ltv_l', g: 'v', n: 'Längsträger vorne links' },
+    { id: 'ltv_r', g: 'v', n: 'Längsträger vorne rechts' },
+    { id: 'rhv_l', g: 'v', n: 'Radhaus vorne links', h: 'Radlaufkante', q: [4] },
+    { id: 'rhv_r', g: 'v', n: 'Radhaus vorne rechts', h: 'Radlaufkante', q: [4] },
+    { id: 'va', g: 'v', n: 'Vorderachse und Querträger', h: 'Achsträger, Querlenkeraufnahmen' },
+    { id: 'sw_l', g: 'm', n: 'Schweller links', h: 'mit Wagenheberaufnahmen', q: [4] },
+    { id: 'sw_r', g: 'm', n: 'Schweller rechts', h: 'mit Wagenheberaufnahmen', q: [4] },
+    { id: 'bb_l', g: 'm', n: 'Bodenblech links' },
+    { id: 'bb_r', g: 'm', n: 'Bodenblech rechts' },
+    { id: 'mt', g: 'm', n: 'Mitteltunnel' },
+    { id: 'lth_l', g: 'h', n: 'Längsträger hinten links' },
+    { id: 'lth_r', g: 'h', n: 'Längsträger hinten rechts' },
+    { id: 'rhh_l', g: 'h', n: 'Radhaus hinten links', h: 'Radlaufkante, besonders hinten', q: [4] },
+    { id: 'rhh_r', g: 'h', n: 'Radhaus hinten rechts', h: 'Radlaufkante, besonders hinten', q: [4] },
+    { id: 'ha', g: 'h', n: 'Hinterachse und Achsträger', h: 'Achsträger und Lageraufnahmen', q: [4] },
+    { id: 'kb', g: 'h', n: 'Kofferraumboden und Reserveradmulde', h: 'Wasser sammelt sich am tiefsten Punkt', q: [4] },
+    { id: 'hb', g: 'h', n: 'Heckabschluss unten' },
+    { id: 'lt', g: 'a', s: 'Leitungen', n: 'Brems- und Kraftstoffleitungen', h: 'auch unter den Kunststoffclips', q: [4] },
+    { id: 'tk', g: 'a', s: 'Tank', n: 'Tank und Halter' },
+    { id: 'ag', g: 'a', s: 'Auspuff', n: 'Auspuffanlage', h: 'Halter und Hitzeschilde; Rost am Rohr ist meist unkritisch', q: [4] },
+    { id: 'h_sw', g: 'r', s: 'Schweller', n: 'Schweller innen', h: 'mit dem Endoskop durch Werks- und Ablauföffnungen', q: [2] },
+    { id: 'h_lt', g: 'r', s: 'Längsträger', n: 'Längsträger innen', h: 'mit dem Endoskop', q: [1] },
+    { id: 'h_tu', g: 'r', s: 'Türen und Säulen', n: 'Türen unten und Säulenfüße', h: 'Türunterkanten, A-, B- und C-Säule unten', q: [1] },
+    { id: 'h_hk', g: 'r', s: 'Heckklappe', n: 'Heckklappe unten', h: 'Falz und Kante', q: [4] }
+  ];
+  var UB_ZM = {};
+  UB_Z.forEach(function (z) { UB_ZM[z.id] = z; });
+  var UB_ST = {
+    ok: { n: 'Gesund', k: 'gesund', d: 'Blech gesund, kein Rost erkennbar' },
+    ober: { n: 'Oberflächenrost', k: 'Oberflächenrost', d: 'Rost nur an der Oberfläche, Blech nicht geschwächt' },
+    rost: { n: 'Rost, Maßnahme nötig', k: 'Rost', d: 'aktive Korrosion: entrosten, grundieren, schützen' },
+    durch: { n: 'Durchgerostet', k: 'durchgerostet', d: 'Loch oder geschwächtes Blech: Blecharbeit nötig' }
+  };
+  var UB_STO = ['ok', 'ober', 'rost', 'durch'];
+  var UB_SCHUTZ = { bitumen: 'Bitumen', pvc: 'PVC oder Kautschuk', wachs: 'Wachs', fett: 'Fett', kriechoel: 'Kriechöl', keiner: 'Keiner erkennbar', unbekannt: 'Nicht erkennbar, welcher' };
+  var UB_SZ = { intakt: 'Intakt', risse: 'Risse oder Ablösungen', unterrostet: 'Unterrostet' };
+  /* Auffrischen in Monaten je Art: u = Unterboden, h = Hohlräume (Quellen siehe ubAuffrHint) */
+  var UB_MT = {
+    kriechoel: { n: 'Kriechöl (Fluid Film)', k: 'Kriechöl', u: 12, h: 36 },
+    wachs: { n: 'Wachs', k: 'Wachs', u: 12, h: null },
+    fett: { n: 'Fett (Mike Sander)', k: 'Fett', u: 48, h: 96 },
+    bitumen: { n: 'Bitumen', k: 'Bitumen', u: 72, h: null },
+    pvc: { n: 'PVC, Kautschuk', k: 'PVC, Kautschuk', u: 72, h: null },
+    rost: { n: 'Rostumwandler, Grundierung', k: 'Rostumwandler, Grundierung', u: null, h: null },
+    zink: { n: 'Zinkgrundierung', k: 'Zinkgrundierung', u: null, h: null },
+    sonst: { n: 'Sonstiges', k: 'Sonstiges', u: null, h: null }
+  };
+  var UB_ART = { reinigung: 'Unterboden gereinigt', entrostung: 'Rost entfernt und grundiert', unterboden: 'Unterbodenschutz aufgetragen', hohlraum: 'Hohlräume konserviert' };
+  var UB_WIE = { buehne: 'Hebebühne oder Grube', boecke: 'Wagenheber und Böcke', licht: 'Gute Beleuchtung', endoskop: 'Endoskop', klopf: 'Klopf- und Druckprobe', sauber: 'Vorher gereinigt' };
+  var UB_NOTE = { 1: 'makellos', 2: 'gut', 3: 'gebraucht', 4: 'verbraucht', 5: 'restaurierungsbedürftig' };
+  var UB_IV = [6, 12, 24, 36];
+  var UB_AF = [6, 12, 24, 36, 48, 60, 72, 96, 120];
+  var UB_RF = { unterboden: 'Unterbodenschutz auffrischen', hohlraum: 'Hohlraumkonservierung auffrischen' };
+  /* Skizze: Ansicht von oben, vorne oben, Maße in Skizzen-Einheiten */
+  var UB_BODY = 'M64 12H156Q190 12 190 46V382Q190 408 164 408H56Q30 408 30 382V46Q30 12 64 12Z';
+  var UB_G = [
+    ['rhv_l', 30, 66, 34, 64, 12], ['rhv_r', 156, 66, 34, 64, 12],
+    ['ltv_l', 68, 20, 14, 122, 4], ['ltv_r', 138, 20, 14, 122, 4],
+    ['va', 84, 104, 52, 16, 4],
+    ['sw_l', 30, 136, 16, 146, 5], ['sw_r', 174, 136, 16, 146, 5],
+    ['bb_l', 50, 148, 48, 114, 6], ['bb_r', 122, 148, 48, 114, 6],
+    ['mt', 101, 56, 18, 206, 6],
+    ['lth_l', 68, 270, 14, 120, 4], ['lth_r', 138, 270, 14, 120, 4],
+    ['rhh_l', 30, 290, 34, 64, 12], ['rhh_r', 156, 290, 34, 64, 12],
+    ['ha', 84, 314, 52, 16, 4],
+    ['kb', 86, 338, 48, 48, 8],
+    ['hb', 56, 394, 108, 10, 4]
+  ];
+  var UB_WH = [[38, 73], [164, 73], [38, 297], [164, 297]];
+  /* ---------- Daten ---------- */
+  function ubOk(w) { var u = w && w.ub; return !!w && !!w.titel && !!u && typeof u === 'object' && (u.typ === 'pruefung' || u.typ === 'behandlung'); }
+  function ubDoc(car) { var u = car && car.unterboden; return u && typeof u === 'object' ? u : {}; }
+  function ubIv(car) { var v = numOrNull(ubDoc(car).intervall); return UB_IV.indexOf(v) >= 0 ? v : 12; }
+  function ubKey(w) { return (isDay(w.datum) ? w.datum : '0000-00-00') + '|' + String(w.erstellt || ''); }
+  /* aufsteigend nach Datum */
+  function ubEntries(car) { return arr(car && car.arbeiten).filter(ubOk).sort(function (a, b) { var x = ubKey(a), y = ubKey(b); return x < y ? -1 : x > y ? 1 : 0; }); }
+  function ubZonen(w) { var z = w && w.ub && w.ub.zonen; return z && typeof z === 'object' ? z : {}; }
+  function ubStOf(v) { return v && typeof v === 'object' && UB_ST[v.st] ? v.st : null; }
+  function ubZoneLabel(zid) { var z = UB_ZM[zid]; return z ? z.n : String(zid); }
+  function ubStTxt(st) { return st && UB_ST[st] ? UB_ST[st].n : 'nicht geprüft'; }
+  /* Zustand je Zone: letzte Prüfung mit Angabe; tr = danach (oder am selben Tag) konserviert */
+  function ubState(car, bis) {
+    var out = {}, list = ubEntries(car).filter(function (w) { return !bis || (isDay(w.datum) && w.datum <= bis); });
+    list.forEach(function (w) {
+      if (w.ub.typ !== 'pruefung') return;
+      var z = ubZonen(w);
+      Object.keys(z).forEach(function (k) {
+        var st = ubStOf(z[k]);
+        if (UB_ZM[k] && st) out[k] = { st: st, n: String(z[k].n || ''), d: isDay(w.datum) ? w.datum : null, wid: w.id };
+      });
+    });
+    list.forEach(function (w) {
+      if (w.ub.typ !== 'behandlung') return;
+      arr(w.ub.bz).forEach(function (k) {
+        if (!UB_ZM[k]) return;
+        var o = out[k] || (out[k] = { st: null, n: '', d: null, wid: null });
+        if (!o.d || (isDay(w.datum) && w.datum >= o.d)) o.tr = { d: isDay(w.datum) ? w.datum : null, wid: w.id };
+      });
+    });
+    return out;
+  }
+  function ubLastP(car, bis) {
+    var l = ubEntries(car).filter(function (w) { return w.ub.typ === 'pruefung' && (!bis || (isDay(w.datum) && w.datum <= bis)); });
+    return l.length ? l[l.length - 1] : null;
+  }
+  function ubCounts(state) {
+    var c = { ok: 0, ober: 0, rost: 0, durch: 0, leer: 0, tr: 0 };
+    UB_Z.forEach(function (z) { var s = state[z.id]; c[s && s.st ? s.st : 'leer']++; if (s && s.tr) c.tr++; });
+    return c;
+  }
+  /* Nächste Prüfung: letzte Prüfung (sonst letzter Eintrag) plus Intervall; ohne Einträge keine Erinnerung */
+  function ubNext(car) {
+    var list = ubEntries(car);
+    if (!list.length) return null;
+    var lp = ubLastP(car), base = lp && isDay(lp.datum) ? lp.datum : null;
+    if (!base) for (var i = list.length - 1; i >= 0; i--) if (isDay(list[i].datum)) { base = list[i].datum; break; }
+    if (!base) return null;
+    var ym = ymAdd(base.slice(0, 7), ubIv(car)), cur = dayKey(new Date()).slice(0, 7);
+    return { ym: ym, now: ym <= cur, base: base, p: !!lp };
+  }
+  /* Auffrischen je Art aus der letzten Konservierung dieser Art */
+  function ubRefresh(car) {
+    var list = ubEntries(car), cur = dayKey(new Date()).slice(0, 7), out = [];
+    ['unterboden', 'hohlraum'].forEach(function (art) {
+      for (var i = list.length - 1; i >= 0; i--) {
+        var w = list[i], u = w.ub;
+        if (u.typ !== 'behandlung' || arr(u.arten).indexOf(art) < 0) continue;
+        var m = numOrNull(u.auffr && u.auffr[art]);
+        if (m && m > 0 && isDay(w.datum)) { var ym = ymAdd(w.datum.slice(0, 7), Math.round(m)); out.push({ art: art, ym: ym, now: ym <= cur, w: w }); }
+        break;
+      }
+    });
+    return out;
+  }
+  function ubMittel(u) { return arr(u && u.mittel).filter(function (m) { return m && typeof m === 'object' && m.n; }); }
+  function ubMittelTxt(u, ohneGrund) { return ubMittel(u).filter(function (m) { return !ohneGrund || (m.t !== 'rost' && m.t !== 'zink'); }).map(function (m) { return m.n; }).join(', '); }
+  function ubIvTxt(m) { return m % 12 === 0 ? (m === 12 ? '12 Monate' : (m / 12) + ' Jahre') : m + ' Monate'; }
+  function ubAfTxt(m) { return m % 12 === 0 ? (m === 12 ? '1 Jahr' : (m / 12) + ' Jahren') : m + ' Monaten'; }
+  function ubEvents(cid, car, name, today, until) {
+    var ev = [], nx = ubNext(car);
+    if (nx && (nx.now || nx.ym < until)) ev.push({ kind: 'ub', sub: 'pruef', car: cid, carName: name, title: 'Unterboden prüfen', d: nx.now ? today : nx.ym + '-01', now: nx.now,
+      info: (nx.p ? 'Zuletzt geprüft am ' : 'Zuletzt am Unterboden gearbeitet am ') + datum(nx.base) + ', Prüfung alle ' + ubIvTxt(ubIv(car)) });
+    ubRefresh(car).forEach(function (r) {
+      if (!(r.now || r.ym < until)) return;
+      var mt = ubMittelTxt(r.w.ub, true);
+      ev.push({ kind: 'ub', sub: r.art, car: cid, carName: name, title: UB_RF[r.art], d: r.now ? today : r.ym + '-01', now: r.now, info: 'Zuletzt am ' + datum(r.w.datum) + (mt ? ' mit ' + mt : '') });
+    });
+    return ev;
+  }
+  function ubTitel(typ, arten) {
+    if (typ === 'pruefung') return 'Unterboden geprüft';
+    var a = arr(arten), u = a.indexOf('unterboden') >= 0, h = a.indexOf('hohlraum') >= 0;
+    if (u && h) return 'Unterboden und Hohlräume konserviert';
+    if (u) return 'Unterbodenschutz aufgetragen';
+    if (h) return 'Hohlraumkonservierung';
+    if (a.indexOf('entrostung') >= 0) return 'Rost am Unterboden behandelt';
+    if (a.indexOf('reinigung') >= 0) return 'Unterbodenwäsche';
+    return 'Unterboden behandelt';
+  }
+  function ubCountTxt(u) {
+    var c = { ok: 0, ober: 0, rost: 0, durch: 0 }, z = ubZonen({ ub: u }), p = [];
+    Object.keys(z).forEach(function (k) { var st = ubStOf(z[k]); if (UB_ZM[k] && st) c[st]++; });
+    if (c.durch) p.push(c.durch + ' durchgerostet');
+    if (c.rost) p.push(c.rost + ' Rost');
+    if (c.ober) p.push(c.ober + ' Oberflächenrost');
+    if (c.ok) p.push(c.ok + ' gesund');
+    return p.join(', ');
+  }
+  /* Kurzfassung für das Serviceheft (steht in notiz) */
+  function ubSummary(u) {
+    var p = [];
+    if (u.typ === 'pruefung') {
+      var by = { ober: [], rost: [], durch: [] }, z = ubZonen({ ub: u }), nOk = 0;
+      UB_Z.forEach(function (x) { var st = ubStOf(z[x.id]); if (st === 'ok') nOk++; else if (st) by[st].push(x.n); });
+      var b = [];
+      if (by.durch.length) b.push('durchgerostet: ' + by.durch.join(', '));
+      if (by.rost.length) b.push('Rost: ' + by.rost.join(', '));
+      if (by.ober.length) b.push('Oberflächenrost: ' + (by.ober.length > 3 ? by.ober.length + ' Zonen' : by.ober.join(', ')));
+      if (nOk) b.push(nOk + (nOk === 1 ? ' Zone gesund' : ' Zonen gesund'));
+      if (b.length) p.push('Befund: ' + b.join('; '));
+      if (UB_NOTE[u.note]) p.push('Zustandsnote ' + u.note + ' (' + UB_NOTE[u.note] + ')');
+    } else {
+      var a = arr(u.arten).map(function (k) { return UB_ART[k]; }).filter(Boolean);
+      if (a.length) p.push(a.join(', '));
+      var m = ubMittelTxt(u);
+      if (m) p.push('Mittel: ' + m);
+      var bz = arr(u.bz).filter(function (k) { return UB_ZM[k]; });
+      if (bz.length) p.push(bz.length === 1 ? 'Zone: ' + ubZoneLabel(bz[0]) : bz.length + ' Zonen behandelt');
+    }
+    if (u.text) p.push(u.text);
+    return p.join('. ').slice(0, 600);
+  }
+  function ubShort(w) {
+    if (w.ub.typ === 'pruefung') { var c = ubCountTxt(w.ub); return c ? ' · ' + c : ''; }
+    var m = ubMittelTxt(w.ub);
+    return m ? ' · ' + m : '';
+  }
+  /* bekannte Roststellen aus der Wartungs-Recherche */
+  function ubProbs(carId) {
+    var w = wartDoc(carId);
+    return { w: w, list: wartProbleme(w).filter(function (p) { return /(^|[^a-zäöüß])rost|(an|durch|ver|unter|flug|ge)rost|korro/i.test(String(p.titel) + ' ' + String(p.text || '')); }) };
+  }
+  /* ---------- Darstellung im Auto-Blatt ---------- */
+  function ubSvg(carId, state, cls) {
+    var h = '<svg class="ubd' + (cls ? ' ' + cls : '') + '" viewBox="0 0 230 446" focusable="false"' +
+      (carId ? ' role="group" aria-label="Skizze des Unterbodens, von oben gesehen, vorne ist oben. Eine Zone antippen für Verlauf und Fotos."' : ' aria-hidden="true"') + '>' +
+      '<text class="ubd-l" x="115" y="11" text-anchor="middle">vorne</text><text class="ubd-l" x="115" y="443" text-anchor="middle">hinten</text>' +
+      '<text class="ubd-l" x="12" y="224" text-anchor="middle" transform="rotate(-90 12 224)">links</text>' +
+      '<text class="ubd-l" x="218" y="224" text-anchor="middle" transform="rotate(90 218 224)">rechts</text>' +
+      '<g transform="translate(5 16)"><path class="ubd-b" d="' + UB_BODY + '"></path>';
+    UB_G.forEach(function (g) {
+      var s = state[g[0]] || {}, lab = ubZoneLabel(g[0]) + ': ' + ubStTxt(s.st) + (s.tr ? ', danach konserviert' : '');
+      h += '<rect class="ubd-z st-' + (s.st || 'leer') + (s.tr ? ' tr' : '') + '" x="' + g[1] + '" y="' + g[2] + '" width="' + g[3] + '" height="' + g[4] + '" rx="' + g[5] + '"' +
+        (carId ? ' data-act="ub-zone" data-id="' + esc(carId) + '" data-z="' + g[0] + '" data-ubk="1" role="button" tabindex="0" aria-label="' + esc(lab) + '"' : '') +
+        '><title>' + esc(lab) + '</title></rect>';
+    });
+    UB_WH.forEach(function (p) { h += '<rect class="ubd-w" x="' + p[0] + '" y="' + p[1] + '" width="18" height="50" rx="5"></rect>'; });
+    return h + '<circle class="ubd-sp" cx="110" cy="362" r="14"></circle></g></svg>';
+  }
+  function ubLegend(c) {
+    var it = [['durch', 'durchgerostet'], ['rost', 'Rost'], ['ober', 'Oberflächenrost'], ['ok', 'gesund'], ['leer', 'nicht geprüft']];
+    var h = it.map(function (x) {
+      if (c && !c[x[0]] && x[0] !== 'leer' && x[0] !== 'ok') return '';
+      return '<li><span class="ub-dot st-' + x[0] + '" aria-hidden="true"></span>' + esc(x[1]) + (c ? ' <b>' + c[x[0]] + '</b>' : '') + '</li>';
+    }).join('');
+    if (!c || c.tr) h += '<li><span class="ub-dot tr" aria-hidden="true"></span>konserviert' + (c ? ' <b>' + c.tr + '</b>' : '') + '</li>';
+    return '<ul class="ub-lg">' + h + '</ul>';
+  }
+  function ubChips(carId, state, g) {
+    var gr = UB_GR.filter(function (x) { return x[0] === g; })[0];
+    return '<div class="ub-cr"><span class="ub-cl">' + esc(gr[1]) + '</span><div class="ub-cs">' + UB_Z.filter(function (z) { return z.g === g; }).map(function (z) {
+      var s = state[z.id] || {};
+      return '<button type="button" class="ub-c st-' + (s.st || 'leer') + (s.tr ? ' tr' : '') + '" data-act="ub-zone" data-id="' + esc(carId) + '" data-z="' + z.id + '">' +
+        '<span class="ub-dot st-' + (s.st || 'leer') + '" aria-hidden="true"></span>' + esc(z.s || z.n) + '<span class="vh">' + esc(': ' + ubStTxt(s.st) + (s.tr ? ', danach konserviert' : '')) + '</span></button>';
+    }).join('') + '</div></div>';
+  }
+  function ubEntryRow(carId, w, back) {
+    var dis = canWrite() ? '' : ' disabled', k = numOrNull(w.kosten);
+    return '<li><button type="button" class="wbtn" data-act="ub-edit" data-id="' + esc(carId) + '" data-work="' + esc(w.id) + '"' + (back ? ' data-back="' + esc(back) + '"' : '') + dis + '>' +
+      '<span class="i-n">' + esc(w.titel) + blClipCount(w.belege) + '<small><span class="i-d">' + esc(workDate(w) || 'Datum offen') + '</span>' + esc(ubShort(w)) + '</small></span>' +
+      '<span class="i-p">' + (k ? esc(eur(k)) : '') + '</span></button></li>';
+  }
+  function ubTipsHtml() {
+    var q = function (n) { return srcRefs(UB_Q, n); };
+    var li = [
+      'Nach dem Winter ist eine Unterbodenwäsche dringend nötig, sonst können Salz und Schmutz zu Rost führen.' + q([9]),
+      'Zum Prüfen braucht es Hebebühne und gute Beleuchtung. Achte darauf, ob die Schutzschicht verletzt, abgelöst oder unterrostet ist.' + q([8]) + ' Hohlräume siehst du mit dem Endoskop durch Werks- und Ablauföffnungen an.' + q([2]) + ' Weiches oder hohles Blech unter scheinbar intaktem Schutz zeigt die Klopf- und Druckprobe.' + q([4]),
+      'Befund je Zone: gesund, Oberflächenrost oder aktive Korrosion, die eine Maßnahme braucht. Durchgerostetes Blech braucht Blecharbeit, Versiegeln allein reicht nicht.' + q([1]),
+      'Vor dem Konservieren lose Reste und Rost entfernen, sonst rostet es unter der Versiegelung weiter.' + q([5]) + ' Erst wenn der Unterboden sauber, trocken und beurteilt ist, wird konserviert.' + q([1]),
+      'Hohlraummittel nur in trockene Hohlräume spritzen. Ablauföffnungen dürfen nicht zugehen und sind danach zu kontrollieren. Bremsen und Auspuff abdecken.' + q([7]) + ' Auch Katalysator, Handbremsseil, Durchführungen, Bremsleitungen und Kabel aussparen.' + q([5]),
+      'Alter Bitumen mit Rissen: Feuchtigkeit kommt darunter und kann nicht mehr entweichen, die Korrosion arbeitet oft jahrelang unbemerkt weiter. Vor dem neuen Schutz befunden und bei Bedarf entfernen.' + q([3]),
+      'Beste Zeit zum Konservieren ist der Herbst, September bis November, vor dem ersten Streusalz.' + q([2]),
+      'Auffrischen: Kriechöl wie Fluid Film an freien Flächen bei ganzjährigem Betrieb jährlich' + q([2]) + ', Ölfluid in Hohlräumen alle drei bis fünf Jahre' + q([6]) + '. Mike Sander’s Fett hält in Hohlräumen acht bis zwölf Jahre' + q([1]) + ', Schadstellen im Radkasten alle vier Jahre nachbehandeln' + q([10]) + '. Wachs-Unterbodenschutz je nach Beanspruchung alle ein bis zwei Jahre (VW 1972)' + q([7]) + '. Den Unterbodenschutz ab Werk spätestens nach sechs bis acht Jahren erneuern.' + q([5]),
+      'Pickerl: Korrosionsschäden an Rahmen, tragenden Teilen und Boden sind eigene Prüfpositionen (6.1.1, 6.2.1, 6.2.4).' + q([11])
+    ];
+    return '<ul class="ub-tips">' + li.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>';
+  }
+  function ubSec(id, car) {
+    if (car.archiviert) return '';
+    var can = canWrite(), ent = ubEntries(car), st = ubState(car), lp = ubLastP(car), nx = ubNext(car), rf = ubRefresh(car), c = ubCounts(st);
+    var h = '<div class="sh-sec ub-sec"><div class="vhead"><h3 class="sec">Unterboden</h3>' +
+      (ent.length && S.dl ? '<button type="button" class="linkbtn" data-act="ub-pdf" data-id="' + esc(id) + '">Protokoll (PDF)</button>' : '') + '</div>' +
+      '<div class="ub-top"><div class="ub-map">' + ubSvg(id, st) + '</div><div class="ub-side">';
+    if (!ent.length) {
+      h += '<p class="ub-empty">Noch nichts eingetragen.</p><p class="ub-sx">Auto auf die Bühne oder auf Böcke, Zone für Zone ansehen und Fotos machen. Die App merkt sich den Zustand jeder Zone und erinnert an die nächste Prüfung.</p>' + ubLegend(null);
+    } else {
+      h += '<dl class="ub-kv">';
+      if (lp) h += '<dt>Zuletzt geprüft</dt><dd>' + esc(workDate(lp) || 'ohne Datum') + (numOrNull(lp.km) !== null ? ' <small>' + esc(nf.format(num(lp.km)) + ' km') + '</small>' : '') + '</dd>';
+      if (lp && UB_NOTE[lp.ub.note]) h += '<dt>Zustandsnote</dt><dd>' + esc(lp.ub.note + ' ') + '<small>' + esc(UB_NOTE[lp.ub.note]) + '</small></dd>';
+      if (nx) h += '<dt>Nächste Prüfung</dt><dd>' + esc(ymTxt(nx.ym)) + (nx.now ? ' <span class="wst faellig">fällig</span>' : '') + '</dd>';
+      rf.forEach(function (r) { h += '<dt>' + esc(UB_RF[r.art]) + '</dt><dd>' + esc('ab ' + ymTxt(r.ym)) + (r.now ? ' <span class="wst faellig">fällig</span>' : '') + '</dd>'; });
+      h += '</dl>' + ubLegend(c);
+    }
+    h += '</div></div>' + ubChips(id, st, 'a') + ubChips(id, st, 'r');
+    var af = UB_Z.filter(function (z) { var s = st[z.id]; return s && (s.st === 'durch' || s.st === 'rost' || s.st === 'ober'); })
+      .sort(function (a, b) { return UB_STO.indexOf(st[b.id].st) - UB_STO.indexOf(st[a.id].st) || UB_Z.indexOf(a) - UB_Z.indexOf(b); });
+    if (af.length) {
+      h += '<h4 class="ub-h4">Auffällig · ' + af.length + '</h4><ul class="ub-af">' + af.map(function (z) {
+        var s = st[z.id], sub = [s.n, s.d ? 'Befund ' + datum(s.d) : '', s.tr ? 'danach konserviert' + (s.tr.d ? ' am ' + datum(s.tr.d) : '') : ''].filter(Boolean).join(' · ');
+        return '<li><button type="button" class="ub-afb st-' + s.st + '" data-act="ub-zone" data-id="' + esc(id) + '" data-z="' + z.id + '">' +
+          '<span class="ub-afn">' + esc(z.n) + ' <span class="wst st-' + s.st + '">' + esc(UB_ST[s.st].k) + '</span></span>' +
+          (sub ? '<span class="ub-afx">' + esc(sub) + '</span>' : '') + '</button></li>';
+      }).join('') + '</ul>';
+    }
+    if (can) h += '<div class="ub-act"><button type="button" class="btn small" data-act="ub-new" data-id="' + esc(id) + '" data-typ="pruefung">Prüfung eintragen</button>' +
+      '<button type="button" class="btn ghost small" data-act="ub-new" data-id="' + esc(id) + '" data-typ="behandlung">Konservierung eintragen</button></div>';
+    if (ent.length) {
+      h += '<h4 class="ub-h4">Einträge · ' + ent.length + '</h4><ul class="works">' + ent.slice(-3).reverse().map(function (w) { return ubEntryRow(id, w, null); }).join('') + '</ul>' +
+        (ent.length > 3 ? '<p class="help">Ältere Einträge stehen unter „Erledigte Arbeiten“ und im Serviceheft.</p>' : '');
+    }
+    var pr = ubProbs(id);
+    if (pr.list.length) {
+      h += '<details class="ub-more" data-k="ub-probs"><summary>Bekannte Roststellen bei diesem Modell · ' + pr.list.length + '</summary><ul class="ub-pl">' + pr.list.map(function (p) {
+        return '<li><b>' + esc(p.titel) + '</b> ' + esc(p.text || '') + srcRefs(pr.w, p.quelle) + '</li>';
+      }).join('') + '</ul><p class="help">Aus der Wartungs-Recherche zu diesem Auto.</p></details>';
+    }
+    h += '<details class="ub-more" data-k="ub-tips"><summary>So prüfst und konservierst du richtig</summary>' + ubTipsHtml() + '</details>';
+    return h + '</div>';
+  }
+  /* ---------- Verlauf einer Zone ---------- */
+  function ubZonePhotos(carId, zid) {
+    var car = S.cars.get(carId), out = [];
+    if (!car) return out;
+    ubEntries(car).slice().reverse().forEach(function (w) { blList(w.belege).forEach(function (r) { if (r.zone === zid) out.push({ r: r, w: w }); }); });
+    return out;
+  }
+  function openUbZone(carId, zid) {
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car || !UB_ZM[zid]) return;
+    openSheet('ubzone', { id: carId, z: zid }, sheetUbZone(carId, car, zid));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function sheetUbZone(carId, car, zid) {
+    var z = UB_ZM[zid], st = ubState(car), s = st[zid] || {}, all = ubZonePhotos(carId, zid), can = canWrite();
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Unterboden · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + esc(z.n) + '</h2>' +
+      (z.h ? '<p class="buy">' + esc('Worauf achten: ' + z.h) + srcRefs(UB_Q, z.q) + '</p>' : '') + '</div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    h += '<div class="ub-now st-' + (s.st || 'leer') + '"><span class="ub-dot st-' + (s.st || 'leer') + '" aria-hidden="true"></span><span><b>' + esc(ubStTxt(s.st)) + '</b>' +
+      '<small>' + esc(s.st ? UB_ST[s.st].d + (s.d ? ' · Befund ' + datum(s.d) : '') : 'In keiner Prüfung bewertet.') + (s.tr ? esc(' · danach konserviert' + (s.tr.d ? ' am ' + datum(s.tr.d) : '')) : '') + '</small>' +
+      (s.n ? '<small>' + esc('Notiz: ' + s.n) + '</small>' : '') + '</span></div>';
+    var rows = ubEntries(car).slice().reverse().filter(function (w) {
+      var zz = ubZonen(w)[zid];
+      return (zz && (ubStOf(zz) || zz.n)) || arr(w.ub.bz).indexOf(zid) >= 0 || blList(w.belege).some(function (r) { return r.zone === zid; });
+    });
+    h += '<div class="sh-sec"><h3 class="sec">Verlauf · ' + rows.length + '</h3>';
+    if (!rows.length) h += '<p class="note">Zu dieser Zone gibt es noch keinen Eintrag.</p>';
+    else h += '<ul class="ubh">' + rows.map(function (w) {
+      var zz = ubZonen(w)[zid] || {}, zst = ubStOf(zz), isB = w.ub.typ === 'behandlung', mt = ubMittelTxt(w.ub);
+      var tiles = all.map(function (x, i) { return x.w === w ? blTile(x.r, 'uz:' + carId + ':' + zid, i, false) : ''; }).join('');
+      var line = isB ? (arr(w.ub.bz).indexOf(zid) >= 0 ? 'Konserviert' + (mt ? ' mit ' + mt : '') : 'Konservierung, Zone nicht behandelt') : 'Prüfung';
+      return '<li class="ubh-i"><div class="ubh-h"><span class="ubh-d">' + esc(workDate(w) || 'ohne Datum') + '</span>' +
+        (zst ? '<span class="wst st-' + zst + '">' + esc(UB_ST[zst].k) + '</span>' : '') + '</div>' +
+        '<p class="ubh-t">' + esc(line + (zz.n ? ': ' + zz.n : '')) + '</p>' +
+        (tiles ? '<div class="bl-s">' + tiles + '</div>' : '') +
+        (can ? '<button type="button" class="linkbtn" data-act="ub-edit" data-id="' + esc(carId) + '" data-work="' + esc(w.id) + '" data-back="' + esc('z:' + zid) + '">Eintrag öffnen</button>' : '') + '</li>';
+    }).join('') + '</ul>';
+    h += '</div><div class="sh-foot">' + (can ? '<button type="button" class="btn" data-act="ub-new" data-id="' + esc(carId) + '" data-typ="pruefung" data-back="' + esc('z:' + zid) + '">Prüfung eintragen</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Zurück zum Auto</button></div>';
+    return h;
+  }
+  /* ---------- Formular: Prüfung oder Konservierung ---------- */
+  function ubZoneFormList(zid) {
+    var f = S.sheet && S.sheet.ubz && S.sheet.ubz[zid];
+    if (!f) return [];
+    return f.keep.concat(f.pend.map(function (p) { return { pfad: 'belege/neu/' + p.name, typ: p.typ, name: p.name, bytes: p.blob.size, w: p.w, h: p.h, _url: p.url, _blob: p.blob, _neu: true }; }));
+  }
+  function ubZoneTiles(zid) {
+    if (!BL) return '';
+    return ubZoneFormList(zid).map(function (r, i) { return blTile(r, 'z:' + zid, i, true).replace('data-act="bl-rm"', 'data-act="ub-zrm" data-z="' + zid + '"'); }).join('') +
+      blAddTile('z:' + zid, 'Foto').replace('accept="image/*,application/pdf"', 'accept="image/*"');
+  }
+  function ubCntTxt(n, note) { return [n ? (n === 1 ? '1 Foto' : n + ' Fotos') : '', note ? 'Notiz' : ''].filter(Boolean).join(', '); }
+  function ubZoneCount(zid) {
+    var el = $('#ubc-' + zid), nt = $('#ubn-' + zid);
+    if (el) el.textContent = ubCntTxt(ubZoneFormList(zid).length, nt && nt.value.trim());
+  }
+  function ubZoneRefresh(zid) { var box = $('#ubp-' + zid); if (box) box.innerHTML = ubZoneTiles(zid); ubZoneCount(zid); }
+  function ubOpenZone(zid, open) {
+    var x = $('#ubx-' + zid), b = $('#ubt-' + zid);
+    if (!x) return;
+    x.hidden = !open;
+    if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (S.sheet && S.sheet.open) S.sheet.open[zid] = !!open;
+  }
+  function ubZoneAdd(zid, prepared, errs) {
+    var f = S.sheet && S.sheet.ubz && S.sheet.ubz[zid];
+    if (!f) return;
+    var ph = S.sheet.typ === 'behandlung' ? 'nachher' : 'Befund';
+    prepared.forEach(function (p) { p.name = ubZoneLabel(zid) + ' ' + ph + '.jpg'; });
+    f.pend = f.pend.concat(prepared);
+    ubZoneRefresh(zid);
+    ubOpenZone(zid, true);
+    if (S.sheet.typ === 'behandlung') { var cb = $('#ubb-' + zid); if (cb) cb.checked = true; }
+    toast(errs.length ? errs[0] : prepared.length === 1 ? 'Foto hinzugefügt. Wird beim Speichern hochgeladen.' : prepared.length + ' Fotos hinzugefügt. Werden beim Speichern hochgeladen.');
+  }
+  function ubZoneRemove(zid, i) {
+    var f = S.sheet && S.sheet.ubz && S.sheet.ubz[zid];
+    if (!f) return;
+    if (i < f.keep.length) f.keep.splice(i, 1);
+    else { var pi = i - f.keep.length; if (f.pend[pi]) f.pend.splice(pi, 1); }
+    ubZoneRefresh(zid);
+  }
+  async function ubCommitZones(carId, typ) {
+    var s = S.sheet, out = [], jobs = [], ph = typ === 'behandlung' ? 'n' : 'v';
+    UB_Z.forEach(function (z) {
+      var f = s.ubz && s.ubz[z.id];
+      if (!f) return;
+      f.keep.forEach(function (r) { out.push(r); });
+      f.pend.forEach(function (p) { jobs.push({ z: z, p: p }); });
+    });
+    for (var i = 0; i < jobs.length; i++) {
+      var j = jobs[i];
+      if (!j.p.ref) {
+        if (jobs.length > 1) toast('Lade Fotos hoch: ' + (i + 1) + ' von ' + jobs.length + ' …');
+        j.p.ref = Object.assign(await blUpload(carId, j.p, j.z.n), { zone: j.z.id, ph: ph });
+      }
+      out.push(j.p.ref);
+    }
+    return out;
+  }
+  function ubSelOpts(map, cur, empty) {
+    return '<option value="">' + esc(empty) + '</option>' + Object.keys(map).map(function (k) { return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + '>' + esc(map[k]) + '</option>'; }).join('');
+  }
+  function ubPills(name, map, sel) {
+    return '<div class="ub-pills">' + Object.keys(map).map(function (k) {
+      return '<label class="ub-pill"><input type="checkbox" name="' + name + '" value="' + k + '"' + (sel.indexOf(k) >= 0 ? ' checked' : '') + '><span>' + esc(map[k]) + '</span></label>';
+    }).join('') + '</div>';
+  }
+  function ubZoneRows(typ, u, cur) {
+    var z0 = ubZonen({ ub: u }), bz = arr(u.bz), open = (S.sheet && S.sheet.open) || {};
+    return UB_GR.map(function (g) {
+      return '<h4 class="ub-gh">' + esc(g[1]) + '</h4>' + UB_Z.filter(function (z) { return z.g === g[0]; }).map(function (z) {
+        var v = z0[z.id] || {}, st = ubStOf(v), note = String(v.n || ''), n = ubZoneFormList(z.id).length, isOpen = !!open[z.id], c = cur[z.id] || {};
+        var hint = z.h ? '<small>' + esc(z.h) + '</small>' : '';
+        var tog = '<button type="button" class="ubz-t" id="ubt-' + z.id + '" data-act="ub-zx" data-z="' + z.id + '" aria-expanded="' + (isOpen ? 'true' : 'false') + '" aria-controls="ubx-' + z.id + '">' +
+          (BL ? (typ === 'pruefung' ? 'Foto oder Notiz' : 'Foto nachher oder Notiz') : 'Notiz') + '<span class="ubz-c" id="ubc-' + z.id + '">' + esc(ubCntTxt(n, note)) + '</span></button>';
+        var head = typ === 'pruefung'
+          ? '<div class="ubz-l"><label class="ubz-n" for="ubs-' + z.id + '">' + esc(z.n) + hint + '</label>' + tog + '</div>' +
+            '<select id="ubs-' + z.id + '" class="ubz-s st-' + (st || 'leer') + '" data-ubz="' + z.id + '"><option value="">nicht geprüft</option>' +
+            UB_STO.map(function (k) { return '<option value="' + k + '"' + (k === st ? ' selected' : '') + '>' + esc(UB_ST[k].n) + '</option>'; }).join('') + '</select>'
+          : '<div class="ubz-l"><label class="check ubz-n ubz-b"><input type="checkbox" id="ubb-' + z.id + '" data-ubb="' + z.id + '"' + (bz.indexOf(z.id) >= 0 ? ' checked' : '') + '><span>' + esc(z.n) +
+            '<small>' + esc(c.st ? 'Befund: ' + UB_ST[c.st].k + (c.d ? ' (' + datum(c.d) + ')' : '') : (z.h || 'noch nicht bewertet')) + '</small></span></label>' + tog + '</div>';
+        return '<div class="ubz' + (typ === 'pruefung' ? '' : ' b') + '" id="ubz-' + z.id + '"><div class="ubz-h">' + head + '</div>' +
+          '<div class="ubz-x" id="ubx-' + z.id + '"' + (isOpen ? '' : ' hidden') + '>' +
+          '<label class="f"><span>Notiz</span><input id="ubn-' + z.id + '" value="' + esc(note) + '" maxlength="160" autocomplete="off" placeholder="' + (typ === 'pruefung' ? 'z. B. Blasen an der Wagenheberaufnahme' : 'z. B. entrostet, Brunox, dann Fett') + '"></label>' +
+          (BL ? '<div class="bl-s" id="ubp-' + z.id + '" role="group" aria-label="' + esc('Fotos ' + z.n) + '">' + ubZoneTiles(z.id) + '</div>' : '') + '</div></div>';
+      }).join('');
+    }).join('');
+  }
+  function ubMittelRow(m, i) {
+    m = m || {};
+    return '<div class="ubm" data-i="' + i + '"><label class="f ubm-nf"><span>Produkt</span><input class="ubm-n" id="ubm-n' + i + '" list="ubm-l" value="' + esc(m.n || '') + '" maxlength="80" autocomplete="off" placeholder="z. B. Mike Sander’s Fett"></label>' +
+      '<label class="f"><span>Art</span><select class="ubm-t" id="ubm-t' + i + '"' + (m.t ? ' data-touched="1"' : '') + '><option value="">Art wählen</option>' +
+      Object.keys(UB_MT).map(function (k) { return '<option value="' + k + '"' + (k === m.t ? ' selected' : '') + '>' + esc(UB_MT[k].n) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Menge</span><input class="ubm-m" id="ubm-m' + i + '" value="' + esc(m.m || '') + '" maxlength="30" autocomplete="off" placeholder="z. B. 2 kg"></label></div>';
+  }
+  function ubMittelNames() {
+    var seen = [];
+    S.items.forEach(function (it) { if (it && !it.archiviert && it.bereich === 'verbrauch' && it.name && seen.indexOf(it.name) < 0) seen.push(String(it.name)); });
+    S.cars.forEach(function (c) { arr(c && c.arbeiten).forEach(function (w) { if (ubOk(w)) ubMittel(w.ub).forEach(function (m) { if (seen.indexOf(m.n) < 0) seen.push(String(m.n)); }); }); });
+    return seen.sort(coll.compare).map(function (n) { return '<option value="' + esc(n) + '"></option>'; }).join('');
+  }
+  function ubGuessT(n) {
+    n = String(n || '').toLowerCase();
+    if (/fluid ?film|kriech|wd-?40|ballistol|owatrol|ölfluid|oelfluid|korrosionsschutzöl/.test(n)) return 'kriechoel';
+    if (/sander|fett/.test(n)) return 'fett';
+    if (/epoxy|rostumwandl|rostumform|fertan|grundierung|primer|rost ?stopp?\b/.test(n)) return 'rost';
+    if (/zink/.test(n)) return 'zink';
+    if (/bitumen|steinschlag/.test(n)) return 'bitumen';
+    if (/kautschuk|pvc/.test(n)) return 'pvc';
+    if (/wachs|wax|dinitrol|tectyl|hohlraum|unterbodenschutz/.test(n)) return 'wachs';
+    return '';
+  }
+  function ubAfSel(art, val, touched) {
+    return '<select id="uba-' + art + '"' + (touched ? ' data-touched="1"' : '') + '><option value="">kein Termin</option>' +
+      UB_AF.map(function (m) { return '<option value="' + m + '"' + (m === val ? ' selected' : '') + '>' + esc('in ' + ubAfTxt(m)) + '</option>'; }).join('') + '</select>';
+  }
+  function ubTypes() {
+    return $$('#ubform .ubm').map(function (row) { var n = $('.ubm-n', row), t = $('.ubm-t', row); return n && n.value.trim() && t && t.value ? t.value : ''; }).filter(Boolean);
+  }
+  /* Vorschlag fürs Auffrischen: der kürzeste belegte Wert der verwendeten Mittel */
+  function ubSuggest(types, art) {
+    var best = null, k = art === 'unterboden' ? 'u' : 'h';
+    types.forEach(function (t) { var d = UB_MT[t] && UB_MT[t][k]; if (d && (best === null || d < best)) best = d; });
+    return best;
+  }
+  function ubAuffrHint(types, art) {
+    var q = function (n) { return srcRefs(UB_Q, n); }, p = [];
+    var has = function (t) { return types.indexOf(t) >= 0; };
+    if (art === 'unterboden') {
+      if (has('kriechoel')) p.push('Kriechöl an freien Flächen jährlich' + q([2]));
+      if (has('wachs')) p.push('Wachs alle ein bis zwei Jahre (VW 1972)' + q([7]));
+      if (has('fett')) p.push('Fett: Schadstellen im Radkasten alle vier Jahre' + q([10]));
+      if (has('bitumen') || has('pvc')) p.push('Schutz ab Werk spätestens nach sechs bis acht Jahren erneuern' + q([5]));
+    } else {
+      if (has('kriechoel')) p.push('Ölfluid in Hohlräumen alle drei bis fünf Jahre' + q([6]));
+      if (has('fett')) p.push('Fett in Hohlräumen acht bis zwölf Jahre' + q([1]));
+      if (has('wachs')) p.push('Sprühwachs in Hohlräumen: mehrere Jahre, ohne feste Zahl' + q([2]));
+    }
+    return p.length ? 'Vorschlag nach dem Mittel: ' + p.join('; ') + '.' : 'Trag oben das Mittel und seine Art ein, dann schlägt die App einen Termin vor.';
+  }
+  function ubAuffrUpdate() {
+    var types = ubTypes();
+    ['unterboden', 'hohlraum'].forEach(function (art) {
+      var sel = $('#uba-' + art), hint = $('#ubah-' + art);
+      if (sel && !sel.dataset.touched) { var v = ubSuggest(types, art); sel.value = v ? String(v) : ''; }
+      if (hint) hint.innerHTML = ubAuffrHint(types, art);
+    });
+  }
+  function ubArtSync() {
+    var a = $$('input[name="ub-art"]').filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+    ['unterboden', 'hohlraum'].forEach(function (art) { var f = $('#ubaf-' + art); if (f) f.hidden = a.indexOf(art) < 0; });
+    var box = $('#ub-auffr'); if (box) box.hidden = a.indexOf('unterboden') < 0 && a.indexOf('hohlraum') < 0;
+  }
+  function openUbForm(carId, typ, workId, pre) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car) return;
+    var w = workId ? arr(car.arbeiten).filter(function (x) { return x && x.id === workId; })[0] : null;
+    if (workId && !w) { toast('Diesen Eintrag gibt es nicht mehr.'); return; }
+    if (w && ubOk(w)) typ = w.ub.typ;
+    typ = typ === 'behandlung' ? 'behandlung' : 'pruefung';
+    pre = pre || {};
+    var u = w ? w.ub : { typ: typ }, refs = blList(w && w.belege), ubz = {}, open = {};
+    UB_Z.forEach(function (z) {
+      ubz[z.id] = { keep: refs.filter(function (r) { return r.zone === z.id; }), pend: [] };
+      var v = ubZonen({ ub: u })[z.id];
+      if (ubz[z.id].keep.length || (v && v.n)) open[z.id] = true;
+    });
+    var data = { car: carId, work: workId || null, typ: typ, back: pre.back || null, bl: BL ? { keep: refs.filter(function (r) { return !r.zone; }), pend: [] } : null, ubz: ubz, open: open };
+    S.sheet = Object.assign({ type: 'ubform' }, data);
+    var cur = ubState(car, w && isDay(w.datum) ? w.datum : null), ck = curKmEst(car), today = dayKey(new Date());
+    var mittel = ubMittel(u), arten = arr(u.arten), af = u.auffr && typeof u.auffr === 'object' ? u.auffr : {};
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Unterboden · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + (w ? esc(w.titel) : typ === 'pruefung' ? 'Prüfung eintragen' : 'Konservierung eintragen') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="ubform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="ub-d" value="' + (w && isDay(w.datum) ? w.datum : today) + '" max="' + today + '"></label>' +
+      '<label class="f"><span>Kilometerstand</span><input id="ub-km" inputmode="numeric" value="' + (w && numOrNull(w.km) !== null ? String(w.km) : '') + '" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'optional') + '" autocomplete="off"></label></div>' +
+      '<label class="f"><span>Durchgeführt von</span><input id="ub-durch" list="ub-durch-l" value="' + esc(w ? w.durch || '' : 'selbst') + '" maxlength="60" autocomplete="off"><datalist id="ub-durch-l">' + durchOpts() + '</datalist></label>';
+    if (typ === 'pruefung') {
+      h += '<fieldset class="ub-fs"><legend>Wie geprüft</legend>' + ubPills('ub-wie', UB_WIE, arr(u.wie)) +
+        '<small class="ub-fh">Kommt ins Protokoll. Was nicht geprüft werden konnte, bleibt dort als „nicht geprüft“ stehen.</small></fieldset>' +
+        '<div class="ub-zh"><h3 class="sec">Zustand je Zone</h3><button type="button" class="btn ghost small" data-act="ub-allok">Übrige auf gesund</button></div>' +
+        '<p class="help">Unklare Zonen leer lassen. Bei Rost ein Foto mit Maßstab und eine kurze Notiz.</p>' +
+        ubZoneRows(typ, u, cur) +
+        '<h3 class="sec ub-s2">Vorhandener Unterbodenschutz</h3>' +
+        '<div class="row2"><label class="f"><span>Art</span><select id="ub-sa">' + ubSelOpts(UB_SCHUTZ, u.schutz && u.schutz.art, '–') + '</select></label>' +
+        '<label class="f"><span>Zustand</span><select id="ub-sz">' + ubSelOpts(UB_SZ, u.schutz && u.schutz.zust, '–') + '</select></label></div>' +
+        '<label class="f"><span>Zustandsnote Unterboden</span><select id="ub-note"><option value="">keine Note</option>' + [1, 2, 3, 4, 5].map(function (n) { return '<option value="' + n + '"' + (u.note === n ? ' selected' : '') + '>' + n + ' ' + esc(UB_NOTE[n]) + '</option>'; }).join('') + '</select>' +
+        '<small>Fünfstufig wie in deinen Gutachten: 1 makellos, 2 gut, 3 gebraucht, 4 verbraucht, 5 restaurierungsbedürftig.</small></label>' +
+        '<label class="f"><span>Nächste Prüfung</span><select id="ub-iv">' + UB_IV.map(function (m) { return '<option value="' + m + '"' + (m === ubIv(car) ? ' selected' : '') + '>' + esc('in ' + ubIvTxt(m)) + '</option>'; }).join('') + '</select>' +
+        '<small>Radläufe und Schwellerunterkanten jährlich prüfen, Hohlräume alle zwei bis drei Jahre.' + srcRefs(UB_Q, [2]) + '</small></label>';
+    } else {
+      h += '<fieldset class="ub-fs"><legend>Was wurde gemacht</legend>' + ubPills('ub-art', UB_ART, arten) + '</fieldset>' +
+        '<fieldset class="ub-fs"><legend>Mittel</legend><div id="ubm-box">' + (mittel.length ? mittel : [{}]).concat([{}]).map(ubMittelRow).join('') + '</div>' +
+        '<button type="button" class="linkbtn" data-act="ub-madd">+ Weiteres Mittel</button><datalist id="ubm-l">' + ubMittelNames() + '</datalist></fieldset>' +
+        '<div class="ub-zh"><h3 class="sec">Behandelte Zonen</h3></div>' +
+        '<div class="ub-q"><button type="button" class="btn ghost small" data-act="ub-quick" data-q="unten">Unterboden</button><button type="button" class="btn ghost small" data-act="ub-quick" data-q="hohl">Hohlräume</button>' +
+        '<button type="button" class="btn ghost small" data-act="ub-quick" data-q="auff">Auffällige</button><button type="button" class="btn ghost small" data-act="ub-quick" data-q="keine">Keine</button></div>' +
+        ubZoneRows(typ, u, cur) +
+        '<div class="row2" id="ub-auffr"><label class="f" id="ubaf-unterboden"><span>Unterbodenschutz auffrischen</span>' + ubAfSel('unterboden', numOrNull(af.unterboden), !!w && arten.indexOf('unterboden') >= 0) + '<small id="ubah-unterboden"></small></label>' +
+        '<label class="f" id="ubaf-hohlraum"><span>Hohlräume auffrischen</span>' + ubAfSel('hohlraum', numOrNull(af.hohlraum), !!w && arten.indexOf('hohlraum') >= 0) + '<small id="ubah-hohlraum"></small></label></div>';
+    }
+    h += '<label class="f"><span>Kosten (€)</span><input id="ub-k" inputmode="decimal" value="' + (w && numOrNull(w.kosten) !== null && num(w.kosten) !== 0 ? nfPrice.format(w.kosten) : '') + '" placeholder="leer = 0 €" autocomplete="off"></label>' +
+      (BL ? blField(data.bl.keep, typ === 'pruefung' ? 'Übersichtsfotos, die zu keiner Zone gehören.' : 'Zum Beispiel Rechnung oder das verwendete Gebinde.').replace('>Fotos und Belege<', '>Weitere Fotos<') : '') +
+      '<label class="f"><span>Notiz</span><textarea id="ub-text" rows="2" maxlength="300" placeholder="' + (typ === 'pruefung' ? 'z. B. ohne Demontage der Verkleidungen geprüft' : 'z. B. Fett auf 100 °C erhitzt, Ablauflöcher frei') + '">' + esc(u.text || '') + '</textarea></label>' +
+      '<p class="err" id="ub-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
+      '<button type="button" class="btn ghost" data-act="ub-back">Zurück</button>' +
+      (w && S.dl ? '<button type="button" class="btn ghost" data-act="ub-pdf" data-id="' + esc(carId) + '" data-day="' + esc(isDay(w.datum) ? w.datum : '') + '">Protokoll (PDF)</button>' : '') +
+      (w ? '<button type="button" class="btn ghost" data-act="ub-del">Entfernen</button>' : '') + '</div></form>';
+    openSheet('ubform', data, h);
+    if (typ === 'behandlung') { ubArtSync(); ubAuffrUpdate(); }
+  }
+  function ubBack(s) {
+    var b = s && s.back;
+    if (b === 'zeitplan') openZeitplan();
+    else if (b === 'sh') openServiceheft(s.car);
+    else if (b && b.indexOf('z:') === 0 && UB_ZM[b.slice(2)]) openUbZone(s.car, b.slice(2));
+    else openCar(s.car);
+  }
+  function ubQuick(q) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ubform') return;
+    var car = S.cars.get(s.car), st = car ? ubState(car) : {};
+    $$('#ubform input[data-ubb]').forEach(function (c) {
+      var z = UB_ZM[c.dataset.ubb], x = st[c.dataset.ubb];
+      if (q === 'keine') c.checked = false;
+      else if (q === 'unten') { if (z.g === 'v' || z.g === 'm' || z.g === 'h') c.checked = true; }
+      else if (q === 'hohl') { if (z.g === 'r') c.checked = true; }
+      else if (q === 'auff') { if (x && (x.st === 'ober' || x.st === 'rost' || x.st === 'durch')) c.checked = true; }
+    });
+  }
+  function ubAllOk() {
+    var n = 0;
+    $$('#ubform select[data-ubz]').forEach(function (sel) { if (!sel.value) { sel.value = 'ok'; sel.className = 'ubz-s st-ok'; n++; } });
+    toast(n ? (n === 1 ? '1 Zone auf gesund gesetzt.' : n + ' Zonen auf gesund gesetzt.') : 'Alle Zonen sind schon bewertet.');
+  }
+  function ubMAdd() {
+    var box = $('#ubm-box');
+    if (!box) return;
+    var n = $$('.ubm', box).length;
+    if (n >= 8) { toast('Mehr als 8 Mittel gehen nicht.'); return; }
+    box.insertAdjacentHTML('beforeend', ubMittelRow({}, n));
+    var inp = $('#ubm-n' + n); if (inp) try { inp.focus(); } catch (_) {}
+  }
+  function ubChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ubform' || !t) return false;
+    if (t.dataset && t.dataset.ubz) {
+      t.className = 'ubz-s st-' + (t.value || 'leer');
+      if (t.value === 'rost' || t.value === 'durch') ubOpenZone(t.dataset.ubz, true);
+      return true;
+    }
+    if (t.classList && t.classList.contains('ubm-t')) { t.dataset.touched = '1'; ubAuffrUpdate(); return true; }
+    if (t.classList && t.classList.contains('ubm-n')) { ubInput(t); return true; }
+    if (t.name === 'ub-art') { ubArtSync(); return true; }
+    if (t.id === 'uba-unterboden' || t.id === 'uba-hohlraum') { t.dataset.touched = '1'; return true; }
+    return false;
+  }
+  function ubInput(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ubform' || !t) return false;
+    if (t.classList && t.classList.contains('ubm-n')) {
+      var row = t.closest('.ubm'), sel = row && $('.ubm-t', row);
+      if (sel && !sel.dataset.touched) { var g = ubGuessT(t.value); sel.value = g; }
+      ubAuffrUpdate();
+      return true;
+    }
+    if (t.id && t.id.indexOf('ubn-') === 0) { ubZoneCount(t.id.slice(4)); return true; }
+    return false;
+  }
+  async function saveUb() {
+    var s = S.sheet;
+    if (!s || s.type !== 'ubform' || S.busy) return;
+    var car = S.cars.get(s.car), showErr = function (m) { var el = $('#ub-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    showErr('');
+    if (!car) { showErr('Dieses Auto gibt es nicht mehr.'); return; }
+    if (!canWrite()) { showErr('Du kannst dieses Inventar nur ansehen.'); return; }
+    var d = g('ub-d'), km = parseNum(g('ub-km')), k = parseNum(g('ub-k'));
+    if (!isDay(d) || d > dayKey(new Date())) { showErr('Bitte ein gültiges Datum eintragen, nicht in der Zukunft.'); return; }
+    if (km !== null && (isNaN(km) || km < 0)) { showErr('Den Kilometerstand bitte als Zahl eintragen.'); return; }
+    if (k !== null && (isNaN(k) || k < 0)) { showErr('Die Kosten bitte als Zahl eintragen, z. B. 40.'); return; }
+    var old = s.work ? arr(car.arbeiten).filter(function (x) { return x && x.id === s.work; })[0] : null;
+    if (s.work && !old) { showErr('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var u = { v: 1, typ: s.typ }, zonen = {}, any = false;
+    UB_Z.forEach(function (z) {
+      var n = g('ubn-' + z.id).slice(0, 160), st = s.typ === 'pruefung' ? g('ubs-' + z.id) : '';
+      if (st && UB_ST[st]) { zonen[z.id] = n ? { st: st, n: n } : { st: st }; any = true; }
+      else if (n) zonen[z.id] = { st: null, n: n };
+    });
+    u.zonen = zonen;
+    if (s.typ === 'pruefung') {
+      if (!any) { showErr('Bitte mindestens eine Zone bewerten. Unklare Zonen dürfen leer bleiben.'); return; }
+      u.wie = $$('input[name="ub-wie"]').filter(function (c) { return c.checked && UB_WIE[c.value]; }).map(function (c) { return c.value; });
+      var sa = g('ub-sa'), sz = g('ub-sz');
+      u.schutz = sa || sz ? { art: UB_SCHUTZ[sa] ? sa : null, zust: UB_SZ[sz] ? sz : null } : null;
+      var nt = Number(g('ub-note'));
+      u.note = UB_NOTE[nt] ? nt : null;
+    } else {
+      u.arten = $$('input[name="ub-art"]').filter(function (c) { return c.checked && UB_ART[c.value]; }).map(function (c) { return c.value; });
+      if (!u.arten.length) { showErr('Bitte ankreuzen, was gemacht wurde.'); return; }
+      u.mittel = $$('#ubform .ubm').map(function (row) {
+        var n = ($('.ubm-n', row) || {}).value || '', t = ($('.ubm-t', row) || {}).value || '', m = ($('.ubm-m', row) || {}).value || '';
+        n = n.trim().slice(0, 80);
+        return n ? { n: n, t: UB_MT[t] ? t : null, m: m.trim().slice(0, 30) || null } : null;
+      }).filter(Boolean).slice(0, 8);
+      u.bz = $$('#ubform input[data-ubb]').filter(function (c) { return c.checked && UB_ZM[c.dataset.ubb]; }).map(function (c) { return c.dataset.ubb; });
+      u.auffr = {};
+      ['unterboden', 'hohlraum'].forEach(function (art) { var v = numOrNull(g('uba-' + art)); u.auffr[art] = u.arten.indexOf(art) >= 0 && v && UB_AF.indexOf(v) >= 0 ? v : null; });
+    }
+    u.text = g('ub-text').slice(0, 300);
+    var titel = ubTitel(s.typ, u.arten), refs = [];
+    setBusy(true);
+    try {
+      var gen = s.bl ? await blCommitForm(s.car, titel) : null;
+      refs = (gen || (old ? blList(old.belege).filter(function (r) { return !r.zone; }) : [])).concat(BL ? await ubCommitZones(s.car, s.typ) : (old ? blList(old.belege).filter(function (r) { return r.zone; }) : []));
+    } catch (e) { setBusy(false); showErr(blErrText(e)); return; }
+    setBusy(false);
+    car = S.cars.get(s.car) || car;
+    var now = new Date().toISOString();
+    var rec = { titel: titel, datum: d, datumGenau: 'tag', kosten: k === null ? 0 : round2(k), km: km === null ? null : Math.round(km), kmCa: false, notiz: ubSummary(u), durch: g('ub-durch').slice(0, 60) || null, wartung: [], belege: refs, ub: u };
+    var list = arr(car.arbeiten).map(function (x) { return Object.assign({}, x); });
+    if (s.work) list = list.map(function (x) { return x.id === s.work ? Object.assign(x, rec, { geaendert: now }) : x; });
+    else list.push(Object.assign({ id: rid(10), erstellt: now, beleg: false }, rec));
+    var patch = { arbeiten: list, geaendert: now };
+    if (s.typ === 'pruefung') { var iv = numOrNull(g('ub-iv')); patch.unterboden = Object.assign({}, ubDoc(car), { intervall: UB_IV.indexOf(iv) >= 0 ? iv : 12 }); }
+    if (rec.km !== null && (numOrNull(car.km) === null || rec.km > num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) { patch.km = rec.km; patch.kmDatum = d; patch.kmLog = kmLogWith(car, d, rec.km); }
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('fahrzeuge/' + s.car).update(patch); });
+      S.cars.set(s.car, Object.assign({}, car, patch));
+      setBusy(false);
+      ubBack(s);
+      renderAll();
+      toast((s.work ? 'Gespeichert: ' : 'Eingetragen: ') + titel + (patch.km !== undefined ? '. km-Stand auf ' + nf.format(patch.km) + ' gesetzt.' : '.'));
+    } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
+  }
+  async function ubRemove(btn) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ubform' || !s.work || S.busy) return;
+    if (!(btn.dataset.armed && Number(btn.dataset.armed) > Date.now())) {
+      btn.dataset.armed = String(Date.now() + 4000);
+      btn.textContent = 'Wirklich entfernen?';
+      setTimeout(function () { if (btn.isConnected && btn.dataset.armed && Number(btn.dataset.armed) <= Date.now()) { delete btn.dataset.armed; btn.textContent = 'Entfernen'; } }, 4100);
+      return;
+    }
+    var car = S.cars.get(s.car);
+    if (!car) return;
+    var list = arr(car.arbeiten).filter(function (x) { return x && x.id !== s.work; }), now = new Date().toISOString();
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('fahrzeuge/' + s.car).update({ arbeiten: list, geaendert: now }); });
+      S.cars.set(s.car, Object.assign({}, car, { arbeiten: list }));
+      setBusy(false);
+      ubBack(s);
+      toast('Eintrag entfernt. Die Fotos bleiben im Daten-Repository.');
+    } catch (e) { writeError(e, function (m) { var el = $('#ub-err'); if (el) el.textContent = m; }); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Tastatur: Zonen in der Skizze mit Enter oder Leertaste öffnen */
+  function ubKey(e) {
+    var t = e.target;
+    if ((e.key === 'Enter' || e.key === ' ') && t && t.getAttribute && t.getAttribute('data-ubk')) { e.preventDefault(); e.stopPropagation(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  }
+  /* ---------- Protokoll als PDF ---------- */
+  var UB_PC = { ok: [44, 122, 75], ober: [201, 173, 46], rost: [217, 102, 31], durch: [178, 58, 42], leer: [221, 227, 230] };
+  async function ubPdfPhotos(list) {
+    var out = [], failed = 0;
+    for (var i = 0; i < list.length; i++) {
+      var x = list[i];
+      try {
+        var b = await blBlob(x.r), p = await blPrepare(b, 1100), data = await blDataUrl(p.blob);
+        out.push({ z: x.r.zone, ph: x.r.ph === 'n' ? 'n' : 'v', d: x.w.datum, data: data, w: p.w, h: p.h });
+      } catch (e) { failed++; }
+    }
+    return { list: out, failed: failed };
+  }
+  function ubPdf(lib, carId, car, day, photos) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, M = 16, X1 = W - M, BOT = H - 18, y = M, PT = 0.3528;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243], wb: [31, 93, 166] };
+    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/[^\u0000-ÿ€„“”‘’–—…•]/g, '?'); };
+    var txt = function (s, x, yy, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), x, yy, o); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.32; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    var need = function (hh) { if (y + hh > BOT) { doc.addPage(); y = M; return true; } return false; };
+    doc.setLineHeightFactor(1.32);
+    var all = ubEntries(car), dayE = all.filter(function (w) { return w.datum === day; });
+    var lpDay = dayE.filter(function (w) { return w.ub.typ === 'pruefung'; }).pop() || null, lp = lpDay || ubLastP(car, day);
+    var beh = dayE.filter(function (w) { return w.ub.typ === 'behandlung'; });
+    var state = ubState(car, day), kunde = car.fremd ? kundeOf(car) : null, shop = klConf().name;
+    var kmE = dayE.map(function (w) { return numOrNull(w.km); }).filter(function (v) { return v !== null; })[0];
+    var who = dayE.map(function (w) { return shWho(w); }).filter(Boolean)[0] || '';
+    doc.setProperties({ title: 'Unterboden-Protokoll ' + (car.name || 'Auto') + ' ' + datum(day), subject: 'Unterboden', creator: 'Werkstatt-Inventar' });
+    // Kopf
+    f('bold', 9); tc(C.mut); txt('UNTERBODEN-PROTOKOLL', M, y + 3);
+    if (shop) { f('bold', 10); tc(C.ink); txt(split(shop, 70)[0], X1, y + 3, { align: 'right' }); }
+    f('bold', 20); tc(C.ink); var nm = split(car.name || 'Auto', X1 - M); txt(nm, M, y + 11.5); y += 11.5 + (nm.length - 1) * lh(20);
+    f('normal', 9.5); tc(C.mut);
+    var meta = [carDetails(Object.assign({}, car, { km: null, kmDatum: null, kaufdatum: null, kaufKm: null, kaufpreis: null }), true), car.kennzeichen ? 'Kennzeichen ' + car.kennzeichen : '', car.fin ? 'FIN ' + car.fin : ''].filter(Boolean).join(' · ');
+    if (meta) { var ml = split(meta, X1 - M); txt(ml, M, y + 5.5); y += 2 + ml.length * lh(9.5); }
+    y += 5;
+    var nx0 = ubNext(car);
+    var facts = [['Datum', datum(day) || '–'], ['Kilometerstand', kmE !== undefined && kmE !== null ? nf.format(kmE) + ' km' : '–'], ['Durchgeführt von', who || '–'], kunde ? ['Kunde', kunde.name] : ['Nächste Prüfung', nx0 ? ymTxt(nx0.ym) : '–']];
+    var cw = (X1 - M) / 4;
+    fc(C.soft); doc.roundedRect(M, y, X1 - M, 15, 2, 2, 'F');
+    facts.forEach(function (p, i) { f('normal', 7.5); tc(C.mut); txt(p[0], M + 4 + i * cw, y + 5.5); f('bold', 9.5); tc(C.ink); txt(split(p[1], cw - 6)[0], M + 4 + i * cw, y + 11); });
+    y += 22;
+    var head = function (t) { need(16); f('bold', 12); tc(C.ink); txt(t, M, y + 4); y += 6; dc(C.ink); doc.setLineWidth(0.5); doc.line(M, y, X1, y); y += 5; };
+    var para = function (t, sz, col) { f('normal', sz || 9.5); var l = split(t, X1 - M); need(l.length * lh(sz || 9.5) + 1); tc(col || C.ink); txt(l, M, y + 3.2); y += l.length * lh(sz || 9.5) + 1.5; };
+    // Befund mit Skizze
+    head(lpDay ? 'Befund' : lp ? 'Befund vom ' + datum(lp.datum) : 'Befund');
+    if (!lp) para('Zu diesem Datum gibt es keine Prüfung. Die Skizze zeigt die konservierten Zonen.', 9.5, C.mut);
+    var sc = 0.2, dx = M, dy = y, top = y;
+    need(446 * sc + 4);
+    dy = y;
+    f('bold', 7); tc(C.mut);
+    txt('vorne', dx + 115 * sc, dy + 2.5, { align: 'center' }); txt('hinten', dx + 115 * sc, dy + 445 * sc, { align: 'center' });
+    var vt = function (s, x, cy, ang) { var tw = doc.getTextWidth(T(s)); txt(s, x, ang === 90 ? cy + tw / 2 : cy - tw / 2, { angle: ang }); };
+    vt('links', dx + 3.4, dy + 224 * sc, 90); vt('rechts', dx + 226 * sc, dy + 224 * sc, -90);
+    var ox = dx + 5 * sc, oy = dy + 16 * sc;
+    dc(C.mut); doc.setLineWidth(0.35); fc([255, 255, 255]);
+    doc.roundedRect(ox + 30 * sc, oy + 12 * sc, 160 * sc, 396 * sc, 30 * sc, 30 * sc, 'FD');
+    UB_G.forEach(function (gg) {
+      var s = state[gg[0]] || {}, col = UB_PC[s.st || 'leer'];
+      fc(col);
+      if (s.tr) { dc(C.wb); doc.setLineWidth(0.55); doc.setLineDashPattern([0.9, 0.6], 0); } else { dc([255, 255, 255]); doc.setLineWidth(0.3); }
+      doc.roundedRect(ox + gg[1] * sc, oy + gg[2] * sc, gg[3] * sc, gg[4] * sc, gg[5] * sc, gg[5] * sc, 'FD');
+      doc.setLineDashPattern([], 0);
+    });
+    fc([70, 80, 86]);
+    UB_WH.forEach(function (p) { doc.roundedRect(ox + p[0] * sc, oy + p[1] * sc, 18 * sc, 50 * sc, 5 * sc, 5 * sc, 'F'); });
+    dc(C.mut); doc.setLineWidth(0.25); doc.circle(ox + 110 * sc, oy + 362 * sc, 14 * sc, 'S');
+    // rechte Spalte neben der Skizze
+    var rx = M + 230 * sc + 6, rw = X1 - rx, ry = dy + 1;
+    var rline = function (lab, val) {
+      f('normal', 7.5); tc(C.mut); txt(lab, rx, ry + 2.6); ry += 3.6;
+      f('normal', 9.5); tc(C.ink); var l = split(val, rw); txt(l, rx, ry + 3); ry += l.length * lh(9.5) + 2.4;
+    };
+    if (lp) {
+      var wie = arr(lp.ub.wie).map(function (k) { return UB_WIE[k]; }).filter(Boolean);
+      rline('Prüfbedingungen', wie.length ? wie.join(', ') : 'nicht angegeben');
+      var leer = UB_Z.filter(function (z) { return !ubStOf(ubZonen(lp)[z.id]); });
+      rline('Nicht geprüft', leer.length ? (leer.length > 8 ? leer.length + ' von ' + UB_Z.length + ' Zonen' : leer.map(function (z) { return z.n; }).join(', ')) : 'keine, alle Zonen bewertet');
+      if (lp.ub.schutz) rline('Vorhandener Unterbodenschutz', [UB_SCHUTZ[lp.ub.schutz.art] || '', UB_SZ[lp.ub.schutz.zust] || ''].filter(Boolean).join(', ') || '–');
+      if (UB_NOTE[lp.ub.note]) rline('Zustandsnote Unterboden', lp.ub.note + ' (' + UB_NOTE[lp.ub.note] + '), Skala 1 makellos bis 5 restaurierungsbedürftig');
+    }
+    // Legende
+    ry += 1;
+    [['ok', 'Gesund: ' + UB_ST.ok.d], ['ober', 'Oberflächenrost: ' + UB_ST.ober.d], ['rost', 'Rost: ' + UB_ST.rost.d], ['durch', 'Durchgerostet: ' + UB_ST.durch.d], ['leer', 'Nicht geprüft']].forEach(function (x) {
+      f('normal', 8); var l = split(x[1], rw - 6);
+      fc(UB_PC[x[0]]); doc.roundedRect(rx, ry + 0.6, 3.6, 3.6, 0.6, 0.6, 'F');
+      tc(C.ink); txt(l, rx + 6, ry + 3.4); ry += l.length * lh(8) + 1.4;
+    });
+    if (beh.length || UB_G.some(function (gg) { return (state[gg[0]] || {}).tr; })) {
+      dc(C.wb); doc.setLineWidth(0.55); doc.setLineDashPattern([0.9, 0.6], 0); fc([255, 255, 255]); doc.roundedRect(rx, ry + 0.6, 3.6, 3.6, 0.6, 0.6, 'FD'); doc.setLineDashPattern([], 0);
+      f('normal', 8); tc(C.ink); txt('Gestrichelt blau: nach dem Befund konserviert', rx + 6, ry + 3.4); ry += lh(8) + 1.4;
+    }
+    y = Math.max(dy + 446 * sc, ry) + 6;
+    // Tabelle der bewerteten Zonen
+    if (lp) {
+      var zz = ubZonen(lp), rows = UB_Z.filter(function (z) { var v = zz[z.id]; return v && (ubStOf(v) || v.n); });
+      if (rows.length) {
+        var cols = [{ t: 'Zone', w: 62 }, { t: 'Zustand', w: 40 }, { t: 'Bemerkung', w: X1 - M - 102 }], pad = 1.6;
+        var hdr = function () { f('bold', 8); tc(C.mut); var xx = M; cols.forEach(function (cl) { txt(cl.t, xx + pad, y + 4); xx += cl.w; }); y += 6; dc(C.line); doc.setLineWidth(0.3); doc.line(M, y, X1, y); y += 1; };
+        need(14); hdr();
+        var lastG = null;
+        rows.forEach(function (z) {
+          var v = zz[z.id], st = ubStOf(v);
+          if (z.g !== lastG) {
+            lastG = z.g; if (need(8)) hdr();
+            f('bold', 8); tc(C.mut); txt(UB_GR.filter(function (x) { return x[0] === z.g; })[0][1], M + pad, y + 4); y += 5.5;
+          }
+          f('normal', 9); var c1 = split(z.n, cols[0].w - 2 * pad), c3 = split(v.n || '', cols[2].w - 2 * pad);
+          var rh = Math.max(c1.length, c3.length, 1) * lh(9) + 2 * pad;
+          if (need(rh)) hdr();
+          tc(C.ink); txt(c1, M + pad, y + pad + lh(9) * 0.72);
+          if (st) { fc(UB_PC[st]); doc.roundedRect(M + cols[0].w + pad, y + pad + 0.5, 3, 3, 0.5, 0.5, 'F'); f('bold', 9); tc(C.ink); txt(UB_ST[st].k, M + cols[0].w + pad + 5, y + pad + lh(9) * 0.72); }
+          else { f('normal', 9); tc(C.mut); txt('nicht geprüft', M + cols[0].w + pad, y + pad + lh(9) * 0.72); }
+          f('normal', 9); tc(C.ink); txt(c3, M + cols[0].w + cols[1].w + pad, y + pad + lh(9) * 0.72);
+          y += rh; dc(C.line); doc.setLineWidth(0.2); doc.line(M, y, X1, y);
+        });
+        y += 6;
+      }
+      if (lp.ub.text) para('Notiz zum Befund: ' + lp.ub.text, 9.5);
+    }
+    // Arbeiten
+    if (beh.length) {
+      head('Durchgeführte Arbeiten');
+      beh.forEach(function (w) {
+        var u = w.ub, a = arr(u.arten).map(function (k) { return UB_ART[k]; }).filter(Boolean);
+        if (a.length) para(a.join(', ') + '.', 10);
+        var ms = ubMittel(u);
+        if (ms.length) {
+          f('bold', 8); tc(C.mut); need(8); txt('Mittel', M, y + 3); y += 4.5;
+          ms.forEach(function (m) { para('• ' + m.n + (m.t && UB_MT[m.t] ? ' (' + UB_MT[m.t].k + ')' : '') + (m.m ? ', ' + m.m : ''), 9.5); });
+        }
+        var bz = arr(u.bz).filter(function (k) { return UB_ZM[k]; });
+        if (bz.length) para('Behandelte Zonen: ' + bz.map(ubZoneLabel).join(', ') + '.', 9.5);
+        var zn = ubZonen(w);
+        UB_Z.forEach(function (z) { if (zn[z.id] && zn[z.id].n) para(z.n + ': ' + zn[z.id].n, 9.5); });
+        if (u.text) para('Notiz: ' + u.text, 9.5);
+        y += 2;
+      });
+    }
+    // Empfehlung
+    head('Empfehlung');
+    var nx = ubNext(car), rec = [];
+    if (nx) rec.push('Nächste Prüfung: ' + ymTxt(nx.ym) + ' (alle ' + ubIvTxt(ubIv(car)) + ').');
+    ubRefresh(car).forEach(function (r) { if (r.w.datum <= day) rec.push((r.art === 'unterboden' ? 'Unterbodenschutz' : 'Hohlräume') + ' auffrischen ab ' + ymTxt(r.ym) + '.'); });
+    if (UB_Z.some(function (z) { return (state[z.id] || {}).st === 'durch'; })) rec.push('Durchgerostete Stellen brauchen Blecharbeit, Versiegeln allein reicht dort nicht.');
+    if (UB_Z.some(function (z) { return (state[z.id] || {}).st === 'rost' && !(state[z.id] || {}).tr; })) rec.push('Stellen mit Rost entrosten, grundieren und schützen.');
+    if (!rec.length) rec.push('Keine.');
+    rec.forEach(function (t) { para(t, 10); });
+    if (car.fremd) {
+      need(26); y += 10; dc(C.ink); doc.setLineWidth(0.3);
+      doc.line(M, y, M + 75, y); doc.line(X1 - 75, y, X1, y);
+      f('normal', 8); tc(C.mut); txt('Datum, Unterschrift Werkstatt', M, y + 4); txt('Datum, Unterschrift Kunde', X1 - 75, y + 4); y += 10;
+    }
+    // Fotos je Zone
+    if (photos && photos.list.length) {
+      doc.addPage(); y = M;
+      head('Fotos');
+      var colW = (X1 - M - 6) / 2, maxH = 70;
+      UB_Z.forEach(function (z) {
+        var ps = photos.list.filter(function (p) { return p.z === z.id; }).sort(function (a, b) { return (a.ph === b.ph ? 0 : a.ph === 'v' ? -1 : 1) || String(a.d).localeCompare(String(b.d)); });
+        if (!ps.length) return;
+        var first = true;
+        for (var i = 0; i < ps.length; i += 2) {
+          var pair = ps.slice(i, i + 2), hh = Math.max.apply(null, pair.map(function (p) { return Math.min(maxH, colW * p.h / p.w); }));
+          need(hh + (first ? 14 : 9));
+          if (first) { f('bold', 10.5); tc(C.ink); txt(z.n, M, y + 4); y += 7; first = false; }
+          pair.forEach(function (p, j) {
+            var sc2 = Math.min(colW / p.w, maxH / p.h), w = p.w * sc2, h = p.h * sc2, x = M + j * (colW + 6);
+            doc.addImage(p.data, 'JPEG', x, y, w, h, undefined, 'FAST');
+            dc(C.line); doc.setLineWidth(0.2); doc.rect(x, y, w, h, 'S');
+            f('normal', 8); tc(C.mut); txt((p.ph === 'n' ? 'Nach der Behandlung' : 'Befund') + (isDay(p.d) ? ', ' + datum(p.d) : ''), x, y + h + 3.6);
+          });
+          y += hh + 8;
+        }
+        y += 2;
+      });
+      if (photos.failed) para(photos.failed === 1 ? 'Ein Foto ließ sich nicht laden und fehlt hier.' : photos.failed + ' Fotos ließen sich nicht laden und fehlen hier.', 8.5, C.mut);
+    }
+    var n = doc.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 11, X1, H - 11);
+      txt('Unterboden-Protokoll · ' + (car.name || 'Auto') + ' · ' + datum(day), M, H - 7);
+      txt('Seite ' + i + ' von ' + n, X1, H - 7, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveUbPdf(carId, day) {
+    var car = carId ? S.cars.get(carId) : null, err = function (m) { var el = $('#ub-err'); if (el) el.textContent = m; else toast(m); };
+    if (!car) return;
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var ent = ubEntries(car).filter(function (w) { return isDay(w.datum); });
+    if (!isDay(day)) day = ent.length ? ent[ent.length - 1].datum : null;
+    if (!day) { err('Für das Protokoll braucht der Eintrag ein Datum.'); return; }
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var photos = null;
+    if (BL) {
+      var lp = ubLastP(car, day), src = [];
+      ubEntries(car).forEach(function (w) { if (w.datum === day || (lp && w === lp)) blList(w.belege).forEach(function (r) { if (r.zone && r.typ !== 'pdf') src.push({ r: r, w: w }); }); });
+      if (src.length) {
+        toast(src.length === 1 ? 'Foto wird geladen …' : src.length + ' Fotos werden geladen …');
+        try { photos = await ubPdfPhotos(src); } catch (e) { photos = null; }
+      }
+    }
+    var blob;
+    try { blob = ubPdf(lib, carId, car, day, photos).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    var name = 'Unterboden-Protokoll ' + fileSafe(car.name || 'Auto') + ' ' + day + '.pdf';
+    try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -7980,7 +9048,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var d = zeitplanData(), stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
     var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Werkstatt-Inventar//DE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Werkstatt'];
     d.ev.forEach(function (e) {
-      var uid = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : e.kind === 'reifen' ? 'reifen-' + e.car + '-' + e.auf + '-' + e.d.slice(0, 4) : 'rep-' + e.id;
+      var uid = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : e.kind === 'reifen' ? 'reifen-' + e.car + '-' + e.auf + '-' + e.d.slice(0, 4) : e.kind === 'ub' ? 'ub-' + e.car + '-' + e.sub + '-' + e.d.slice(0, 7) : 'rep-' + e.id;
       var title = e.carName + ': ' + e.title;
       lines.push('BEGIN:VEVENT', 'UID:' + icsEsc(uid) + '@werkstatt-inventar', 'DTSTAMP:' + stamp,
         'DTSTART;VALUE=DATE:' + e.d.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + addDays(e.d, 1).replace(/-/g, ''),
@@ -8299,6 +9367,17 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'pickerl-edit': openPickerlForm(t.dataset.id); break;
       case 'reifen-edit': openReifenForm(t.dataset.id, t.dataset.set); break;
       case 'reifen-wechsel': openReifenWechsel(t.dataset.id); break;
+      case 'ub-new': openUbForm(t.dataset.id, t.dataset.typ, null, { back: t.dataset.back || null }); break;
+      case 'ub-edit': openUbForm(t.dataset.id, null, t.dataset.work, { back: t.dataset.back || null }); break;
+      case 'ub-zone': openUbZone(t.dataset.id, t.dataset.z); break;
+      case 'ub-zx': var ubx = $('#ubx-' + t.dataset.z); ubOpenZone(t.dataset.z, !!(ubx && ubx.hidden)); break;
+      case 'ub-zrm': ubZoneRemove(t.dataset.z, Number(t.dataset.i)); break;
+      case 'ub-allok': ubAllOk(); break;
+      case 'ub-quick': ubQuick(t.dataset.q); break;
+      case 'ub-madd': ubMAdd(); break;
+      case 'ub-back': if (s && s.type === 'ubform' && !S.busy) ubBack(s); break;
+      case 'ub-del': ubRemove(t); break;
+      case 'ub-pdf': saveUbPdf(t.dataset.id, t.dataset.day || null); break;
       case 'bl-view': blOpenViewer(t.dataset.ctx, t.dataset.i); break;
       case 'bl-rm': blFormRemove(Number(t.dataset.i)); break;
       case 'bv-close': blCloseViewer(); break;
@@ -8344,6 +9423,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (t.name === 'rw-auf') { reifenWechselLabel(); return; }
     if (t.dataset && t.dataset.blAdd !== undefined) { blAddFiles(t); return; }
     if (etChange(t)) return;
+    if (ubChange(t)) return;
     if (t.id === 'ka-kunde') { var kn = $('#ka-neu'); if (kn) kn.hidden = t.value !== '__neu'; return; }
     if (t.id === 'ki-kunde' || t.id === 'ki-car') { kdImportChange(t); return; }
     if (t.name === 'kl-car' || t.id === 'kl-car1') { klCarsChanged(); return; }
@@ -8374,6 +9454,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     document.addEventListener('click', onClick);
     document.addEventListener('change', onChange);
     document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', ubKey);
     $('#lookup').addEventListener('submit', onLookup);
     $('#q').addEventListener('input', function () { renderHits(false); });
     $('#fq').addEventListener('input', function (e) { S.fq = e.target.value; renderBestand(); });
@@ -8396,6 +9477,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'pickerlform') { e.preventDefault(); savePickerl(); }
       else if (e.target.id === 'reifenform') { e.preventDefault(); saveReifen(); }
       else if (e.target.id === 'reifenwechsel') { e.preventDefault(); saveReifenWechsel(); }
+      else if (e.target.id === 'ubform') { e.preventDefault(); saveUb(); }
       else if (e.target.id === 'kmallform') { e.preventDefault(); saveKmAll(); }
       else if (e.target.id === 'kundeform') { e.preventDefault(); saveKunde(); }
       else if (e.target.id === 'kundeassign') { e.preventDefault(); saveKundeAssign(); }
@@ -8406,6 +9488,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     document.addEventListener('toggle', function (e) { if (e.target && e.target.id === 'repdone') S.repDoneOpen = e.target.open; }, true);
     document.addEventListener('input', function (e) {
       if (etInput(e.target)) return;
+      if (ubInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
       if (e.target && e.target.classList && e.target.classList.contains('invq')) e.target.classList.toggle('diff', String(e.target.value).trim() !== e.target.dataset.orig);
       if (e.target && e.target.classList && e.target.classList.contains('kmq')) e.target.classList.remove('diff');
