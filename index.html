@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "26", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "26.1", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1518,6 +1518,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .ki-s { display: block; padding-left: 32px; }
 .ki-a { margin: 6px 0 10px; white-space: pre-line; overflow-wrap: anywhere; font-size: 15px; }
 @media (max-width: 380px) { .ki-r b { display: block; min-width: 0; } }
+.kl-cars { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.kl-cars legend { padding: 0; margin-bottom: 4px; font-size: 14px; font-weight: 700; color: var(--muted); }
+.kl-cars small { font-size: 12px; line-height: 1.3; color: var(--muted); }
 </style>
 
 <div class="wrap">
@@ -7395,18 +7398,42 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   /* ---------- Link für Kunden ---------- */
   function klConf() { var c = S.kundenLink || {}; return { name: kOne(c.name, 60), wa: String(c.whatsapp || '').replace(/\D/g, ''), mail: kOne(c.email, 120) }; }
   function klReady() { var c = klConf(); return !!c.name && (c.wa.length >= 8 || /@/.test(c.mail)); }
-  function klUrl(kid) {
+  function klUrl(kid, cars) {
     var c = klConf(), k = kid ? S.kunden.get(kid) : null, o = { v: 1, n: c.name };
     if (c.wa) o.w = c.wa;
     if (c.mail) o.m = c.mail;
     if (k) { o.k = kid; o.p = { name: String(k.name || '').slice(0, 80) }; }
+    /* Autos, die der Kunde im Formular auswählen kann (nur Name und Kennzeichen, damit er sie erkennt) */
+    var list = arr(cars).filter(function (id) { return S.cars.has(id); }).slice(0, 10).map(function (id) { var x = S.cars.get(id), e = { i: id, n: String(x.name || 'Auto').slice(0, 60) }; if (x.kennzeichen) e.kz = String(x.kennzeichen).slice(0, 15); return e; });
+    if (list.length) o.c = list;
     var u = new URL('kunde.html', location.href);
     u.search = ''; u.hash = 'd=' + b64urlStr(JSON.stringify(o));
     return u.href;
   }
-  function klText(kid) {
+  function klText(kid, cars) {
     var k = kid ? S.kunden.get(kid) : null, vor = k ? String(k.name || '').split(/\s+/)[0] : '';
-    return 'Hallo' + (vor ? ' ' + vor : '') + '! Bitte trag hier die Daten zu deinem Auto ein, dann kann ich alles vorbereiten. Den Zulassungsschein brauchst du dafür, es dauert ein paar Minuten:\n' + klUrl(kid);
+    return 'Hallo' + (vor ? ' ' + vor : '') + '! Bitte trag hier die Daten zu deinem Auto ein, dann kann ich alles vorbereiten. Den Zulassungsschein brauchst du dafür, es dauert ein paar Minuten:\n' + klUrl(kid, cars);
+  }
+  function klCarsHtml(kid, sel) {
+    if (kid) {
+      var own = kundeCars(kid).filter(function (c) { return !c[1].archiviert; });
+      if (!own.length) return '';
+      return '<fieldset class="kl-cars"><legend>Autos zum Auswählen im Formular</legend>' + own.map(function (c) { return '<label class="check"><input type="checkbox" name="kl-car" value="' + esc(c[0]) + '"' + (sel.indexOf(c[0]) >= 0 ? ' checked' : '') + '><span>' + esc((c[1].name || 'Auto') + (c[1].kennzeichen ? ' (' + c[1].kennzeichen + ')' : '')) + '</span></label>'; }).join('') +
+        '<small>Ist das Auto schon dabei, wählt der Kunde es aus und trägt nur ein, was neu ist. Im Link stehen dafür nur Name und Kennzeichen.</small></fieldset>';
+    }
+    var free = carsOhneKunde();
+    if (!free.length) return '';
+    return '<label class="f"><span>Geht es um ein Auto, das schon in der App ist?</span><select id="kl-car1"><option value="">Nein, ein neues Auto</option>' + free.map(function (c) { return '<option value="' + esc(c[0]) + '"' + (sel[0] === c[0] ? ' selected' : '') + '>' + esc((c[1].name || 'Auto') + (c[1].kennzeichen ? ' (' + c[1].kennzeichen + ')' : '')) + '</option>'; }).join('') + '</select>' +
+      '<small>Dann kann der Kunde es im Formular auswählen. Im Link stehen dafür nur Name und Kennzeichen.</small></label>';
+  }
+  function klCarsChanged() {
+    var s = S.sheet;
+    if (!s || s.type !== 'klshare') return;
+    var one = $('#kl-car1');
+    s.cars = one ? (one.value ? [one.value] : []) : $$('input[name="kl-car"]').filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+    var url = klUrl(s.kunde, s.cars), t = $('#kl-text'), a = $('#kl-view');
+    if (t) { var re = /https?:\/\/\S*kunde\.html#d=[A-Za-z0-9_-]+/; t.value = re.test(t.value) ? t.value.replace(re, url) : t.value.replace(/\s*$/, '') + '\n' + url; }
+    if (a) a.href = url;
   }
   function openKlSettings(next) {
     if (!canWrite()) { toast('Du kannst dieses Inventar nur ansehen.'); return; }
@@ -7447,18 +7474,19 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!KL_ON) return;
     if (!klReady()) { openKlSettings({ share: true, kunde: kid || null }); return; }
     var k = kid ? S.kunden.get(kid) : null, tk = k ? telKey(k.telefon) : '';
-    openSheet('klshare', { kunde: kid || null },
+    var cars = kid ? kundeCars(kid).filter(function (c) { return !c[1].archiviert; }).map(function (c) { return c[0]; }) : [];
+    openSheet('klshare', { kunde: kid || null, cars: cars },
       '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundenbereich</p><h2 class="sh-title" id="sheet-title">' + esc(k ? 'Link an ' + k.name : 'Link an neuen Kunden') + '</h2></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
-      '<div class="form"><label class="f"><span>Nachricht</span><textarea id="kl-text" rows="6" maxlength="1500">' + esc(klText(kid)) + '</textarea><small>Du kannst den Text noch ändern. Der Link muss drinbleiben.</small></label>' +
+      '<div class="form">' + klCarsHtml(kid, cars) + '<label class="f"><span>Nachricht</span><textarea id="kl-text" rows="6" maxlength="1500">' + esc(klText(kid, cars)) + '</textarea><small>Du kannst den Text noch ändern. Der Link muss drinbleiben.</small></label>' +
       '<div class="sh-btns kl-b">' + (tk ? '<button type="button" class="btn" data-act="kl-wa" data-tel="' + esc(tk) + '">' + esc('Per WhatsApp an ' + String(k.name).split(/\s+/)[0]) + '</button>' : '') +
       (navigator.share ? '<button type="button" class="btn' + (tk ? ' ghost' : '') + '" data-act="kl-native">Teilen …</button>' : '') +
       '<button type="button" class="btn' + (tk || navigator.share ? ' ghost' : '') + '" data-act="kl-copy">Text kopieren</button>' +
-      '<a class="btn ghost" href="' + esc(klUrl(kid)) + '" target="_blank" rel="noopener">Formular ansehen</a></div>' +
+      '<a class="btn ghost" id="kl-view" href="' + esc(klUrl(kid, cars)) + '" target="_blank" rel="noopener">Formular ansehen</a></div>' +
       '<p class="help">Kommt die Antwort, tippst du in der Nachricht auf den Link. Öffnet er sich nicht in der App, kopiere die Nachricht und nimm in der App „Daten aus Nachricht“.</p></div>' +
       '<div class="sh-foot"><button type="button" class="btn ghost" data-act="' + (kid ? 'kunde-open' : 'kunden') + '"' + (kid ? ' data-id="' + esc(kid) + '"' : '') + '>Zurück</button></div>');
   }
-  function klCurrentText() { var t = $('#kl-text'); return t ? t.value : klText(S.sheet && S.sheet.kunde); }
+  function klCurrentText() { var t = $('#kl-text'); return t ? t.value : klText(S.sheet && S.sheet.kunde, S.sheet && S.sheet.cars); }
   async function klCopy(text, ok) {
     var done = false;
     try { await navigator.clipboard.writeText(text); done = true; } catch (_) {
@@ -7496,11 +7524,12 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       p: { n: kOne(o.p.n, 80), tel: kOne(o.p.tel, 30), mail: kOne(o.p.mail, 120), adr: kOne(o.p.adr, 160) },
       f: { ma: kOne(f.ma, 40), mo: kOne(f.mo, 60), kz: kOne(f.kz, 15).toUpperCase(), fin: kOne(f.fin, 20).toUpperCase().replace(/[^A-Z0-9]/g, ''),
         ez: /^\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?$/.test(f.ez || '') ? f.ez : '', km: int(f.km, 3000000), ccm: int(f.ccm, 20000), kw: int(f.kw, 2000),
-        kr: kOne(f.kr, 30), ge: kOne(f.ge, 30), pk: isYm(f.pk) ? f.pk : '', rg: kOne(f.rg, 30).toUpperCase(), rt: RT_NAME[f.rt] ? f.rt : '' },
+        kr: kOne(f.kr, 30), ge: kOne(f.ge, 30), pk: isYm(f.pk) ? f.pk : '', rg: kOne(f.rg, 30).toUpperCase(), rt: RT_NAME[f.rt] ? f.rt : '',
+        cid: kOne(f.cid, 40).replace(/[^A-Za-z0-9_-]/g, '') },
       a: { txt: kStr(a.txt, 1000), wt: kOne(a.wt, 60) }
     };
     if (d.p.mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.p.mail)) d.p.mail = '';
-    if (!d.p.n || !d.f.ma || !d.f.mo) throw kErr('Im Link fehlen Name oder Auto.');
+    if (!d.p.n || (!d.f.cid && (!d.f.ma || !d.f.mo))) throw kErr('Im Link fehlen Name oder Auto.');
     return d;
   }
   function kdFromHash() {
@@ -7548,9 +7577,16 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     return hit;
   }
   function kdMatchCar(d) {
+    var byId = d.f.cid ? S.cars.get(d.f.cid) : null;
+    if (byId && !byId.archiviert && byId.fremd) return d.f.cid;
     var hit = null, kz = kzKey(d.f.kz);
     S.cars.forEach(function (c, id) { if (hit || !c || c.archiviert || !c.fremd) return; if ((d.f.fin && String(c.fin || '').toUpperCase() === d.f.fin) || (kz && kzKey(c.kennzeichen) === kz)) hit = id; });
     return hit;
+  }
+  function kdAutoName(d) {
+    if (d.f.ma || d.f.mo) return (d.f.ma + ' ' + d.f.mo).trim();
+    var c = d.f.cid ? S.cars.get(d.f.cid) : null;
+    return c ? String(c.name || 'Auto') : 'Auto von ' + d.p.n;
   }
   function fmtEz(s) { var p = String(s || '').split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : p.length === 2 ? p[1] + '/' + p[0] : p[0] || ''; }
   function kdKraft(s) { return KRAFTSTOFFE.indexOf(s) >= 0 ? s : s ? 'Sonstiges' : ''; }
@@ -7596,7 +7632,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function openKdImport(d) {
     if (!canWrite()) { toast('Du kannst dieses Inventar nur ansehen.'); return; }
     var kid = kdMatchKunde(d), cid = kdMatchCar(d);
-    if (!cid && kid) { var own = kundeCars(kid).filter(function (c) { return !c[1].archiviert && coll.compare(String(c[1].name || ''), d.f.ma + ' ' + d.f.mo) === 0; })[0]; if (own) cid = own[0]; }
+    if (!cid && kid && (d.f.ma || d.f.mo)) { var own = kundeCars(kid).filter(function (c) { return !c[1].archiviert && coll.compare(String(c[1].name || ''), kdAutoName(d)) === 0; })[0]; if (own) cid = own[0]; }
     var st = { kd: d, kunde: kid || '', car: cid || '' };
     openSheet('kdimport', st, sheetKdImport(st));
     try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
@@ -7605,14 +7641,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var s = st || S.sheet, d = s.kd, kid = s.kunde && S.kunden.has(s.kunde) ? s.kunde : '', cid = s.car && S.cars.has(s.car) ? s.car : '';
     var k = kid ? S.kunden.get(kid) : null, car = cid ? S.cars.get(cid) : null, f = d.f;
     var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundendaten aus dem Formular</p><h2 class="sh-title" id="sheet-title">' + esc(d.p.n) + '</h2>' +
-      '<p class="buy">' + esc(f.ma + ' ' + f.mo + (f.kz ? ' · ' + f.kz : '') + (d.t ? ' · gesendet am ' + datum(d.t.slice(0, 10)) : '')) + '</p></div>' +
+      '<p class="buy">' + esc(kdAutoName(d) + (f.kz ? ' · ' + f.kz : '') + (f.cid && !(f.ma || f.mo) ? ' · im Formular ausgewählt' : '') + (d.t ? ' · gesendet am ' + datum(d.t.slice(0, 10)) : '')) + '</p></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div><form class="form" id="kdimport" novalidate>';
     var opts = '<option value=""' + (kid ? '' : ' selected') + '>' + esc('Neu anlegen: ' + d.p.n) + '</option>' + kundenList().map(function (p) { return '<option value="' + esc(p[0]) + '"' + (p[0] === kid ? ' selected' : '') + '>' + esc(p[1].name) + '</option>'; }).join('');
     h += '<div class="sh-sec"><h3 class="sec">Kunde</h3><label class="f"><span class="vh">Kunde</span><select id="ki-kunde">' + opts + '</select></label><ul class="ki">' +
       KD_K.map(function (x) { var nv = x.v(d), ov = k ? String(k[x.f] || '') : ''; if (!k && x.k === 'n') return '<li class="ki-r same"><span class="ki-s"><b>Name</b> ' + esc(nv) + '</span></li>'; return kdRow('k.' + x.k, x.l, nv, k ? ov : '', ov && (x.same ? x.same(nv, ov) : nv === ov), false); }).join('') + '</ul></div>';
     var cands = (kid ? kundeCars(kid).filter(function (c) { return !c[1].archiviert; }) : []).concat(carsOhneKunde());
     if (cid && !cands.some(function (c) { return c[0] === cid; })) cands.unshift([cid, car]);
-    var copts = '<option value=""' + (cid ? '' : ' selected') + '>' + esc('Neu anlegen: ' + f.ma + ' ' + f.mo) + '</option>' + cands.map(function (c) { return '<option value="' + esc(c[0]) + '"' + (c[0] === cid ? ' selected' : '') + '>' + esc((c[1].name || 'Auto') + (c[1].kennzeichen ? ' (' + c[1].kennzeichen + ')' : '') + (c[1].kunde ? '' : ' · ohne Kunde')) + '</option>'; }).join('');
+    var copts = '<option value=""' + (cid ? '' : ' selected') + '>' + esc('Neu anlegen: ' + kdAutoName(d)) + '</option>' + cands.map(function (c) { return '<option value="' + esc(c[0]) + '"' + (c[0] === cid ? ' selected' : '') + '>' + esc((c[1].name || 'Auto') + (c[1].kennzeichen ? ' (' + c[1].kennzeichen + ')' : '') + (c[1].kunde ? '' : ' · ohne Kunde')) + '</option>'; }).join('');
     h += '<div class="sh-sec"><h3 class="sec">Auto</h3><label class="f"><span class="vh">Auto</span><select id="ki-car">' + copts + '</select></label><ul class="ki">' +
       (car ? '' : '<li class="ki-r same"><span class="ki-s"><b>Name</b> ' + esc(kdCarName(d)) + '</span></li>') +
       KD_C.map(function (x) { var nv = x.show(f), ov = car ? x.cur(car, f) : ''; return kdRow('c.' + x.k, x.l, nv, ov, !!ov && (x.same ? x.same(f, car) : ov === nv), car && x.def ? x.def(f, car) : false); }).join('') + '</ul>' +
@@ -7626,7 +7662,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     return h;
   }
   function kdCarName(d) {
-    var base = (d.f.ma + ' ' + d.f.mo).trim().slice(0, 60), name = base, n = 2;
+    var base = kdAutoName(d).slice(0, 60), name = base, n = 2;
     var taken = function (x) { return activeCars().some(function (p) { return coll.compare(String(p[1].name || ''), x) === 0; }); };
     if (taken(name)) name = (base + ' (' + (d.f.kz || d.p.n) + ')').slice(0, 60);
     while (taken(name) && n < 50) { name = (base + ' ' + n).slice(0, 60); n++; }
@@ -8069,6 +8105,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (t.dataset && t.dataset.blAdd !== undefined) { blAddFiles(t); return; }
     if (t.id === 'ka-kunde') { var kn = $('#ka-neu'); if (kn) kn.hidden = t.value !== '__neu'; return; }
     if (t.id === 'ki-kunde' || t.id === 'ki-car') { kdImportChange(t); return; }
+    if (t.name === 'kl-car' || t.id === 'kl-car1') { klCarsChanged(); return; }
     if (t.name === 'f-bereich') {
       var f = $('#editform');
       if (f) f.dataset.bereich = t.value;

@@ -76,6 +76,19 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
 .zs-g li.on { color: var(--ink); }
 .zs-g li.on .code { color: var(--wb); background: var(--wb-soft); }
 @media (max-width: 520px) { .zs-g { grid-template-columns: minmax(0, 1fr); } }
+.pick { margin: 0; padding: 0; border: 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.pick legend { padding: 0; margin-bottom: 8px; font-weight: 700; font-size: 16px; }
+.pc { position: relative; display: block; }
+.pc input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pc-b { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.pc-b::before { content: ""; flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted); box-sizing: border-box; }
+.pc input:checked + .pc-b { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.pc input:checked + .pc-b::before { border: 6px solid var(--ink); }
+.pc input:focus-visible + .pc-b { outline: 3px solid var(--focus); outline-offset: 2px; }
+.pc-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pc-t b { overflow-wrap: anywhere; }
+.pc-kz { align-self: flex-start; padding: 1px 6px 0; border: 1.5px solid #1b1f22; border-top: 4px solid #c8102e; border-bottom: 4px solid #c8102e; border-radius: 3px; background: #fff; color: #111417; font-family: var(--f-code); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.35; }
+.pc-n { color: var(--muted); font-size: 15px; }
 .check { display: flex; align-items: flex-start; gap: 12px; font-size: 16px; }
 .check input { flex: none; width: 24px; height: 24px; min-height: 0; margin: 1px 0 0; accent-color: var(--ink); }
 .privacy { margin-top: 26px; padding: 14px; border-radius: 12px; background: var(--surface-2); font-size: 15px; display: flex; flex-direction: column; gap: 12px; }
@@ -121,6 +134,11 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
     <section class="step" aria-labelledby="h2">
       <span class="num" aria-hidden="true">2</span><h2 id="h2">Dein Auto</h2>
       <div class="body">
+        <fieldset class="pick" id="pick" hidden>
+          <legend>Welches Auto?</legend>
+          <div class="pick-l" id="pick-list"></div>
+          <p class="hint" id="pick-hint" hidden>Dieses Auto ist schon eingetragen. Trag nur ein, was neu ist oder sich geändert hat, zum Beispiel den Kilometerstand.</p>
+        </fieldset>
         <div class="zs">
           <p class="zs-t">Das meiste steht im Zulassungsschein. Die Buchstaben zeigen, in welchem Feld.</p>
           <ul class="zs-g" id="zs">
@@ -134,7 +152,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
             <li data-code="P.3"><span class="code">P.3</span>Antriebsart</li>
           </ul>
         </div>
-        <div class="row2">
+        <div class="row2" id="mm-row">
           <label class="f"><span>Marke <span class="code">D.1</span></span><input id="marke" maxlength="40" placeholder="z. B. BMW" data-code="D.1" required></label>
           <label class="f"><span>Modell <span class="code">D.3</span></span><input id="modell" maxlength="60" placeholder="z. B. 320d Touring" data-code="D.3" required></label>
         </div>
@@ -209,7 +227,8 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
       if (!c || typeof c !== 'object' || c.v !== 1) return null;
       var str = function (x, n) { return typeof x === 'string' ? x.trim().slice(0, n) : ''; };
       var w = str(c.w, 20).replace(/\D/g, ''), mail = str(c.m, 120);
-      return { n: str(c.n, 60) || 'die Werkstatt', w: w.length >= 8 && w.length <= 15 ? w : '', m: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail) ? mail : '', k: /^[A-Za-z0-9_-]{4,40}$/.test(c.k || '') ? c.k : '', pn: str(c.p && c.p.name, 80) };
+      var cars = (Array.isArray(c.c) ? c.c : []).slice(0, 10).map(function (x) { return x && typeof x === 'object' && /^[A-Za-z0-9_-]{2,40}$/.test(x.i || '') ? { i: x.i, n: str(x.n, 60) || 'Auto', kz: str(x.kz, 15) } : null; }).filter(Boolean);
+      return { code: m[1], n: str(c.n, 60) || 'die Werkstatt', w: w.length >= 8 && w.length <= 15 ? w : '', m: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail) ? mail : '', k: /^[A-Za-z0-9_-]{1,40}$/.test(c.k || '') ? c.k : '', pn: str(c.p && c.p.name, 80), cars: cars };
     } catch (_) { return null; }
   }
   var conf = readConf();
@@ -220,11 +239,41 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
   $('#ok-txt').textContent = 'Einverstanden, dass ' + conf.n + ' meine Angaben dafür speichert.';
   $('#form').hidden = false;
 
+  /* Ist das Auto schon eingetragen? Dann auswählen statt neu eintragen. */
+  function carChoice() { var r = document.querySelector('input[name="car"]:checked'); return r ? r.value : 'neu'; }
+  function carById(id) { for (var i = 0; i < conf.cars.length; i++) if (conf.cars[i].i === id) return conf.cars[i]; return null; }
+  function syncCar() {
+    var known = !!carById(carChoice());
+    $('#mm-row').hidden = known;
+    $('#pick-hint').hidden = !known;
+  }
+  if (conf.cars.length) {
+    var pl = $('#pick-list');
+    conf.cars.concat([{ i: 'neu', n: 'Ein anderes Auto', kz: '' }]).forEach(function (c, idx) {
+      var lab = document.createElement('label'), inp = document.createElement('input'), b = document.createElement('span'), t = document.createElement('span'), nm = document.createElement('b');
+      lab.className = 'pc'; inp.type = 'radio'; inp.name = 'car'; inp.value = c.i; if (idx === 0) inp.checked = true;
+      b.className = 'pc-b'; t.className = 'pc-t'; nm.textContent = c.n; t.appendChild(nm);
+      if (c.kz) { var kz = document.createElement('span'); kz.className = 'pc-kz'; kz.textContent = c.kz; t.appendChild(kz); }
+      if (c.i === 'neu') { var nn = document.createElement('span'); nn.className = 'pc-n'; nn.textContent = 'neu eintragen'; t.appendChild(nn); }
+      b.appendChild(t); lab.appendChild(inp); lab.appendChild(b); pl.appendChild(lab);
+    });
+    $('#pick').hidden = false;
+    document.addEventListener('change', function (e) { if (e.target && e.target.name === 'car') syncCar(); });
+  }
+
   /* Entwurf auf dem Gerät behalten (nur lokal) */
   var IDS = ['name', 'tel', 'mail', 'adr', 'marke', 'modell', 'kz', 'ez', 'fin', 'km', 'ccm', 'kw', 'kraft', 'getr', 'pk', 'rg', 'rt', 'anl', 'wt'];
-  var KEY = 'kunde-entwurf:' + (conf.k || 'neu');
-  function saveDraft() { try { var o = {}; IDS.forEach(function (id) { o[id] = $('#' + id).value; }); localStorage.setItem(KEY, JSON.stringify(o)); } catch (_) {} }
-  try { var d = JSON.parse(localStorage.getItem(KEY) || 'null'); if (d) IDS.forEach(function (id) { if (typeof d[id] === 'string') $('#' + id).value = d[id]; }); } catch (_) {}
+  /* je Link ein eigener Entwurf, damit sich zwei Links auf demselben Handy nicht vermischen */
+  var KEY = 'kunde-entwurf:' + (function (s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h.toString(36); })(conf.code);
+  function saveDraft() { try { var o = {}; IDS.forEach(function (id) { o[id] = $('#' + id).value; }); o.car = carChoice(); localStorage.setItem(KEY, JSON.stringify(o)); } catch (_) {} }
+  try {
+    var d = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (d) {
+      IDS.forEach(function (id) { if (typeof d[id] === 'string') $('#' + id).value = d[id]; });
+      if (typeof d.car === 'string') { var rr = document.querySelector('input[name="car"][value="' + (d.car === 'neu' || carById(d.car) ? d.car : '') + '"]'); if (rr) rr.checked = true; }
+    }
+  } catch (_) {}
+  syncCar();
   if (!$('#name').value && conf.pn) $('#name').value = conf.pn;
   document.addEventListener('input', function (e) { saveDraft(); if (e.target && e.target.removeAttribute) e.target.removeAttribute('aria-invalid'); });
   window.addEventListener('hashchange', function () { location.reload(); });
@@ -254,8 +303,9 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
     if (!v('tel') && !v('mail')) return bad('tel', 'Bitte eine Telefonnummer oder E-Mail-Adresse eintragen, damit du erreichbar bist.');
     if (v('tel') && !/^[+\d][\d\s/()-]{5,}$/.test(v('tel'))) return bad('tel', 'Die Telefonnummer bitte nur mit Ziffern, z. B. 0664 1234567.');
     if (v('mail') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('mail'))) return bad('mail', 'Die E-Mail-Adresse sieht nicht vollständig aus.');
-    if (!v('marke')) return bad('marke', 'Bitte die Marke eintragen, z. B. BMW.');
-    if (!v('modell')) return bad('modell', 'Bitte das Modell eintragen, z. B. 320d Touring.');
+    var known = !!carById(carChoice());
+    if (!known && !v('marke')) return bad('marke', 'Bitte die Marke eintragen, z. B. BMW.');
+    if (!known && !v('modell')) return bad('modell', 'Bitte das Modell eintragen, z. B. 320d Touring.');
     if (v('ez') && !parseYm(v('ez'), true)) return bad('ez', 'Die Erstzulassung bitte als TT.MM.JJJJ eintragen, z. B. 12.05.2009.');
     var fin = v('fin').toUpperCase().replace(/[\s.-]/g, '');
     if (fin && !/^[A-Z0-9]+$/.test(fin)) return bad('fin', 'Die Fahrgestellnummer hat nur Buchstaben und Ziffern.');
@@ -270,7 +320,8 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
   }
   function data() {
     var fin = v('fin').toUpperCase().replace(/[\s.-]/g, '');
-    var o = { v: 1, t: new Date().toISOString(), p: { n: v('name') }, f: { ma: v('marke'), mo: v('modell') }, ok: true };
+    var kc = carById(carChoice());
+    var o = { v: 1, t: new Date().toISOString(), p: { n: v('name') }, f: kc ? { cid: kc.i } : { ma: v('marke'), mo: v('modell') }, ok: true };
     if (conf.k) o.k = conf.k;
     if (v('tel')) o.p.tel = v('tel');
     if (v('mail')) o.p.mail = v('mail');
@@ -303,7 +354,8 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
   }
   function fmtYm(s) { if (!s) return ''; var p = s.split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : p.length === 2 ? p[1] + '/' + p[0] : p[0]; }
   function rows(o) {
-    var f = o.f, r = [['Name', o.p.n], ['Telefon', o.p.tel], ['E-Mail', o.p.mail], ['Adresse', o.p.adr], ['Auto', f.ma + ' ' + f.mo], ['Kennzeichen', f.kz], ['Erstzulassung', fmtYm(f.ez)], ['Fahrgestellnr.', f.fin],
+    var f = o.f, kc = f.cid ? carById(f.cid) : null;
+    var r = [['Name', o.p.n], ['Telefon', o.p.tel], ['E-Mail', o.p.mail], ['Adresse', o.p.adr], ['Auto', kc ? kc.n + (kc.kz ? ' (' + kc.kz + ')' : '') + ', schon eingetragen' : f.ma + ' ' + f.mo], ['Kennzeichen', f.kz], ['Erstzulassung', fmtYm(f.ez)], ['Fahrgestellnr.', f.fin],
       ['Kilometerstand', f.km != null ? f.km.toLocaleString('de-AT') + ' km' : ''], ['Hubraum', f.ccm != null ? f.ccm + ' cm³' : ''], ['Leistung', f.kw != null ? f.kw + ' kW' : ''], ['Kraftstoff', f.kr], ['Getriebe', f.ge], ['Nächstes Pickerl', fmtYm(f.pk)],
       ['Reifen', [f.rg, f.rt ? { sommer: 'Sommerreifen', winter: 'Winterreifen', ganzjahr: 'Ganzjahresreifen' }[f.rt] : ''].filter(Boolean).join(', ')], ['Anliegen', o.a && o.a.txt], ['Wunschtermin', o.a && o.a.wt]];
     return r.filter(function (x) { return x[1]; });
@@ -323,7 +375,8 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
     var wa = $('#send-wa'), ml = $('#send-mail');
     wa.hidden = !conf.w; ml.hidden = !conf.m;
     if (conf.w) wa.href = 'https://wa.me/' + conf.w + '?text=' + encodeURIComponent(text);
-    if (conf.m) ml.href = 'mailto:' + encodeURIComponent(conf.m) + '?subject=' + encodeURIComponent('Fahrzeugdaten ' + o.f.ma + ' ' + o.f.mo) + '&body=' + encodeURIComponent(text);
+    var subj = o.f.cid ? (carById(o.f.cid) || { n: 'Auto' }).n : o.f.ma + ' ' + o.f.mo;
+    if (conf.m) ml.href = 'mailto:' + encodeURIComponent(conf.m) + '?subject=' + encodeURIComponent('Fahrzeugdaten ' + subj) + '&body=' + encodeURIComponent(text);
     $('#copy').className = conf.w || conf.m ? 'btn ghost' : 'btn';
     $('#done').hidden = true; $('#copy-ok').textContent = '';
     $('#form').hidden = true; $('#send').hidden = false;
