@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "35", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "36", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1906,6 +1906,55 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .ke-l li.ruhe span { color: var(--muted); }
 .ke-sec .kva-act a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .ke-wid { margin-top: 6px; align-self: flex-start; }
+/* Kosten-Auswertung, Fahrtenbuch, Verkaufsmappe */
+.ka-yr { display: flex; flex-wrap: wrap; gap: 6px; }
+.ka-yb { min-height: 40px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.ka-yb[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.ka-yb:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ka-tot { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0; padding: 10px 0 2px; border-bottom: 2px solid var(--ink); font-size: 15px; color: var(--muted); }
+.ka-tot b { font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.ka-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ka-li { border-bottom: 1px solid var(--line); }
+.ka-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; width: 100%; padding: 12px 0; border: 0; background: none; text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
+.ka-row:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+.ka-n { font-weight: 700; font-size: 15.5px; overflow-wrap: anywhere; }
+.ka-n::after { content: " ›"; color: var(--muted); }
+.ka-row[aria-expanded="true"] .ka-n::after { content: " ⌄"; }
+.ka-v { font-weight: 700; font-size: 15.5px; font-variant-numeric: tabular-nums; text-align: right; }
+.ka-tr { grid-column: 1 / -1; display: block; height: 14px; }
+.ka-tr i { display: block; height: 100%; min-width: 0; background: var(--wb); border-radius: 0 4px 4px 0; }
+.ka-s { grid-column: 1 / -1; font-size: 13px; color: var(--muted); }
+.ka-det { display: flex; flex-direction: column; gap: 8px; padding: 0 0 14px; }
+.ka-t { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.ka-t th, .ka-t td { padding: 7px 4px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+.ka-t th:first-child { text-align: left; }
+.ka-t thead th { font-size: 12px; color: var(--muted); font-weight: 700; }
+.ka-t tbody th { font-weight: 700; white-space: nowrap; }
+.ka-t td small { display: block; font-size: 11.5px; color: var(--muted); }
+.ka-link { margin: -4px 0 0; }
+.fb-m { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; }
+.fb-mh { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; align-items: baseline; }
+.fb-mh b { font-size: 15.5px; font-variant-numeric: tabular-nums; }
+.fb-mh span { font-size: 13.5px; color: var(--muted); }
+.fb-tr { display: block; height: 10px; border-radius: 5px; background: var(--wb-soft); overflow: hidden; }
+.fb-tr i { display: block; height: 100%; background: var(--wb); border-radius: 0 5px 5px 0; }
+.fb-m.lv-warn .fb-tr { background: var(--ro-soft); }
+.fb-m.lv-warn .fb-tr i { background: var(--ro); }
+.fb-m.lv-warn .fb-mh span { color: var(--ro-text); font-weight: 700; }
+.fb-m.lv-bad .fb-tr { background: var(--kaufen-soft); }
+.fb-m.lv-bad .fb-tr i { background: var(--kaufen); }
+.fb-m.lv-bad .fb-mh span { color: var(--kaufen); font-weight: 700; }
+.fb-l { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.fb-e { display: flex; flex-direction: column; gap: 3px; padding: 10px 0; border-top: 1px solid var(--line); }
+.fb-e:first-child { border-top: 0; }
+.fb-eh { display: flex; flex-direction: column; gap: 2px; }
+.fb-eh b { font-size: 13px; color: var(--muted); }
+.fb-eh span { font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.fb-e small { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.fb-e .fb-k { color: var(--ro-text); }
+.fb-e.storno .fb-eh span { text-decoration: line-through; color: var(--muted); }
+.fb-e .linkbtn { align-self: flex-start; }
+.fb-sub { margin-top: -6px; }
 </style>
 
 <div class="wrap">
@@ -1967,7 +2016,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 
   <section class="view" id="view-autos" aria-label="Autos" hidden>
     <div class="vhead"><h2 class="sec">Autos und ihre Teile</h2><button type="button" class="linkbtn" data-act="car-new">+ Auto anlegen</button></div>
-    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button></div>
+    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="ka-open">Kosten</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button></div>
     <ul class="cars" id="cars"></ul>
     <p class="hint">Jedes Auto bekommt ein eigenes Fach im Regal: auf der Karte das Fach antippen, „Fach einstellen“ und das Auto wählen. Im Auto trägst du Kaufpreis und erledigte Arbeiten ein, Einbauteile brauchen Kaufdatum und Preis. Der Wartungsplan im Auto zeigt, welche Wechsel fällig sind, und typische Probleme je km-Stand. Der Zeitplan sammelt die Termine aller Autos für die nächsten 12 Monate.</p>
   </section>
@@ -2067,7 +2116,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, gaConf: null, gaArm: null, gaLastUri: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2477,6 +2526,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.rr = m;
         renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('fahrtenbuch').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.fb = m; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('steckbrief').onSnapshot(function (snap) {
         var m = new Map();
@@ -3793,6 +3847,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       $$('details[data-k]', sh).forEach(function (d) { if (od.indexOf(d.dataset.k) >= 0) d.open = true; });
       sh.scrollTop = top;
     }
+    else if (S.sheet.type === 'kosten') { setHTML(sh, sheetKosten()); sh.scrollTop = top; }
+    else if (S.sheet.type === 'fb' && S.cars.has(S.sheet.id)) { setHTML(sh, sheetFb(S.sheet.id)); sh.scrollTop = top; }
     else if (S.sheet.type === 'einkauf') { setHTML(sh, sheetEinkauf()); sh.scrollTop = top; }
     else if (S.sheet.type === 'zeitplan') { setHTML(sh, sheetZeitplan()); sh.scrollTop = top; }
     else if (S.sheet.type === 'kunden') { setHTML(sh, sheetKunden()); sh.scrollTop = top; }
@@ -3977,12 +4033,13 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<div><span>Erledigt</span><b>' + eur(st.done) + '</b></div>' +
       '<div><span>Teile im Lager</span><b>' + eur(st.waitV) + '</b></div>' +
       '<div><span>Gesamt</span><b>' + eur(st.total) + '</b></div></div>' +
-      carCosts(car, st) +
+      carCosts(car, st) + kaLink(id, car) +
       (open.length ? '<p class="note">' + esc(open.join(', ')) + ', zählen noch nicht in die Summe.</p>' : '') +
       (!cellId ? '<p class="note">Noch kein Fach auf der Karte: im Tab „Karte“ ein Fach antippen, „Fach einstellen“ und dieses Auto wählen.</p>' : '') +
       shBanner(id, car) +
       wpBanner(id, car) +
       pvBanner(id, car) +
+      hzSec(id, car) +
       gaSec(id, car) +
       reCarSec(id, car) +
       carWartSec(id, car) +
@@ -6572,7 +6629,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     h += '</div>';
     h += '<div class="sh-btns">' + (can ? '<button type="button" class="btn" data-act="sh-add" data-id="' + esc(carId) + '">Eintrag nachtragen</button>' : '') +
       (can && BL ? '<label class="btn ghost bl-btn"><input type="file" accept="image/*,application/pdf" multiple data-bl-add="e:' + esc(carId) + '">Beleg fotografieren</label>' : '') +
-      '<button type="button" class="btn ghost" data-act="sh-pdf" data-id="' + esc(carId) + '">Als PDF speichern</button></div>';
+      '<button type="button" class="btn ghost" data-act="sh-pdf" data-id="' + esc(carId) + '">Als PDF speichern</button>' + (car.fremd || !S.dl ? '' : '<button type="button" class="btn ghost" data-act="vm-open" data-id="' + esc(carId) + '">Verkaufsmappe</button>') + '</div>';
     h += shBlPdfOpt(car) + (can && BL ? '<p class="help">Beleg fotografieren: eine Rechnung oder eine Seite aus dem alten Serviceheft. Claude liest sie beim nächsten geplanten Lauf aus und trägt Datum, km, Arbeiten und Kosten ein, du prüfst dann nur noch. Mehrere Fotos auf einmal zählen als ein Beleg.</p>' : '');
     h += shTimeline(carId, car);
     var body = '', year = null;
@@ -6595,7 +6652,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     loadJsPdf().catch(function () {});
   }
   /* ---------- PDF ---------- */
-  function shPdf(lib, carId, car, att) {
+  function shPdf(lib, carId, car, att, vm) {
     var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
     var W = 210, H = 297, M = 16, X1 = W - M, BOT = H - 16, y = M;
     var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243], bad: [178, 58, 42], warn: [196, 92, 20], ok: [44, 122, 75], leer: [120, 130, 136], self: [31, 93, 166], shop: [92, 62, 160] };
@@ -6611,6 +6668,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
     var newPage = function () { doc.addPage(); y = M; };
     var need = function (hh) { if (y + hh > BOT) { newPage(); return true; } return false; };
+    if (vm && vm.cover) { vm.cover({ doc: doc, f: f, tc: tc, fc: fc, dc: dc, txt: txt, split: split, lh: lh, M: M, X1: X1, W: W, H: H, C: C }); newPage(); }
     var c = shCheck(carId, car), ent = shEntries(carId, car).filter(function (e) { return !blOffen(e.w); }).slice().reverse(), rows = wartRows(carId).filter(function (r) { return r.status !== 'info'; }).sort(wartSort);
     var stamp = function (label, col, cx, cy, deg, sz) {
       f('bold', sz); var tw = doc.getTextWidth(T(label)), w = tw + 8, hh = sz * PT + 5.5, a = deg * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
@@ -6624,7 +6682,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var s0 = rot(-tw / 2, sz * PT * 0.35);
       txt(label, s0[0], s0[1], { angle: deg });
     };
-    doc.setProperties({ title: 'Serviceheft ' + (car.name || 'Auto'), subject: 'Wartungshistorie', creator: 'Werkstatt-Inventar' });
+    doc.setProperties({ title: (vm && vm.label ? vm.label : 'Serviceheft') + ' ' + (car.name || 'Auto'), subject: 'Wartungshistorie', creator: 'Werkstatt-Inventar' });
     // Kopf
     f('bold', 9); tc(C.mut); txt('SERVICEHEFT', M, y + 3);
     f('bold', 22); tc(C.ink); var nm = split(car.name || 'Auto', 120); txt(nm, M, y + 12); y += 12 + (nm.length - 1) * lh(22);
@@ -6729,7 +6787,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var n = doc.getNumberOfPages();
     for (var i = 1; i <= n; i++) {
       doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 11, X1, H - 11);
-      txt('Serviceheft ' + (car.name || 'Auto') + ' · Stand ' + datum(dayKey(new Date())), M, H - 7);
+      txt((vm && vm.label ? vm.label : 'Serviceheft') + ' ' + (car.name || 'Auto') + ' · Stand ' + datum(dayKey(new Date())), M, H - 7);
       txt('Seite ' + i + ' von ' + n, X1, H - 7, { align: 'right' });
     }
     return doc;
@@ -12981,6 +13039,624 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       toast('Einverständnis eingetragen.');
     } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
   }
+  /* ---------- Kosten-Auswertung: je Auto und Jahr, je 1.000 km, Vergleich der eigenen Autos ---------- */
+  function kaData(carId) {
+    var car = S.cars.get(carId) || {}, years = {}, ohne = { n: 0, sum: 0 }, noCost = 0;
+    var add = function (y, k, v) { var o = years[y] || (years[y] = { arb: 0, teile: 0, n: 0 }); o[k] += v; o.n++; };
+    arr(car.arbeiten).forEach(function (w) {
+      if (!w || typeof w !== 'object' || !w.titel || workVorKauf(car, w) || blOffen(w)) return;
+      var k = numOrNull(w.kosten);
+      if (k === null) { noCost++; return; }
+      if (isDay(w.datum)) add(w.datum.slice(0, 4), 'arb', k); else { ohne.n++; ohne.sum += k; }
+    });
+    S.items.forEach(function (it) {
+      installedList(it).forEach(function (r) {
+        if (r.fahrzeug !== carId) return;
+        var p = numOrNull(r.preis);
+        if (p === null) return;
+        var v = p * num(r.menge), d = isDay(r.datum) ? r.datum : String(r.t || '').slice(0, 10);
+        if (isDay(d)) add(d.slice(0, 4), 'teile', v); else { ohne.n++; ohne.sum += v; }
+      });
+    });
+    Object.keys(years).forEach(function (y) { var o = years[y]; o.arb = round2(o.arb); o.teile = round2(o.teile); o.sum = round2(o.arb + o.teile); });
+    ohne.sum = round2(ohne.sum);
+    return { years: years, ohne: ohne, noCost: noCost };
+  }
+  function kaAll(d) {
+    var o = { arb: 0, teile: 0, sum: 0, n: 0 };
+    Object.keys(d.years).forEach(function (y) { var x = d.years[y]; o.arb += x.arb; o.teile += x.teile; o.n += x.n; });
+    o.arb = round2(o.arb); o.teile = round2(o.teile); o.sum = round2(o.arb + o.teile + d.ohne.sum); o.n += d.ohne.n;
+    return o;
+  }
+  /* Gefahrene km im Jahr aus den eingetragenen km-Ständen, nur wenn die Stände das Jahr (ab Kauf) abdecken */
+  function kaKm(car, y) {
+    var pts = kmPoints(car);
+    if (pts.length < 2) return null;
+    var today = dayKey(new Date()), ys = String(y), a = ys + '-01-01', b = ys === today.slice(0, 4) ? today : ys + '-12-31';
+    if (isDay(car.kaufdatum) && car.kaufdatum > a) a = car.kaufdatum;
+    if (a > b) return null;
+    var first = pts[0].d, last = pts[pts.length - 1].d, s = a < first ? first : a, e = b > last ? last : b;
+    if (e <= s || dayNum(s) - dayNum(a) > 45 || dayNum(b) - dayNum(e) > 45) return null;
+    var ka = kmAt(pts, s), kb = kmAt(pts, e);
+    return ka && kb && kb.km >= ka.km ? Math.round(kb.km - ka.km) : null;
+  }
+  function kaKmAll(car) { var kk = numOrNull(car.kaufKm), ck = curKmEst(car); return kk !== null && ck && ck.km - kk >= 0 ? Math.round(ck.km - kk) : null; }
+  function kaPer(sum, km) { return km !== null && km >= 500 && sum > 0 ? sum / km * 1000 : null; }
+  function kaCars() { return activeCars().filter(function (p) { return !p[1].fremd; }); }
+  function kaYears() {
+    var ys = {}, cur = dayKey(new Date()).slice(0, 4);
+    ys[cur] = 1;
+    kaCars().forEach(function (p) { Object.keys(kaData(p[0]).years).forEach(function (y) { ys[y] = 1; }); });
+    return Object.keys(ys).sort().reverse();
+  }
+  function kaState() { if (!S.ka) S.ka = { y: dayKey(new Date()).slice(0, 4), open: null }; return S.ka; }
+  function kaRows(y) {
+    return kaCars().map(function (p) {
+      var d = kaData(p[0]), o = y === 'alle' ? kaAll(d) : d.years[y] || { arb: 0, teile: 0, sum: 0, n: 0 }, km = y === 'alle' ? kaKmAll(p[1]) : kaKm(p[1], y);
+      return { id: p[0], car: p[1], d: d, o: o, km: km, per: kaPer(o.sum, km) };
+    }).sort(function (a, b) { return b.o.sum - a.o.sum || coll.compare(String(a.car.name || ''), String(b.car.name || '')); });
+  }
+  function kaDetail(r) {
+    var ys = Object.keys(r.d.years).sort().reverse(), today = dayKey(new Date()).slice(0, 4);
+    var h = '<div class="ka-det"><table class="ka-t"><thead><tr><th scope="col">Jahr</th><th scope="col">Arbeiten</th><th scope="col">Teile</th><th scope="col">Summe</th><th scope="col">je 1.000 km</th></tr></thead><tbody>' +
+      ys.map(function (y) {
+        var o = r.d.years[y], km = kaKm(r.car, y), per = kaPer(o.sum, km);
+        return '<tr><th scope="row">' + esc(y + (y === today ? ' bisher' : '')) + '</th><td>' + esc(mwEur(o.arb)) + '</td><td>' + esc(mwEur(o.teile)) + '</td><td><b>' + esc(mwEur(o.sum)) + '</b></td><td>' + esc(per !== null ? mwEur(per) : '–') + (km !== null ? '<small>' + esc('ca. ' + nf.format(km) + ' km') + '</small>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table>';
+    var notes = [];
+    if (r.d.ohne.n) notes.push((r.d.ohne.n === 1 ? 'Ein Eintrag' : r.d.ohne.n + ' Einträge') + ' ohne Datum mit zusammen ' + mwEur(r.d.ohne.sum) + ' stehen nur in der Summe seit Kauf.');
+    if (r.d.noCost) notes.push((r.d.noCost === 1 ? 'Eine Arbeit hat' : r.d.noCost + ' Arbeiten haben') + ' keinen Betrag und zählen nicht mit.');
+    if (numOrNull(r.car.kaufpreis) !== null) notes.push('Kaufpreis ' + mwEur(r.car.kaufpreis) + ', nicht eingerechnet.');
+    if (notes.length) h += '<p class="help">' + esc(notes.join(' ')) + '</p>';
+    return h + '<div class="kva-act"><button type="button" class="btn ghost small" data-act="open-car" data-id="' + esc(r.id) + '">Zum Auto</button></div></div>';
+  }
+  function sheetKosten() {
+    var st = kaState(), ys = kaYears(), y = st.y === 'alle' || ys.indexOf(st.y) >= 0 ? st.y : ys[0], rows = kaRows(y), today = dayKey(new Date()).slice(0, 4);
+    var max = rows.reduce(function (a, r) { return Math.max(a, r.o.sum); }, 0), tot = round2(rows.reduce(function (a, r) { return a + r.o.sum; }, 0));
+    var label = y === 'alle' ? 'seit Kauf' : y + (y === today ? ' bisher' : '');
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Eigene Autos</p><h2 class="sh-title" id="sheet-title">Kosten</h2>' +
+      '<p class="buy">Arbeiten mit Betrag und eingebaute Teile mit Preis, ohne Kaufpreis.</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    h += '<div class="ka-yr" role="group" aria-label="Zeitraum">' + ys.slice(0, 5).map(function (x) { return '<button type="button" class="ka-yb" data-act="ka-year" data-y="' + x + '" aria-pressed="' + (x === y) + '">' + x + '</button>'; }).join('') +
+      '<button type="button" class="ka-yb" data-act="ka-year" data-y="alle" aria-pressed="' + (y === 'alle') + '">Seit Kauf</button></div>';
+    if (!rows.length) return h + '<p class="note">Noch keine eigenen Autos eingetragen.</p>';
+    h += '<p class="ka-tot"><span>' + esc('Alle Autos ' + label) + '</span><b>' + esc(mwEur(tot)) + '</b></p>';
+    h += '<ul class="ka-bars">' + rows.map(function (r) {
+      var open = st.open === r.id, w = max > 0 ? Math.max(r.o.sum > 0 ? 1.5 : 0, r.o.sum / max * 100) : 0;
+      var sub = [r.o.n ? r.o.n + ' Posten' : 'keine Kosten', r.per !== null ? mwEur(r.per) + ' je 1.000 km' : '', r.km ? 'ca. ' + nf.format(r.km) + ' km' : ''].filter(Boolean).join(' · ');
+      return '<li class="ka-li"><button type="button" class="ka-row" data-act="ka-car" data-id="' + esc(r.id) + '" aria-expanded="' + open + '">' +
+        '<span class="ka-n">' + esc(r.car.name || 'Auto') + '</span><span class="ka-v">' + esc(mwEur(r.o.sum)) + '</span>' +
+        '<span class="ka-tr" aria-hidden="true"><i style="width:' + w.toFixed(1) + '%"></i></span><span class="ka-s">' + esc(sub) + '</span></button>' +
+        (open ? kaDetail(r) : '') + '</li>';
+    }).join('') + '</ul>';
+    h += '<p class="help">km aus den eingetragenen km-Ständen, dazwischen gleichmäßig verteilt; je 1.000 km nur, wenn die Stände den Zeitraum abdecken und mindestens 500 km gefahren wurden. Antippen zeigt die Jahre je Auto.</p>';
+    h += '<p class="err" id="ka-err" role="alert"></p><div class="sh-foot">' + (S.dl ? '<button type="button" class="btn ghost" data-act="ka-csv">Als Tabelle speichern (CSV)</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="close">Schließen</button></div>';
+    return h;
+  }
+  function openKosten(carId) {
+    var st = kaState();
+    if (carId) st.open = carId;
+    openSheet('kosten', {}, sheetKosten());
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+    if (carId) setTimeout(function () { var el = $('#sheet .ka-row[aria-expanded="true"]'); if (el) el.scrollIntoView({ block: 'start' }); }, 60);
+  }
+  function kaRerender() { var sh = $('#sheet'); if (!sh || !S.sheet || S.sheet.type !== 'kosten') return; var top = sh.scrollTop; setHTML(sh, sheetKosten()); sh.scrollTop = top; }
+  function kaYear(y) { kaState().y = y; kaRerender(); }
+  function kaToggle(id) { var st = kaState(); st.open = st.open === id ? null : id; kaRerender(); }
+  async function kaCsv() {
+    var err = function (m) { var el = $('#ka-err'); if (el) el.textContent = m; else toast(m); };
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var n2 = function (v) { return v === null || v === undefined ? '' : nfPrice.format(v); }, q = function (s) { s = String(s == null ? '' : s); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    var L = ['Auto;Jahr;Arbeiten (EUR);Teile (EUR);Summe (EUR);km (ca.);EUR je 1.000 km'];
+    kaCars().forEach(function (p) {
+      var d = kaData(p[0]);
+      Object.keys(d.years).sort().forEach(function (y) { var o = d.years[y], km = kaKm(p[1], y), per = kaPer(o.sum, km); L.push([q(p[1].name || 'Auto'), y, n2(o.arb), n2(o.teile), n2(o.sum), km === null ? '' : km, per === null ? '' : n2(round2(per))].join(';')); });
+      if (d.ohne.n) L.push([q(p[1].name || 'Auto'), 'ohne Datum', '', '', n2(d.ohne.sum), '', ''].join(';'));
+    });
+    var name = 'Kosten Autos ' + dayKey(new Date()) + '.csv';
+    try { await S.dl.save({ filename: name, data: new Blob(['﻿' + L.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }) }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
+  /* ---------- Historisches Fahrzeug und Fahrtenbuch (§ 34 Abs. 4 KFG, Gesamterlass 2026) ---------- */
+  var FB_Q = { quellen: [
+    { titel: 'Land Oberösterreich: Genehmigung von historischen Kraftfahrzeugen (Oldtimer)', url: 'https://www.land-oberoesterreich.gv.at/15616.htm' },
+    { titel: 'BMIMI: Gesamterlass historische Fahrzeuge 2026 (GZ 2026-0.379.175, Stand 22.05.2026), Kopie beim ÖAMTC', url: 'https://www.oeamtc.at/Gesamterlass+historische+Fahrzeuge+2026.pdf/87.876.974' },
+    { titel: 'Land Oberösterreich: Infoblatt Genehmigung historischer Fahrzeuge', url: 'https://www.land-oberoesterreich.gv.at/Mediendateien/Formulare/Dokumente%20SVD%20Abt_Verk/Historische%20Fahrzeuge%20Infoblatt%202022.11.11.pdf' },
+    { titel: 'Kuratorium Historische Mobilität Österreich: Fahrzeugsuche in der Liste', url: 'https://www.khmoe.at/fahrzeugsuche' }
+  ] };
+  var FB_ART = { kraftwagen: { n: 'Kraftwagen', max: 120 }, kraftrad: { n: 'Kraftrad', max: 60 } };
+  var FB_OHNE = { probe: 'mit Probefahrtkennzeichen', rennstrecke: 'auf einer gesperrten Rennstrecke', privat: 'auf privatem Grund' };
+  var FB_FELD = { datum: 'Datum', von: 'Abfahrtsort', kmVon: 'km bei Abfahrt', nach: 'Ankunftsort', kmBis: 'km bei Ankunft', zaehlt: 'zählt als Fahrtag' };
+  function hzOf(car) { var h = car && car.historisch; return h && typeof h === 'object' && isDay(h.seit) && !isDay(h.bis) ? h : null; }
+  function hzArt(car) { var h = hzOf(car); return FB_ART[h && h.art] ? h.art : 'kraftwagen'; }
+  function hzJahr(car) {
+    var b = numOrNull(car && car.baujahr);
+    if (b !== null) return b;
+    var m = /^(\d{4})/.exec(String((car && car.erstzulassung) || ''));
+    return m ? Number(m[1]) : null;
+  }
+  function fbDoc(carId) { var d = S.fb && S.fb.get(carId); return d && typeof d === 'object' ? d : null; }
+  function fbList(carId) { return arr(fbDoc(carId) && fbDoc(carId).eintraege).filter(function (e) { return e && typeof e === 'object' && e.id; }); }
+  /* Aktueller Wert eines Felds: die letzte Korrektur zählt, das Original bleibt sichtbar */
+  function fbVal(e, k) {
+    var v = e[k];
+    arr(e.korr).forEach(function (c) { if (c && c.feld === k) v = c.neu; });
+    return v;
+  }
+  function fbLive(e) { return !(e.storno && typeof e.storno === 'object'); }
+  function fbCounts(e) { return fbLive(e) && fbVal(e, 'zaehlt') !== false && isDay(fbVal(e, 'datum')); }
+  function fbOpen(carId) { return fbList(carId).filter(function (e) { return fbLive(e) && !e.tEnde; })[0] || null; }
+  function fbDays(carId, y) {
+    var set = {};
+    fbList(carId).forEach(function (e) { var d = fbVal(e, 'datum'); if (fbCounts(e) && String(d).slice(0, 4) === String(y)) set[d] = 1; });
+    return Object.keys(set).sort();
+  }
+  function fbYears(carId) {
+    var ys = {}; ys[dayKey(new Date()).slice(0, 4)] = 1;
+    fbList(carId).forEach(function (e) { var d = fbVal(e, 'datum'); if (isDay(d)) ys[d.slice(0, 4)] = 1; });
+    return Object.keys(ys).sort().reverse();
+  }
+  function fbPlaces(carId) {
+    var seen = [];
+    fbList(carId).slice().reverse().forEach(function (e) { [fbVal(e, 'nach'), fbVal(e, 'von')].forEach(function (p) { p = String(p || '').trim(); if (p && seen.indexOf(p) < 0) seen.push(p); }); });
+    return seen.slice(0, 12);
+  }
+  function fbMeter(carId, car, y) {
+    var max = FB_ART[hzArt(car)].max, n = fbDays(carId, y).length, lv = n >= max ? 'bad' : n >= max - 20 ? 'warn' : 'ok';
+    var txt = n >= max ? 'Grenze erreicht: ' + max + ' Fahrtage im Jahr' : n >= max - 20 ? 'Noch ' + (max - n) + (max - n === 1 ? ' Fahrtag' : ' Fahrtage') : 'Noch ' + (max - n) + ' Fahrtage';
+    return '<div class="fb-m lv-' + lv + '"><div class="fb-mh"><b>' + esc('Fahrtage ' + y + ': ' + n + ' von ' + max) + '</b><span>' + esc(txt) + '</span></div>' +
+      '<span class="fb-tr" role="img" aria-label="' + esc(n + ' von ' + max + ' Fahrtagen') + '"><i style="width:' + Math.min(100, n / max * 100).toFixed(1) + '%"></i></span></div>';
+  }
+  /* Auto-Blatt: Status und Fahrten, oder ob die historische Zulassung in Frage kommt */
+  function hzSec(id, car) {
+    if (car.fremd || car.archiviert) return '';
+    var h = hzOf(car), can = canWrite(), y = dayKey(new Date()).slice(0, 4);
+    if (h) {
+      var open = fbOpen(id), out = '<div class="sh-sec hz-sec"><div class="vhead"><h3 class="sec">Historisches Fahrzeug</h3><button type="button" class="linkbtn" data-act="fb-open" data-id="' + esc(id) + '">Fahrtenbuch</button></div>' + fbMeter(id, car, y);
+      if (open) out += '<p class="note">' + esc('Fahrt läuft seit ' + datum(fbVal(open, 'datum')) + ', ab ' + fbVal(open, 'von') + ' bei ' + nf.format(num(fbVal(open, 'kmVon'))) + ' km.') + '</p>';
+      if (can) out += '<div class="kva-act">' + (open ? '<button type="button" class="btn small" data-act="fb-end" data-id="' + esc(id) + '">Fahrt beenden</button>' : '<button type="button" class="btn small" data-act="fb-start" data-id="' + esc(id) + '">Fahrt beginnen</button>') + '</div>';
+      return out + '<p class="help">' + esc('Seit ' + datum(h.seit) + ' als historisches Fahrzeug genehmigt. Pickerl alle zwei Jahre; dabei wird das Fahrtenbuch kontrolliert.') + srcRefs(FB_Q, [1, 3]) + '</p></div>';
+    }
+    var j = hzJahr(car), cy = Number(y);
+    if (j === null || cy - j < 27) return '';
+    var age = cy - j, ok = j <= 1955 || age > 30, soon = age === 30;
+    var s = '<div class="sh-sec hz-sec"><h3 class="sec">Historische Zulassung</h3><p class="rtext">' + esc(ok ? 'Möglich: Das Auto ist älter als 30 Jahre.' : soon ? 'Ab ' + (j + 30) + ' möglich, sobald das Auto älter als 30 Jahre ist (Baujahr ' + j + ').' : 'Ab ' + (j + 30) + ' möglich (30 Jahre ab Baujahr ' + j + ').') + srcRefs(FB_Q, [3]) + '</p>';
+    s += '<details class="wp-more" data-k="hz-ck"><summary>Was es braucht</summary><ul class="sb-l">' +
+      '<li>' + esc('Das Modell steht in der Liste der historischen Fahrzeuge (Fahrzeugsuche beim Kuratorium).') + srcRefs(FB_Q, [4]) + '</li>' +
+      '<li>' + esc('Die Hauptbaugruppen sind original: Rahmen bzw. Fahrgestell, Motor und Gemischbildung, Kraftübertragung, Radaufhängungen mit der Rad-Reifen-Kombination, Lenkung, Aufbau, Bremsen. Zeitgenössische Teile zählen als original, wenn sie innerhalb von 10 Jahren für diese Type angeboten wurden.') + srcRefs(FB_Q, [2]) + '</li>' +
+      '<li>' + esc('Erhaltungszustand 1 bis 3; den Zustand kannst du mit dem Gutachten-Modus festhalten.') + srcRefs(FB_Q, [2, 3]) + '</li>' +
+      '<li>' + esc('Ein gültiges Pickerl, wenn das Auto schon in Österreich genehmigt ist.') + srcRefs(FB_Q, [3]) + '</li>' +
+      '<li>' + esc('Danach: höchstens 120 Fahrtage im Jahr (Motorräder 60), fahrtenbuchartige Aufzeichnungen, Pickerl alle zwei Jahre.') + srcRefs(FB_Q, [1]) + '</li></ul></details>';
+    if (can && ok) s += '<div class="kva-act"><button type="button" class="btn ghost small" data-act="hz-set" data-id="' + esc(id) + '">Genehmigt? Eintragen</button></div>';
+    return s + '</div>';
+  }
+  function openHzForm(carId) {
+    var car = S.cars.get(carId);
+    if (!car || !canWrite()) return;
+    var today = dayKey(new Date());
+    openSheet('hzform', { id: carId },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Historisches Fahrzeug · ' + (car.name || 'Auto')) + '</p><h2 class="sh-title" id="sheet-title">Genehmigung eintragen</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="hzform" novalidate>' +
+      '<label class="f"><span>Genehmigt am</span><input type="date" id="hz-d" value="' + today + '" max="' + today + '"><small>Steht im Genehmigungsdokument; im Zulassungsschein ist das Feld J vermerkt.</small></label>' +
+      '<fieldset class="kva-v"><legend>Art</legend>' + Object.keys(FB_ART).map(function (k, i) { return '<label class="check"><input type="radio" name="hz-art" value="' + k + '"' + (i ? '' : ' checked') + '><span>' + esc(FB_ART[k].n + ': höchstens ' + FB_ART[k].max + ' Fahrtage im Jahr') + '</span></label>'; }).join('') + '</fieldset>' +
+      '<p class="help">Danach zählt die App die Fahrtage und führt das Fahrtenbuch.' + srcRefs(FB_Q, [1]) + '</p>' +
+      '<p class="err" id="hz-err" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Zurück</button></div></form>');
+  }
+  async function saveHzForm() {
+    var s = S.sheet;
+    if (!s || s.type !== 'hzform' || S.busy) return;
+    var car = S.cars.get(s.id), err = function (m) { var el = $('#hz-err'); if (el) el.textContent = m; };
+    var d = (($('#hz-d') || {}).value || '').trim(), art = ($('input[name="hz-art"]:checked') || {}).value;
+    if (!car) { err('Dieses Auto gibt es nicht mehr.'); return; }
+    if (!isDay(d) || d > dayKey(new Date())) { err('Bitte das Datum der Genehmigung eintragen.'); return; }
+    if (!FB_ART[art]) { err('Bitte die Art wählen.'); return; }
+    var now = new Date().toISOString(), patch = { historisch: { seit: d, art: art, eingetragen: now }, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
+      S.cars.set(s.id, Object.assign({}, car, patch));
+      setBusy(false);
+      openCar(s.id); renderAll();
+      toast('Als historisches Fahrzeug eingetragen.');
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Fahrtenbuch: nur anhängen. Korrekturen und Stornos stehen mit Zeitpunkt beim Eintrag, nichts wird überschrieben. */
+  async function fbWrite(carId, list) {
+    var had = !!fbDoc(carId), now = new Date().toISOString();
+    await write(function () { var ref = S.db.doc('fahrtenbuch/' + carId); return had ? ref.update({ eintraege: list, geaendert: now }) : ref.set({ fahrzeug: carId, eintraege: list, erstellt: now, geaendert: now }); });
+    if (!S.fb) S.fb = new Map();
+    S.fb.set(carId, Object.assign({}, fbDoc(carId) || { fahrzeug: carId, erstellt: now }, { eintraege: list, geaendert: now }));
+  }
+  function fbHead(car, title, eyebrow) {
+    return '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc(eyebrow || 'Fahrtenbuch · ' + (car.name || 'Auto')) + '</p><h2 class="sh-title" id="sheet-title">' + esc(title) + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+  }
+  function fbPlaceList(carId) { return '<datalist id="fb-orte">' + fbPlaces(carId).map(function (p) { return '<option value="' + esc(p) + '"></option>'; }).join('') + '</datalist>'; }
+  function openFbStart(carId, back) {
+    var car = S.cars.get(carId);
+    if (!car || !canWrite()) return;
+    if (fbOpen(carId)) { openFbEnd(carId, back); return; }
+    var today = dayKey(new Date()), pl = fbPlaces(carId), ck = curKmEst(car), last = fbList(carId).filter(fbLive).slice(-1)[0];
+    var lastKm = last ? numOrNull(fbVal(last, 'kmBis')) : null, km = lastKm !== null && (!ck || lastKm >= ck.km) ? lastKm : ck ? ck.km : null;
+    openSheet('fbstart', { id: carId, back: back || null }, fbHead(car, 'Fahrt beginnen') +
+      '<form class="form" id="fbstart" novalidate>' +
+      '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="fb-d" value="' + today + '" max="' + today + '"></label>' +
+      '<label class="f"><span>km bei Abfahrt</span><input id="fb-km" inputmode="numeric" value="' + (km === null ? '' : km) + '" autocomplete="off"></label></div>' +
+      '<label class="f"><span>Abfahrtsort</span><input id="fb-von" list="fb-orte" value="' + esc(pl[0] || '') + '" maxlength="80" autocomplete="off" placeholder="z. B. Eggelsberg"></label>' + fbPlaceList(carId) +
+      '<label class="check"><input type="checkbox" id="fb-zaehlt" checked><span>Zählt als Fahrtag</span></label>' +
+      '<label class="f" id="fb-ohne-f" hidden><span>Warum nicht?</span><select id="fb-ohne">' + Object.keys(FB_OHNE).map(function (k) { return '<option value="' + k + '">' + esc('Fahrt ' + FB_OHNE[k]) + '</option>'; }).join('') + '</select>' +
+      '<small>Diese Fahrten zählen laut Gesamterlass nicht zu den Fahrtagen, Fahrten im Ausland schon.' + srcRefs(FB_Q, [2]) + '</small></label>' +
+      '<p class="help">Ankunftsort und km trägst du am Ende mit „Fahrt beenden“ ein. Einträge lassen sich nicht nachträglich ändern, nur mit einer Korrektur, die im Fahrtenbuch stehen bleibt.</p>' +
+      '<p class="err" id="fb-err" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Fahrt beginnen</button><button type="button" class="btn ghost" data-act="' + (back === 'fb' ? 'fb-open' : 'back-car') + '" data-id="' + esc(carId) + '">Zurück</button></div></form>');
+  }
+  async function saveFbStart() {
+    var s = S.sheet;
+    if (!s || s.type !== 'fbstart' || S.busy) return;
+    var car = S.cars.get(s.id), err = function (m) { var el = $('#fb-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    var d = g('fb-d'), von = g('fb-von').slice(0, 80), km = parseNum(g('fb-km')), zaehlt = !!(($('#fb-zaehlt') || {}).checked), ohne = g('fb-ohne');
+    err('');
+    if (!car) { err('Dieses Auto gibt es nicht mehr.'); return; }
+    if (!isDay(d) || d > dayKey(new Date())) { err('Bitte das Datum der Fahrt eintragen.'); return; }
+    if (!von) { err('Bitte den Abfahrtsort eintragen.'); return; }
+    if (km === null || isNaN(km) || km < 0 || km > 3000000) { err('Bitte den km-Stand bei der Abfahrt als Zahl eintragen.'); return; }
+    if (fbOpen(s.id)) { err('Es läuft noch eine Fahrt. Bitte zuerst beenden.'); return; }
+    var e = { id: rid(10), datum: d, von: von, kmVon: Math.round(km), t: new Date().toISOString(), nach: null, kmBis: null, tEnde: null, zaehlt: zaehlt, ohne: zaehlt ? null : (FB_OHNE[ohne] ? ohne : 'privat'), korr: [], storno: null };
+    setBusy(true);
+    try {
+      await fbWrite(s.id, fbList(s.id).concat([e]));
+      setBusy(false);
+      if (s.back === 'fb') openFb(s.id); else openCar(s.id);
+      renderAll();
+      toast('Fahrt begonnen. Am Ende „Fahrt beenden“ antippen.');
+    } catch (x) { writeError(x, err); } finally { if (S.busy) setBusy(false); }
+  }
+  function openFbEnd(carId, back) {
+    var car = S.cars.get(carId), e = fbOpen(carId);
+    if (!car || !canWrite()) return;
+    if (!e) { openFbStart(carId, back); return; }
+    openSheet('fbend', { id: carId, eid: e.id, back: back || null }, fbHead(car, 'Fahrt beenden') +
+      '<p class="buy fb-sub">' + esc('Begonnen ' + datum(fbVal(e, 'datum')) + ' in ' + fbVal(e, 'von') + ' bei ' + nf.format(num(fbVal(e, 'kmVon'))) + ' km') + '</p>' +
+      '<form class="form" id="fbend" novalidate>' +
+      '<label class="f"><span>Ankunftsort</span><input id="fb-nach" list="fb-orte" value="' + esc(fbVal(e, 'von') || '') + '" maxlength="80" autocomplete="off"></label>' + fbPlaceList(carId) +
+      '<label class="f"><span>km bei Ankunft</span><input id="fb-kmb" inputmode="numeric" value="" autocomplete="off" placeholder="' + esc('mindestens ' + nf.format(num(fbVal(e, 'kmVon')))) + '"></label>' +
+      '<p class="err" id="fb-err" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Fahrt beenden</button><button type="button" class="btn ghost" data-act="' + (back === 'fb' ? 'fb-open' : 'back-car') + '" data-id="' + esc(carId) + '">Zurück</button></div></form>');
+  }
+  async function saveFbEnd() {
+    var s = S.sheet;
+    if (!s || s.type !== 'fbend' || S.busy) return;
+    var car = S.cars.get(s.id), err = function (m) { var el = $('#fb-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    var nach = g('fb-nach').slice(0, 80), km = parseNum(g('fb-kmb')), list = fbList(s.id), idx = -1;
+    list.forEach(function (x, i) { if (x.id === s.eid) idx = i; });
+    err('');
+    if (!car || idx < 0) { err('Diese Fahrt gibt es nicht mehr.'); return; }
+    var e = list[idx], kv = num(fbVal(e, 'kmVon'));
+    if (e.tEnde) { err('Diese Fahrt ist schon beendet.'); return; }
+    if (!nach) { err('Bitte den Ankunftsort eintragen.'); return; }
+    if (km === null || isNaN(km) || km < kv || km > 3000000) { err('Bitte den km-Stand bei der Ankunft eintragen, mindestens ' + nf.format(kv) + '.'); return; }
+    var now = new Date().toISOString(), ne = Object.assign({}, e, { nach: nach, kmBis: Math.round(km), tEnde: now });
+    var nl = list.slice(); nl[idx] = ne;
+    setBusy(true);
+    try {
+      await fbWrite(s.id, nl);
+      var d = fbVal(ne, 'datum');
+      if (isDay(d) && (numOrNull(car.km) === null || ne.kmBis > num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) {
+        var cp = { km: ne.kmBis, kmDatum: d, kmLog: kmLogWith(car, d, ne.kmBis), geaendert: now };
+        try { await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(cp); }); S.cars.set(s.id, Object.assign({}, car, cp)); } catch (_) {}
+      }
+      setBusy(false);
+      if (s.back === 'fb') openFb(s.id); else openCar(s.id);
+      renderAll();
+      toast('Fahrt eingetragen: ' + nf.format(ne.kmBis - kv) + ' km.');
+    } catch (x) { writeError(x, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Korrektur oder Storno eines Eintrags, mit Grund */
+  function openFbKorr(carId, eid) {
+    var car = S.cars.get(carId), e = fbList(carId).filter(function (x) { return x.id === eid; })[0];
+    if (!car || !e || !canWrite()) return;
+    var opts = Object.keys(FB_FELD).filter(function (k) { return (k !== 'nach' && k !== 'kmBis') || e.tEnde; });
+    openSheet('fbkorr', { id: carId, eid: eid }, fbHead(car, 'Eintrag korrigieren') +
+      '<p class="buy fb-sub">' + esc(fbLine(e)) + '</p>' +
+      '<form class="form" id="fbkorr" novalidate>' +
+      '<label class="f"><span>Was korrigieren?</span><select id="fk-feld">' + opts.map(function (k) { return '<option value="' + k + '">' + esc(FB_FELD[k]) + '</option>'; }).join('') + '<option value="storno">Ganzen Eintrag stornieren</option></select></label>' +
+      '<label class="f" id="fk-neu-f"><span>Richtig ist</span><input id="fk-neu" maxlength="80" autocomplete="off"></label>' +
+      '<label class="f"><span>Grund</span><input id="fk-grund" maxlength="160" autocomplete="off" placeholder="z. B. Tippfehler beim km-Stand"></label>' +
+      '<p class="help">Der ursprüngliche Wert bleibt im Fahrtenbuch stehen, die Korrektur kommt mit Zeitpunkt und Grund dazu.' + srcRefs(FB_Q, [2]) + '</p>' +
+      '<p class="err" id="fk-err" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Korrektur eintragen</button><button type="button" class="btn ghost" data-act="fb-open" data-id="' + esc(carId) + '">Zurück</button></div></form>');
+    fbKorrSync();
+  }
+  function fbKorrSync() {
+    var s = S.sheet, f = $('#fk-feld'), box = $('#fk-neu-f');
+    if (!s || s.type !== 'fbkorr' || !f || !box) return;
+    var e = fbList(s.id).filter(function (x) { return x.id === s.eid; })[0], k = f.value;
+    if (!e) return;
+    if (k === 'storno') { box.hidden = true; return; }
+    box.hidden = false;
+    var cur = fbVal(e, k), inp;
+    if (k === 'datum') inp = '<input type="date" id="fk-neu" value="' + esc(isDay(cur) ? cur : '') + '" max="' + dayKey(new Date()) + '">';
+    else if (k === 'zaehlt') inp = '<select id="fk-neu"><option value="1"' + (cur !== false ? ' selected' : '') + '>Ja, zählt als Fahrtag</option><option value="0"' + (cur === false ? ' selected' : '') + '>Nein, zählt nicht</option></select>';
+    else inp = '<input id="fk-neu" ' + (k === 'kmVon' || k === 'kmBis' ? 'inputmode="numeric" ' : 'list="fb-orte" ') + 'value="' + esc(cur == null ? '' : String(cur)) + '" maxlength="80" autocomplete="off">';
+    box.innerHTML = '<span>Richtig ist</span>' + inp + (k === 'von' || k === 'nach' ? fbPlaceList(s.id) : '');
+  }
+  async function saveFbKorr() {
+    var s = S.sheet;
+    if (!s || s.type !== 'fbkorr' || S.busy) return;
+    var err = function (m) { var el = $('#fk-err'); if (el) el.textContent = m; };
+    var list = fbList(s.id), idx = -1, k = (($('#fk-feld') || {}).value || ''), grund = ((($('#fk-grund') || {}).value) || '').trim().slice(0, 160);
+    list.forEach(function (x, i) { if (x.id === s.eid) idx = i; });
+    err('');
+    if (idx < 0) { err('Diesen Eintrag gibt es nicht mehr.'); return; }
+    if (!grund) { err('Bitte einen Grund angeben, er steht dann im Fahrtenbuch.'); return; }
+    var e = list[idx], now = new Date().toISOString(), ne;
+    if (k === 'storno') {
+      if (!fbLive(e)) { err('Der Eintrag ist schon storniert.'); return; }
+      ne = Object.assign({}, e, { storno: { t: now, grund: grund } });
+    } else {
+      if (!FB_FELD[k]) { err('Bitte wählen, was korrigiert wird.'); return; }
+      var raw = ((($('#fk-neu') || {}).value) || '').trim(), neu;
+      if (k === 'datum') { if (!isDay(raw) || raw > dayKey(new Date())) { err('Bitte ein gültiges Datum eintragen.'); return; } neu = raw; }
+      else if (k === 'kmVon' || k === 'kmBis') { var n = parseNum(raw); if (n === null || isNaN(n) || n < 0 || n > 3000000) { err('Bitte den km-Stand als Zahl eintragen.'); return; } neu = Math.round(n); }
+      else if (k === 'zaehlt') neu = raw === '1';
+      else { if (!raw) { err('Bitte den richtigen Ort eintragen.'); return; } neu = raw.slice(0, 80); }
+      var kv = k === 'kmVon' ? neu : num(fbVal(e, 'kmVon')), kb = k === 'kmBis' ? neu : numOrNull(fbVal(e, 'kmBis'));
+      if (kb !== null && kb < kv) { err('Der km-Stand bei der Ankunft kann nicht kleiner sein als bei der Abfahrt.'); return; }
+      if (neu === fbVal(e, k)) { err('Das ist schon der eingetragene Wert.'); return; }
+      ne = Object.assign({}, e, { korr: arr(e.korr).concat([{ t: now, feld: k, alt: fbVal(e, k), neu: neu, grund: grund }]) });
+    }
+    var nl = list.slice(); nl[idx] = ne;
+    setBusy(true);
+    try {
+      await fbWrite(s.id, nl);
+      setBusy(false);
+      openFb(s.id); renderAll();
+      toast(k === 'storno' ? 'Eintrag storniert, er bleibt durchgestrichen im Fahrtenbuch.' : 'Korrektur eingetragen.');
+    } catch (x) { writeError(x, err); } finally { if (S.busy) setBusy(false); }
+  }
+  function fbFmtVal(k, v) { return k === 'datum' ? datum(v) : k === 'kmVon' || k === 'kmBis' ? (numOrNull(v) === null ? '–' : nf.format(num(v)) + ' km') : k === 'zaehlt' ? (v === false ? 'nein' : 'ja') : String(v == null || v === '' ? '–' : v); }
+  function fbWhen(t) { var d = new Date(t); return isNaN(d) ? '' : datum(dayKey(d)) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function fbLine(e) {
+    var kv = numOrNull(fbVal(e, 'kmVon')), kb = numOrNull(fbVal(e, 'kmBis'));
+    return [datum(fbVal(e, 'datum')), fbVal(e, 'von') + (e.tEnde ? ' → ' + fbVal(e, 'nach') : ' → läuft'), kv !== null ? nf.format(kv) + (kb !== null ? '–' + nf.format(kb) + ' km (' + nf.format(kb - kv) + ' km)' : ' km') : ''].filter(Boolean).join(' · ');
+  }
+  function sheetFb(carId) {
+    var car = S.cars.get(carId) || {}, can = canWrite(), st = S.fbY && S.fbY.car === carId ? S.fbY : (S.fbY = { car: carId, y: dayKey(new Date()).slice(0, 4) });
+    var ys = fbYears(carId), y = ys.indexOf(st.y) >= 0 ? st.y : ys[0], days = fbDays(carId, y), open = fbOpen(carId);
+    var miss = [!car.fin ? 'Fahrgestellnummer' : '', !car.erstzulassung ? 'Erstzulassung' : '', !car.kennzeichen ? 'Kennzeichen' : ''].filter(Boolean);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Fahrtenbuch · historisches Fahrzeug</p><h2 class="sh-title" id="sheet-title">' + esc(car.name || 'Auto') + '</h2>' +
+      '<p class="buy">' + esc([car.fin ? 'FIN ' + car.fin : '', car.erstzulassung ? 'EZ ' + fmtEz(car.erstzulassung) : '', car.kennzeichen || ''].filter(Boolean).join(' · ')) + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    if (miss.length) h += '<p class="note">' + esc('Ins Fahrtenbuch gehören Marke, Type, Fahrgestellnummer, Erstzulassung und Kennzeichen. Es fehlt noch: ' + miss.join(', ') + '. Im Auto unter „Bearbeiten“ ergänzen.') + srcRefs(FB_Q, [2]) + '</p>';
+    if (ys.length > 1) h += '<div class="ka-yr" role="group" aria-label="Jahr">' + ys.map(function (x) { return '<button type="button" class="ka-yb" data-act="fb-year" data-y="' + x + '" aria-pressed="' + (x === y) + '">' + x + '</button>'; }).join('') + '</div>';
+    h += fbMeter(carId, car, y);
+    if (can) h += '<div class="sh-btns">' + (open ? '<button type="button" class="btn" data-act="fb-end" data-id="' + esc(carId) + '" data-back="fb">Fahrt beenden</button>' : '<button type="button" class="btn" data-act="fb-start" data-id="' + esc(carId) + '" data-back="fb">Fahrt beginnen</button>') +
+      (S.dl ? '<button type="button" class="btn ghost" data-act="fb-pdf" data-id="' + esc(carId) + '">Als PDF speichern</button>' : '') + '</div>';
+    var list = fbList(carId).filter(function (e) { return String(fbVal(e, 'datum')).slice(0, 4) === y; }).sort(function (a, b) { var x = fbVal(a, 'datum') + a.t, z = fbVal(b, 'datum') + b.t; return x < z ? 1 : x > z ? -1 : 0; });
+    h += '<div class="sh-sec"><h3 class="sec">' + esc('Fahrten ' + y + ' · ' + list.length) + '</h3>' + (list.length ? '<ol class="fb-l">' + list.map(function (e) {
+      var live = fbLive(e), d = fbVal(e, 'datum'), no = fbCounts(e) ? days.indexOf(d) + 1 : 0;
+      var tag = !live ? 'storniert' : fbVal(e, 'zaehlt') === false ? 'kein Fahrtag' + (FB_OHNE[e.ohne] ? ' (Fahrt ' + FB_OHNE[e.ohne] + ')' : '') : 'Fahrtag ' + no;
+      return '<li class="fb-e' + (live ? '' : ' storno') + '"><div class="fb-eh"><b>' + esc(tag) + '</b><span>' + esc(fbLine(e)) + '</span></div>' +
+        '<small>' + esc('erfasst ' + fbWhen(e.t) + (e.tEnde ? ', beendet ' + fbWhen(e.tEnde) : '')) + '</small>' +
+        arr(e.korr).map(function (c) { return '<small class="fb-k">' + esc('Korrektur ' + fbWhen(c.t) + ': ' + (FB_FELD[c.feld] || c.feld) + ' ' + fbFmtVal(c.feld, c.alt) + ' → ' + fbFmtVal(c.feld, c.neu) + ' (' + c.grund + ')') + '</small>'; }).join('') +
+        (live ? '' : '<small class="fb-k">' + esc('Storniert ' + fbWhen(e.storno.t) + ': ' + e.storno.grund) + '</small>') +
+        (can && live ? '<button type="button" class="linkbtn" data-act="fb-korr" data-id="' + esc(carId) + '" data-e="' + esc(e.id) + '">Korrigieren</button>' : '') + '</li>';
+    }).join('') + '</ol>' : '<p class="note">In diesem Jahr noch keine Fahrt eingetragen.</p>') + '</div>';
+    h += '<p class="help">' + esc('Fahrtenbuch laut Gesamterlass: vor der Fahrt Datum, Abfahrtsort und km-Stand, danach Ankunftsort und km-Stand. Elektronisch ist es in einer eigenen App erlaubt, wenn nachträgliche Änderungen ausgeschlossen oder dokumentiert sind; Excel-Listen sind unzulässig. Aufbewahren drei Jahre ab der letzten Eintragung, beim Verkauf mitgeben. Fahrten mit Probefahrtkennzeichen, auf gesperrten Rennstrecken und auf privatem Grund zählen nicht als Fahrtag, Fahrten im Ausland schon. Ob die Prüfstelle das PDF aus der App annimmt, vorher dort fragen.') + srcRefs(FB_Q, [1, 2]) + '</p>';
+    h += '<p class="err" id="fb-err" role="alert"></p><div class="sh-foot"><button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Zum Auto</button></div>';
+    return h;
+  }
+  function openFb(carId) {
+    if (!S.cars.has(carId)) return;
+    openSheet('fb', { id: carId }, sheetFb(carId));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function fbYear(y) { var s = S.sheet; if (!s || s.type !== 'fb') return; S.fbY = { car: s.id, y: y }; refreshSheet(); }
+  function fbPdf(lib, carId, car, y) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, M = 16, X1 = W - M, BOT = H - 18, yy = M, PT = 0.3528;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243], bad: [178, 58, 42] };
+    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/→/g, '->').replace(/[^\u0000-ÿ€„“”‘’–—…•]/g, '?'); };
+    var txt = function (s, x, z, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), x, z, o); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.3; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    doc.setLineHeightFactor(1.3);
+    doc.setProperties({ title: 'Fahrtenbuch ' + (car.name || '') + ' ' + y, creator: 'Werkstatt-Inventar' });
+    var days = fbDays(carId, y), max = FB_ART[hzArt(car)].max;
+    f('bold', 9); tc(C.mut); txt('FAHRTENBUCH · HISTORISCHES FAHRZEUG', M, yy + 3);
+    f('bold', 20); tc(C.ink); txt(split(car.name || 'Auto', X1 - M)[0], M, yy + 11); yy += 15;
+    var facts = [['Marke / Type', car.name || '–'], ['Fahrgestellnummer', car.fin || '–'], ['Erstzulassung', car.erstzulassung ? fmtEz(car.erstzulassung) : '–'], ['Kennzeichen', car.kennzeichen || '–'], ['Jahr', y + ': ' + days.length + ' von ' + max + ' Fahrtagen']];
+    fc(C.soft); doc.roundedRect(M, yy, X1 - M, 8 + Math.ceil(facts.length / 2) * 9, 2, 2, 'F');
+    facts.forEach(function (p, i) { var cx = M + 4 + (i % 2) * ((X1 - M) / 2), cy = yy + 6 + Math.floor(i / 2) * 9; f('normal', 7.5); tc(C.mut); txt(p[0], cx, cy); f('bold', 9.5); tc(C.ink); txt(split(p[1], (X1 - M) / 2 - 8)[0], cx, cy + 4.2); });
+    yy += 8 + Math.ceil(facts.length / 2) * 9 + 6;
+    var cols = [{ t: 'Tag', w: 12 }, { t: 'Datum', w: 20 }, { t: 'Abfahrt', w: 32 }, { t: 'km', w: 19, r: true }, { t: 'Ankunft', w: 32 }, { t: 'km', w: 19, r: true }, { t: 'Strecke', w: 15, r: true }, { t: 'Erfasst', w: X1 - M - 149 }], pad = 1.4;
+    var hdr = function () { f('bold', 8); tc(C.mut); var x = M; cols.forEach(function (c) { txt(c.t, c.r ? x + c.w - pad : x + pad, yy + 4, c.r ? { align: 'right' } : undefined); x += c.w; }); yy += 6; dc(C.ink); doc.setLineWidth(0.4); doc.line(M, yy, X1, yy); yy += 0.6; };
+    hdr();
+    var list = fbList(carId).filter(function (e) { return String(fbVal(e, 'datum')).slice(0, 4) === String(y); }).sort(function (a, b) { var x = fbVal(a, 'datum') + a.t, z = fbVal(b, 'datum') + b.t; return x < z ? -1 : x > z ? 1 : 0; });
+    if (!list.length) { f('normal', 9.5); tc(C.mut); txt('In diesem Jahr keine Fahrten.', M, yy + 5); yy += 9; }
+    list.forEach(function (e) {
+      var live = fbLive(e), d = fbVal(e, 'datum'), kv = numOrNull(fbVal(e, 'kmVon')), kb = numOrNull(fbVal(e, 'kmBis'));
+      var tag = !live ? 'storn.' : fbVal(e, 'zaehlt') === false ? '–' : String(days.indexOf(d) + 1);
+      var cells = [tag, datum(d), fbVal(e, 'von') || '', kv === null ? '' : nf.format(kv), e.tEnde ? fbVal(e, 'nach') || '' : 'läuft', kb === null ? '' : nf.format(kb), kv !== null && kb !== null ? nf.format(kb - kv) : '', fbWhen(e.t)];
+      f('normal', 8.5);
+      var lines = cells.map(function (c, i) { return split(c, cols[i].w - 2 * pad); });
+      var notes = [];
+      if (fbVal(e, 'zaehlt') === false && live) notes.push('Zählt nicht als Fahrtag: Fahrt ' + (FB_OHNE[e.ohne] || 'ohne Angabe') + '.');
+      arr(e.korr).forEach(function (c) { notes.push('Korrektur ' + fbWhen(c.t) + ': ' + (FB_FELD[c.feld] || c.feld) + ' ' + fbFmtVal(c.feld, c.alt) + ' -> ' + fbFmtVal(c.feld, c.neu) + ' (' + c.grund + ')'); });
+      if (!live) notes.push('Storniert ' + fbWhen(e.storno.t) + ': ' + e.storno.grund);
+      if (e.tEnde) notes.push('Ende erfasst ' + fbWhen(e.tEnde));
+      f('normal', 7.5); var nl = []; notes.forEach(function (n) { nl = nl.concat(split(n, X1 - M - cols[0].w - 2 * pad)); });
+      var rh = Math.max.apply(null, lines.map(function (l) { return l.length; })) * lh(8.5) + nl.length * lh(7.5) + 2 * pad + 0.4;
+      if (yy + rh > BOT) { doc.addPage(); yy = M; hdr(); }
+      var x = M; f('normal', 8.5); tc(live ? C.ink : C.mut);
+      lines.forEach(function (l, i) { txt(l, cols[i].r ? x + cols[i].w - pad : x + pad, yy + pad + lh(8.5) * 0.74, cols[i].r ? { align: 'right' } : undefined); x += cols[i].w; });
+      if (!live) { dc(C.mut); doc.setLineWidth(0.3); var sy = yy + pad + lh(8.5) * 0.45; doc.line(M + cols[0].w, sy, X1 - cols[7].w, sy); }
+      if (nl.length) { f('normal', 7.5); tc(C.mut); txt(nl, M + cols[0].w + pad, yy + pad + Math.max.apply(null, lines.map(function (l) { return l.length; })) * lh(8.5) + lh(7.5) * 0.6); }
+      yy += rh; dc(C.line); doc.setLineWidth(0.2); doc.line(M, yy, X1, yy);
+    });
+    yy += 6;
+    var note = 'Elektronisch geführt mit der Werkstatt-App. Einträge werden nicht geändert: Korrekturen und Stornos stehen mit Zeitpunkt und Grund beim Eintrag. Fahrtage zählen je Kalendertag mit mindestens einer Fahrt; Fahrten mit Probefahrtkennzeichen, auf gesperrten Rennstrecken und auf privatem Grund zählen nicht. Aufbewahrung drei Jahre ab der letzten Eintragung.';
+    f('normal', 8); var l2 = split(note, X1 - M);
+    if (yy + l2.length * lh(8) > BOT) { doc.addPage(); yy = M; }
+    tc(C.mut); txt(l2, M, yy + 3);
+    var n = doc.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 12, X1, H - 12);
+      txt('Fahrtenbuch ' + (car.name || '') + (car.fin ? ' · FIN ' + car.fin : '') + ' · ' + y, M, H - 8);
+      txt('Seite ' + i + ' von ' + n, X1, H - 8, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveFbPdf(carId) {
+    var car = S.cars.get(carId), err = function (m) { var el = $('#fb-err'); if (el) el.textContent = m; else toast(m); };
+    if (!car) return;
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var y = S.fbY && S.fbY.car === carId ? S.fbY.y : dayKey(new Date()).slice(0, 4), lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var blob;
+    try { blob = fbPdf(lib, carId, car, y).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    var name = 'Fahrtenbuch ' + fileSafe(car.name || 'Auto') + ' ' + y + '.pdf';
+    try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
+  /* ---------- Verkaufsmappe: Deckblatt mit Fotos und Zustand, dann das Serviceheft mit Belegen ---------- */
+  function vmGutachten(carId) { return gaList(carId).filter(function (p) { var g = p[1]; return !g.uebung && g.status === 'abgeschlossen' && gaNoteOk(gaObj(g.gesamt).note); })[0] || null; }
+  function vmFotos(car) { return blList(car.fotos).filter(function (r) { return r.typ !== 'pdf'; }); }
+  function vmFacts(carId, car, gp) {
+    var out = [], ck = curKmEst(car), pk = pickerlInfo(car), c = shCheck(carId, car);
+    out.push(['Kilometerstand', ck ? nf.format(ck.km) + ' km' + (isDay(car.kmDatum) && !ck.est ? ' (' + datum(car.kmDatum) + ')' : '') : '–']);
+    if (car.erstzulassung) out.push(['Erstzulassung', fmtEz(car.erstzulassung)]); else if (numOrNull(car.baujahr) !== null) out.push(['Baujahr', String(car.baujahr)]);
+    out.push(['Pickerl', pk ? 'fällig ' + ymTxt(pk.due) : '–']);
+    out.push(['Serviceheft', c.nEnt + (c.nEnt === 1 ? ' Eintrag' : ' Einträge') + ' · ' + SH_STAMP[c.lv]]);
+    var ws = arr(car.arbeiten).filter(function (w) { return w && w.titel && isDay(w.datum) && !blOffen(w); }).sort(function (a, b) { return a.datum < b.datum ? 1 : -1; });
+    if (ws[0]) out.push(['Letzte Arbeit', datum(ws[0].datum) + ': ' + ws[0].titel]);
+    var rf = ['sommer', 'winter'].map(function (k) { var s = reifenSet(car, k); if (!s || !s.groesse) return ''; var m = reifenMin(s); return RSET[k].k + ' ' + s.groesse + (s.dot ? ', DOT ' + s.dot : '') + (m !== null ? ', min. ' + nf.format(m) + ' mm' : ''); }).filter(Boolean);
+    if (rf.length) out.push(['Reifen', rf.join(' · ')]);
+    var bm = brLast(car);
+    if (bm) { var bad = BR_ACH.filter(function (p) { var s = brState(car, p[0]); return s.scheibe === 'tauschen' || s.belag === 'grenze'; }).map(function (p) { return p[1].toLowerCase(); }); out.push(['Bremsen', 'Messung vom ' + datum(bm.am) + ': ' + (bad.length ? 'Grenzwert erreicht ' + bad.join(' und ') : 'kein Grenzwert erreicht')]); }
+    var lp = ubLastP(car);
+    if (lp && isDay(lp.datum)) { var cc = ubCounts(ubState(car)); out.push(['Unterboden', 'geprüft ' + datum(lp.datum) + ': ' + [cc.ok ? cc.ok + (cc.ok === 1 ? ' Zone gesund' : ' Zonen gesund') : '', cc.ober ? cc.ober + ' mit Oberflächenrost' : '', cc.rost ? cc.rost + ' mit Rost, Maßnahme nötig' : '', cc.durch ? cc.durch + ' durchgerostet' : ''].filter(Boolean).join(', ')]); }
+    if (gp) { var g = gp[1], gn = gaObj(g.gesamt).note; out.push(['Zustand', 'Gesamtnote ' + gn + ' laut Gutachten ' + (g.nr || '') + (isDay(gaObj(g.auftrag).stichtag) ? ' vom ' + datum(gaObj(g.auftrag).stichtag) : '')]); }
+    var hz = hzOf(car);
+    if (hz) out.push(['Historisch', 'genehmigt seit ' + datum(hz.seit) + '; Fahrtenbuch wird mitgegeben']);
+    return out;
+  }
+  function openVm(carId) {
+    var car = S.cars.get(carId);
+    if (!car) return;
+    var nf2 = vmFotos(car).length, gp = vmGutachten(carId), snd = wpSender(), nb = 0;
+    arr(car.arbeiten).forEach(function (w) { if (w && w.titel && !blOffen(w)) nb += blList(w.belege).filter(function (r) { return r.typ !== 'pdf' && !r.zone; }).length; });
+    openSheet('vm', { id: carId }, '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Verkauf · ' + (car.name || 'Auto')) + '</p><h2 class="sh-title" id="sheet-title">Verkaufsmappe</h2>' +
+      '<p class="buy">Ein PDF für Interessenten: Deckblatt mit Fotos und Zustand, dann das Serviceheft mit allen Einträgen und Belegen.</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="vmform" novalidate>' +
+      (nf2 ? '<label class="check"><input type="checkbox" id="vm-fotos" checked><span>' + esc('Fotos vom Auto (' + nf2 + ')') + '</span></label>' : '<p class="note">Noch keine Fotos vom Auto. Im Auto unter „Fotos“ hinzufügen, dann kommt das erste aufs Deckblatt.</p>') +
+      (nb ? '<label class="check"><input type="checkbox" id="vm-bl" checked><span>' + esc('Fotos der Belege anhängen (' + nb + ')') + '</span></label>' : '') +
+      (gp ? '<label class="check"><input type="checkbox" id="vm-ga" checked><span>' + esc('Zustandsnoten aus dem Gutachten ' + (gp[1].nr || '')) + '</span></label>' : '') +
+      '<label class="f"><span>Preisvorstellung (€) <span class="muted">(optional)</span></span><input id="vm-preis" inputmode="decimal" autocomplete="off"></label>' +
+      '<label class="f"><span>Kontakt <span class="muted">(optional)</span></span><input id="vm-kontakt" value="' + esc([snd.name, snd.telefon].filter(Boolean).join(', ')) + '" maxlength="120" autocomplete="off"></label>' +
+      '<label class="f"><span>Text für Interessenten <span class="muted">(optional)</span></span><textarea id="vm-text" rows="3" maxlength="600" placeholder="z. B. Zweitbesitz, unfallfrei laut Vorbesitzer, Winter in der Garage"></textarea></label>' +
+      '<p class="help">Die Fahrgestellnummer steht drin, damit Interessenten die Historie prüfen können. Kosten der Arbeiten stehen im Serviceheft-Teil.</p>' +
+      '<p class="err" id="vm-err" role="alert"></p><div class="sh-foot">' + (S.dl ? '<button type="submit" class="btn">PDF erstellen</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="sh-open" data-id="' + esc(carId) + '">Zurück</button></div></form>');
+  }
+  async function vmImg(r) { var b = await blBlob(r), d = await blDims(b, r); return { data: await blDataUrl(b), fmt: /png/i.test(b.type) ? 'PNG' : 'JPEG', w: d.w, h: d.h }; }
+  async function saveVmPdf() {
+    var s = S.sheet;
+    if (!s || s.type !== 'vm' || S.busy) return;
+    var car = S.cars.get(s.id), err = function (m) { var el = $('#vm-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; }, on = function (id) { return !!(($('#' + id) || {}).checked); };
+    err('');
+    if (!car) { err('Dieses Auto gibt es nicht mehr.'); return; }
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var preis = g('vm-preis') ? gaEur(g('vm-preis')) : null;
+    if (g('vm-preis') && (preis === null || isNaN(preis) || preis < 0)) { err('Den Preis bitte als Zahl eintragen, z. B. 12.500.'); return; }
+    var opt = { preis: preis, kontakt: g('vm-kontakt').slice(0, 120), text: g('vm-text').slice(0, 600), ga: on('vm-ga') ? vmGutachten(s.id) : null, fotos: [] }, lib, att = null, failed = 0;
+    setBusy(true);
+    try {
+      try { lib = await loadJsPdf(); } catch (e) { setBusy(false); err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+      if (on('vm-fotos')) {
+        toast('Fotos werden geladen …');
+        var fl = vmFotos(car).slice(0, 7);
+        for (var i = 0; i < fl.length; i++) { try { opt.fotos.push(await vmImg(fl[i])); } catch (e) { failed++; } }
+      }
+      if (on('vm-bl')) {
+        try { att = await shPdfAttachments(s.id, car); } catch (e) { att = null; }
+        if (att) failed += att.failed || 0;
+      }
+      var blob;
+      try { blob = shPdf(lib, s.id, car, att, { label: 'Verkaufsmappe', cover: function (o) { vmCover(o, s.id, car, opt); } }).output('blob'); }
+      catch (e) { setBusy(false); err('Das PDF konnte nicht erstellt werden.'); return; }
+      setBusy(false);
+      var name = 'Verkaufsmappe ' + fileSafe(car.name || 'Auto') + ' ' + dayKey(new Date()) + '.pdf';
+      try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name + (failed ? (failed === 1 ? '. Ein Foto ließ sich nicht laden.' : '. ' + failed + ' Fotos ließen sich nicht laden.') : '')); }
+      catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+    } finally { if (S.busy) setBusy(false); }
+  }
+  /* Deckblatt (und Fotoseite) in das PDF des Serviceheftes; o bringt doc und die Zeichenhilfen mit */
+  function vmCover(o, carId, car, opt) {
+    var doc = o.doc, M = o.M, X1 = o.X1, H = o.H, y = M, BOTc = H - 18;
+    o.f('bold', 9); o.tc(o.C.mut); o.txt('VERKAUFSMAPPE', M, y + 3);
+    o.f('bold', 24); o.tc(o.C.ink); var nm = o.split(car.name || 'Auto', X1 - M); o.txt(nm, M, y + 13); y += 13 + (nm.length - 1) * o.lh(24);
+    o.f('normal', 10); o.tc(o.C.mut);
+    var det = o.split([carDetails(car, false), car.fin ? 'FIN ' + car.fin : '', car.kennzeichen ? 'Kennzeichen ' + car.kennzeichen : ''].filter(Boolean).join(' · '), X1 - M);
+    o.txt(det, M, y + 6); y += 6 + det.length * o.lh(10);
+    y += 4;
+    var hero = opt.fotos[0];
+    if (hero) {
+      var maxW = X1 - M, maxH = 78, sc = Math.min(maxW / hero.w, maxH / hero.h), w = hero.w * sc, h = hero.h * sc;
+      doc.addImage(hero.data, hero.fmt, M + (maxW - w) / 2, y, w, h, undefined, 'FAST');
+      y += h + 6;
+    }
+    if (opt.preis !== null || opt.kontakt) {
+      o.fc(o.C.soft); var bh = 14; doc.roundedRect(M, y, X1 - M, bh, 2, 2, 'F');
+      if (opt.preis !== null) { o.f('normal', 8); o.tc(o.C.mut); o.txt('Preisvorstellung', M + 4, y + 5.4); o.f('bold', 13); o.tc(o.C.ink); o.txt(mwEur(opt.preis), M + 4, y + 11); }
+      if (opt.kontakt) { o.f('normal', 8); o.tc(o.C.mut); o.txt('Kontakt', X1 - 4, y + 5.4, { align: 'right' }); o.f('bold', 10); o.tc(o.C.ink); o.txt(o.split(opt.kontakt, (X1 - M) / 2)[0], X1 - 4, y + 11, { align: 'right' }); }
+      y += bh + 6;
+    }
+    if (opt.text) { o.f('normal', 10); o.tc(o.C.ink); var tl = o.split(opt.text, X1 - M); o.txt(tl, M, y + 4); y += tl.length * o.lh(10) + 4; }
+    var facts = vmFacts(carId, car, opt.ga);
+    var lw = 34, vw = X1 - M - lw;
+    o.f('bold', 12); o.tc(o.C.ink);
+    if (y + 12 > BOTc) { doc.addPage(); y = M; }
+    o.txt('Auf einen Blick', M, y + 4); y += 6; o.dc(o.C.ink); doc.setLineWidth(0.5); doc.line(M, y, X1, y); y += 2.5;
+    facts.forEach(function (p) {
+      o.f('normal', 9.5); var vl = o.split(p[1], vw - 2), rh = vl.length * o.lh(9.5) + 3;
+      if (y + rh > BOTc) { doc.addPage(); y = M; }
+      o.f('normal', 9); o.tc(o.C.mut); o.txt(p[0], M, y + 4);
+      o.f('normal', 9.5); o.tc(o.C.ink); o.txt(vl, M + lw, y + 4);
+      y += rh; o.dc(o.C.line); doc.setLineWidth(0.2); doc.line(M, y, X1, y);
+    });
+    if (opt.ga) {
+      var g = opt.ga[1], rows = GA_BG.map(function (b) { var bg = gaBg(g, b[0]); return gaNoteOk(bg.note) ? [b[1], String(bg.note)] : null; }).filter(Boolean);
+      if (rows.length) {
+        y += 6;
+        if (y + 12 + rows.length * 6 > BOTc) { doc.addPage(); y = M; }
+        o.f('bold', 12); o.tc(o.C.ink); o.txt('Zustandsnoten (1 bester, 5 schlechtester Zustand)', M, y + 4); y += 6; o.dc(o.C.ink); doc.setLineWidth(0.5); doc.line(M, y, X1, y); y += 2.5;
+        rows.forEach(function (rw) { o.f('normal', 9.5); o.tc(o.C.ink); o.txt(rw[0], M, y + 4); o.f('bold', 9.5); o.txt(rw[1], M + 60, y + 4); y += 6; o.dc(o.C.line); doc.setLineWidth(0.2); doc.line(M, y, X1, y); });
+        o.f('normal', 8); o.tc(o.C.mut); var gl = o.split('Aus dem Gutachten ' + (g.nr || '') + '. Das vollständige Gutachten gibt es auf Nachfrage.', X1 - M); o.txt(gl, M, y + 4); y += gl.length * o.lh(8) + 3;
+      }
+    }
+    var more = opt.fotos.slice(1);
+    if (more.length) {
+      doc.addPage(); y = M;
+      o.f('bold', 9); o.tc(o.C.mut); o.txt('FOTOS', M, y + 3); y += 8;
+      var cw = (X1 - M - 6) / 2, chh = 72;
+      more.slice(0, 6).forEach(function (im, i) {
+        var cx = M + (i % 2) * (cw + 6), cy = y + Math.floor(i / 2) * (chh + 6), sc2 = Math.min(cw / im.w, chh / im.h), w2 = im.w * sc2, h2 = im.h * sc2;
+        doc.addImage(im.data, im.fmt, cx + (cw - w2) / 2, cy + (chh - h2) / 2, w2, h2, undefined, 'FAST');
+      });
+    }
+  }
+  function kaLink(id, car) {
+    if (car.fremd || car.archiviert || !(carStats(id).done > 0)) return '';
+    return '<p class="ka-link"><button type="button" class="linkbtn" data-act="ka-open" data-id="' + esc(id) + '">Kosten je Jahr und Vergleich</button></p>';
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -13338,6 +14014,18 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'ke-sent': keMark(t.dataset.id, t.dataset.via || ''); break;
       case 'ke-copy': keCopy(t.dataset.id); break;
       case 'ke-wid': keWiderruf(t.dataset.id, t); break;
+      case 'ka-open': openKosten(t.dataset.id || null); break;
+      case 'ka-year': kaYear(t.dataset.y); break;
+      case 'ka-car': kaToggle(t.dataset.id); break;
+      case 'ka-csv': kaCsv(); break;
+      case 'hz-set': openHzForm(t.dataset.id); break;
+      case 'fb-open': openFb(t.dataset.id); break;
+      case 'fb-start': openFbStart(t.dataset.id, t.dataset.back || null); break;
+      case 'fb-end': openFbEnd(t.dataset.id, t.dataset.back || null); break;
+      case 'fb-korr': openFbKorr(t.dataset.id, t.dataset.e); break;
+      case 'fb-year': fbYear(t.dataset.y); break;
+      case 'fb-pdf': saveFbPdf(t.dataset.id); break;
+      case 'vm-open': openVm(t.dataset.id); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
@@ -13438,6 +14126,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (wpChange(t)) return;
     if (kvaChange(t)) return;
     if (reChange(t)) return;
+    if (t.id === 'fb-zaehlt') { var fo = $('#fb-ohne-f'); if (fo) fo.hidden = t.checked; return; }
+    if (t.id === 'fk-feld') { fbKorrSync(); return; }
     if (brChange(t)) return;
     if (pvChange(t)) return;
     if (gaChange(t)) return;
@@ -13499,6 +14189,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'wpstart') { e.preventDefault(); saveWpStart(); }
       else if (e.target.id === 'kvaform') { e.preventDefault(); saveKva(false); }
       else if (e.target.id === 'reform') { e.preventDefault(); saveRe(false); }
+      else if (e.target.id === 'hzform') { e.preventDefault(); saveHzForm(); }
+      else if (e.target.id === 'fbstart') { e.preventDefault(); saveFbStart(); }
+      else if (e.target.id === 'fbend') { e.preventDefault(); saveFbEnd(); }
+      else if (e.target.id === 'fbkorr') { e.preventDefault(); saveFbKorr(); }
+      else if (e.target.id === 'vmform') { e.preventDefault(); saveVmPdf(); }
       else if (e.target.id === 'keein') { e.preventDefault(); saveKeEin(); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
