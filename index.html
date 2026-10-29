@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "33", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "34", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1858,6 +1858,37 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .ga-v { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
 .ga-vh { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .ga-va { font-size: 13.5px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* Modell-Steckbrief und Marktpreise */
+.sb-d { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.sb-d > summary { display: flex; flex-direction: column; gap: 2px; padding: 11px 14px; cursor: pointer; list-style: none; }
+.sb-d > summary::-webkit-details-marker { display: none; }
+.sb-d > summary b { font-size: 16px; line-height: 1.25; }
+.sb-d > summary b::after { content: " ›"; color: var(--muted); }
+.sb-d[open] > summary b::after { content: " ⌄"; }
+.sb-d > summary span { font-size: 13px; color: var(--muted); }
+.sb-d > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 12px; }
+.sb-b { display: flex; flex-direction: column; gap: 6px; padding: 0 14px 12px; }
+.sb-h { margin: 8px 0 0; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); }
+.sb-v { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.sb-v li { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.35; }
+.sb-v li:first-child { border-top: 0; }
+.sb-v li span { color: var(--muted); overflow-wrap: anywhere; }
+.sb-v li small { font-size: 12.5px; color: var(--ro-text); }
+.sb-l { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.sb-ex { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px; }
+.sb-ex a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.mw-sum b { font-size: 16px; }
+.mw-sum > span { font-size: 13.5px; color: var(--muted); }
+.mw-cmp { display: flex; flex-direction: column; gap: 4px; }
+.mw-dl dd { font-variant-numeric: tabular-nums; }
+.mw-l { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; }
+.mw-l li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--line); }
+.mw-l li:first-child { border-top: 0; }
+.mw-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 14.5px; overflow-wrap: anywhere; }
+.mw-t a { color: var(--focus); font-weight: 700; }
+.mw-t small { font-size: 12.5px; color: var(--muted); }
+.mw-l b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ga-sb .sb-l { margin-bottom: 8px; }
 </style>
 
 <div class="wrap">
@@ -2019,7 +2050,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, gaConf: null, gaArm: null, gaLastUri: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2429,6 +2460,16 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.rr = m;
         renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('steckbrief').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.sb = m; renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('markt').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.mw = m; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('gutachten').onSnapshot(function (snap) {
         S.ga = gaMerge(snap); S.gaReady = true; gaReapply();
@@ -3845,7 +3886,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       kaufdatum: bereich === 'einbau' ? dayKey(new Date()) : null, fachWb: pre.fachWb || null, fachRo: pre.fachRo || null
     };
     openSheet('new', { lagerHint: pre.lagerHint || null }, sheetForm('new', data));
-    setTimeout(function () { var f = $('#f-name'); if (f) { try { f.focus(); } catch (_) {} } }, 80);
+    setTimeout(function () { var f = $('#f-name'); if (f && !userFocused(f)) { try { f.focus(); } catch (_) {} } }, 80);
   }
   function openEdit(id) {
     var it = id ? S.items.get(id) : null;
@@ -3931,6 +3972,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       brSec(id, car) +
       ubSec(id, car) +
       rrSec(id, car) +
+      sbSec(id, car) +
+      mwSec(id, car) +
       carFotosSec(id, car) +
       '<div class="sh-sec"><div class="vhead"><h3 class="sec">Anstehend · ' + reps.length + '</h3>' +
       (canWrite() ? '<button type="button" class="linkbtn" data-act="rep-new" data-car="' + esc(id) + '">+ Eintragen</button>' : '') + '</div>' +
@@ -3996,7 +4039,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<button type="button" class="btn ghost" data-act="' + (id ? 'back-car' : 'close') + '"' + (id ? ' data-id="' + esc(id) + '"' : '') + '>Abbrechen</button>' +
       (id ? '<button type="button" class="btn ghost" data-act="car-archive">' + (car.archiviert ? 'Wieder aktivieren' : 'Archivieren') + '</button>' : '') +
       '</div></form>');
-    setTimeout(function () { var f = $('#c-name'); if (f && !id) { try { f.focus(); } catch (_) {} } }, 80);
+    setTimeout(function () { var f = $('#c-name'); if (f && !id && !userFocused(f)) { try { f.focus(); } catch (_) {} } }, 80);
   }
   function openWorkForm(carId, workId, pre) {
     if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
@@ -4031,7 +4074,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       (workId ? etButton(carId, w) : '') +
       (workId ? '<button type="button" class="btn ghost" data-act="work-del">Entfernen</button>' : '') +
       '</div></form>');
-    setTimeout(function () { var f = $('#w-titel'); if (f && !workId) { try { f.focus(); } catch (_) {} } }, 80);
+    setTimeout(function () { var f = $('#w-titel'); if (f && !workId && !userFocused(f)) { try { f.focus(); } catch (_) {} } }, 80);
   }
   /* ---------- Anstehende Reparaturen ---------- */
   function fmtGenau(d, g) {
@@ -4896,7 +4939,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<p class="err" id="km-err" role="alert"></p>' +
       '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
       '<button type="button" class="btn ghost" data-act="' + (back === 'wart' ? 'wart-open' : 'back-car') + '" data-id="' + esc(carId) + '">Zurück</button></div></form>');
-    setTimeout(function () { var f = $('#k-km'); if (f) { try { f.focus(); f.select(); } catch (_) {} } }, 80);
+    setTimeout(function () { var f = $('#k-km'); if (f && !userFocused(f)) { try { f.focus(); f.select(); } catch (_) {} } }, 80);
   }
   function kmLogWith(car, day, km) {
     return arr(car && car.kmLog).filter(function (x) { return x && x.d !== day; }).concat([{ d: day, km: km }]).sort(function (a, b) { return a.d < b.d ? -1 : 1; }).slice(-60);
@@ -5327,7 +5370,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<p class="help">Der Bestand bleibt gezählt' + (st > 0 ? ' (' + fmt(st) + ' ' + u + ')' : '') + ', das Werkzeug ist nur als verliehen markiert.</p>' +
       '<p class="err" id="lend-err" role="alert"></p>' +
       '<div class="sh-foot"><button type="submit" class="btn">Verleihen</button><button type="button" class="btn ghost" data-act="back-item">Zurück</button></div></form>');
-    setTimeout(function () { var f = $('#l-an'); if (f) { try { f.focus(); } catch (_) {} } }, 80);
+    setTimeout(function () { var f = $('#l-an'); if (f && !userFocused(f)) { try { f.focus(); } catch (_) {} } }, 80);
   }
   async function saveLend() {
     var s = S.sheet;
@@ -7702,7 +7745,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<p class="err" id="kf-err" role="alert"></p>' +
       '<div class="sh-foot"><button type="submit" class="btn">' + (id ? 'Speichern' : 'Anlegen') + '</button>' +
       '<button type="button" class="btn ghost" data-act="' + (id ? 'kunde-open' : 'kunden') + '"' + (id ? ' data-id="' + esc(id) + '"' : '') + '>Zurück</button></div></form>');
-    setTimeout(function () { var f = $('#k-name'); if (f && !id) { try { f.focus(); } catch (_) {} } }, 80);
+    setTimeout(function () { var f = $('#k-name'); if (f && !id && !userFocused(f)) { try { f.focus(); } catch (_) {} } }, 80);
   }
   async function saveKunde() {
     var s = S.sheet;
@@ -11257,6 +11300,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var def = GA_CK[gaArt(g).ck], c = gaCkCount(g), h = '';
     h += '<div class="pv-sum"><b>' + esc(c.n + ' von ' + c.total + ' angesehen') + '</b><span>' + esc([c.m ? c.m + (c.m === 1 ? ' Mangel' : ' Mängel') : 'keine Mängel eingetragen', c.nb ? c.nb + ' nicht beurteilbar' : ''].filter(Boolean).join(' · ')) + '</span>' + wpBar(c.n, c.total) + '</div>';
     h += '<p class="help">' + esc(def.n + ' aus deinem Vault. Je Punkt OK, Mangel oder n. b. (nicht beurteilbar). Bei Mangel kurz notieren, was und wo, und mit Maßstab fotografieren.') + '</p>';
+    h += gaSbBox(g);
     h += def.g.map(function (gr) {
       return '<div class="sh-sec pv-g"><h3 class="sec">' + esc(gr.t) + '</h3><ul class="pvl">' + gr.it.map(function (it) {
         var key = gaArt(g).ck + '.' + it[0], x = gaCk(g, key), st = gaCkSt(x), hint = gaHint(g, car, key), fotos = blList(x.fotos), ctx = 'ga:' + gid + ':c:' + key;
@@ -11411,7 +11455,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     h += gaIn(g, 'orig.matching', 'Matching Numbers', { sel: [['', '–'], ['ja', 'ja'], ['nein', 'nein'], ['unklar', 'unklar, nicht belegt']] }) +
       gaIn(g, 'orig.matchingN', 'Wie geprüft, was gefunden', { ta: 1, rows: 2, max: 1000, ph: 'z. B. Motornummer am Block = Typenschein' }) +
       gaIn(g, 'orig.aenderungen', 'Zeitgenössische Änderungen', { ta: 1, rows: 3, max: 2000 }) +
-      gaIn(g, 'orig.fremdteile', 'Nicht-Originalteile', { ta: 1, rows: 3, max: 2000 });
+      gaIn(g, 'orig.fremdteile', 'Nicht-Originalteile', { ta: 1, rows: 3, max: 2000 }) + gaSbOrig(g);
     h += '<p class="help">Bei Spezialversionen getrennt angeben: belegt, plausibel aber nicht belegt, widersprüchlich, nicht prüfbar. Keine Echtheit bestätigen, die über das Geprüfte hinausgeht (deine Notiz „Echtheitsprüfung Spezialversionen“).</p>';
     return h;
   }
@@ -11425,6 +11469,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var rows = gaVglRows(g), h = '';
     if (gaArt(g).bew === 'opt') h += '<p class="note">Bei dieser Art ist die Bewertung freiwillig. Ohne Einträge fehlt sie im PDF.</p>';
     h += '<div class="pv-sum" id="ga-vgs">' + gaVglSum(g) + '</div>';
+    var mwn = can ? gaMwNew(g) : [];
+    if (mwn.length) h += '<button type="button" class="btn ghost" data-act="ga-mw-import">' + esc((mwn.length === 1 ? 'Ein Angebot' : mwn.length + ' Angebote') + ' aus der Marktrecherche übernehmen') + '</button>';
     h += '<ol class="ga-vl">' + rows.map(function (r, i) {
       var b = 'bew.vgl.' + i + '.', adj = gaVglAdj(r), armed = S.gaArm && S.gaArm.id === r.id && S.gaArm.t > Date.now();
       return '<li class="ga-v" id="ga-v-' + esc(r.id) + '"><div class="ga-vh"><b>' + esc('Vergleichsfahrzeug ' + (i + 1)) + '</b><span class="ga-va" id="ga-va-' + i + '">' + esc(adj !== null ? 'angepasst ' + eur(adj) : '') + '</span></div>' +
@@ -12134,6 +12180,207 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name + (att && att.failed ? ' (' + att.failed + (att.failed === 1 ? ' Foto fehlt' : ' Fotos fehlen') + ')' : '')); }
     catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
   }
+  /* ---------- Modell-Steckbrief und Marktpreise: Recherche-Aufträge für den geplanten Lauf ---------- */
+  var XR_KIND = {
+    sb: { col: 'steckbrief', map: 'sb', t: 'Modell-Steckbrief', req: 'Recherchieren lassen', again: 'Neu recherchieren lassen', run: 'Steckbrief-Recherche läuft …' },
+    mw: { col: 'markt', map: 'mw', t: 'Marktpreise', req: 'Angebote suchen lassen', again: 'Neu suchen lassen', run: 'Angebotssuche läuft …' }
+  };
+  function xDoc(kind, carId) { var m = S[XR_KIND[kind].map], d = m && m.get(carId); return d && typeof d === 'object' ? d : null; }
+  function xDone(d) { return !!(d && (d.fertig || d.recherchiertAm)); }
+  function xPending(d) { return !!(d && (d.anfrage || d.laeuft)) && !rrStale(d); }
+  function xStand(d) { var s = isDay(d && d.stand) ? d.stand : String((d && (d.recherchiertAm || d.fertig)) || '').slice(0, 10); return isDay(s) ? s : ''; }
+  function xList(d, k) { return arr(d && d[k]).filter(function (x) { return x && (typeof x === 'string' || x.text || x.name || x.titel); }); }
+  function xLi(d, x) { return '<li>' + esc(typeof x === 'string' ? x : x.text) + (typeof x === 'string' ? '' : srcRefs(d, x.quelle)) + '</li>'; }
+  function xQuellen(d) {
+    var qs = arr(d && d.quellen).filter(function (s) { return s && safeUrl(s.url); });
+    if (!qs.length) return '';
+    return '<details class="rr-src"><summary>' + esc('Quellen · ' + qs.length) + '</summary><ol class="rsrc">' + arr(d.quellen).map(function (s) {
+      if (!s || !safeUrl(s.url)) return '<li><span class="muted">–</span></li>';
+      return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">' + esc(s.titel || urlHost(s.url)) + '</a> <small>' + esc(urlHost(s.url)) + '</small></li>';
+    }).join('') + '</ol></details>';
+  }
+  function xHead(kind, id, d, can) {
+    var K = XR_KIND[kind], firing = S.xFiring && S.xFiring.kind === kind && S.xFiring.car === id, pending = xPending(d);
+    var h = '<div class="vhead"><h3 class="sec">' + esc(K.t) + '</h3>' + (can && !pending && !firing ? '<button type="button" class="linkbtn" data-act="x-req" data-k="' + kind + '" data-id="' + esc(id) + '">' + esc(xDone(d) ? K.again : K.req) + '</button>' : '') + '</div>';
+    if (firing) h += '<p class="rstat run" role="status">Auftrag wird abgelegt …</p>';
+    else if (pending) h += '<p class="rstat run" role="status">' + esc(d.laeuft ? K.run : 'Auftrag abgelegt ' + fmtWhen(d.anfrage) + '. Claude recherchiert beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr).') + '</p>';
+    else if (d && (d.anfrage || d.laeuft) && rrStale(d)) h += '<p class="note">' + esc(d.anfrage ? 'Der Auftrag von ' + fmtWhen(d.anfrage) + ' ist noch offen. Du kannst ihn neu anfordern.' : 'Die letzte Recherche ist nicht fertig geworden. Du kannst sie neu anfordern.') + '</p>';
+    if (S.xMsg && S.xMsg.kind === kind && S.xMsg.car === id) h += '<p class="rstat warn" role="status">' + esc(S.xMsg.text) + '</p>';
+    return h;
+  }
+  /* Auto-Blatt: Steckbrief */
+  function sbSec(id, car) {
+    if (car.archiviert) return '';
+    var d = xDoc('sb', id), can = canWrite(), h = '<div class="sh-sec sb-sec">' + xHead('sb', id, d, can);
+    if (!xDone(d)) {
+      if (!xPending(d)) h += '<p class="note">Noch kein Steckbrief. Claude recherchiert Bauzeit, Varianten mit Stückzahlen, typische Roststellen, Schwachstellen und Originalitätsmerkmale, jeweils mit Quelle. Beim Gutachten erscheinen die Roststellen dann in der Checkliste.</p>';
+      return h + '</div>';
+    }
+    var M = gaObj(d.modell), V = xList(d, 'varianten'), stand = xStand(d);
+    var line = [M.bauzeit ? M.bauzeit : '', V.length ? V.length + (V.length === 1 ? ' Variante' : ' Varianten') : '', stand ? 'Stand ' + datum(stand) : ''].filter(Boolean).join(' · ');
+    h += '<details class="sb-d" data-k="sb-more"><summary><b>' + esc(M.name || (car.name || 'Modell')) + '</b><span>' + esc(line) + '</span></summary><div class="sb-b">';
+    if (M.kurz) h += '<p class="rtext">' + esc(M.kurz) + srcRefs(d, M.quelle) + '</p>';
+    if (V.length) h += '<h4 class="sb-h">Varianten</h4><ul class="sb-v">' + V.map(function (v) {
+      var st = numOrNull(v.stueck);
+      return '<li><b>' + esc(v.name || '') + '</b><span>' + esc([v.bauzeit, v.motor, v.leistung, st !== null ? nf.format(st) + ' Stück' : ''].filter(Boolean).join(' · ')) + srcRefs(d, v.quelle) + '</span>' + (v.stueckHinweis ? '<small>' + esc(v.stueckHinweis) + '</small>' : '') + '</li>';
+    }).join('') + '</ul>';
+    [['rost', 'Typische Roststellen'], ['schwach', 'Technik und Schwachstellen'], ['original', 'Originalität und Matching Numbers'], ['hinweise', 'Hinweise']].forEach(function (p) {
+      var l = xList(d, p[0]);
+      if (l.length) h += '<h4 class="sb-h">' + esc(p[1]) + '</h4><ul class="sb-l">' + l.map(function (x) { return xLi(d, x); }).join('') + '</ul>';
+    });
+    h += xQuellen(d) + '<div class="sb-ex"><a class="btn ghost small" data-act="sb-obs" data-id="' + esc(id) + '" href="' + esc(sbObsUri(id)) + '">In Obsidian anlegen</a><button type="button" class="btn ghost small" data-act="sb-copy" data-id="' + esc(id) + '">Markdown kopieren</button></div>' +
+      '<p class="help">' + esc('Die Notiz folgt deiner Vorlage „Modell-Steckbrief“ und landet unter 60 Technik/Oldtimer/Modelle; eine bestehende Notiz wird nicht überschrieben.') + '</p></div></details>';
+    if (stand && dayNum(dayKey(new Date())) - dayNum(stand) > 730) h += '<p class="note">Der Steckbrief ist über zwei Jahre alt.</p>';
+    return h + '</div>';
+  }
+  /* Auto-Blatt: Marktpreise aus Inseraten und Vergleich mit anstehenden Arbeiten */
+  var nfEur0 = new Intl.NumberFormat('de-AT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  function mwEur(n) { return nfEur0.format(Math.round(num(n))); }
+  function mwOffers(d) { return arr(d && d.angebote).filter(function (a) { return a && typeof a === 'object' && numOrNull(a.preis) !== null && num(a.preis) > 0; }); }
+  function mwStats(d) {
+    var v = mwOffers(d).map(function (a) { return num(a.preis); }).sort(function (a, b) { return a - b; });
+    if (!v.length) return { n: 0 };
+    var m = v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
+    return { n: v.length, min: v[0], max: v[v.length - 1], med: m };
+  }
+  function mwOpenRepCost(id) {
+    var o = { sum: 0, n: 0, ohne: 0, titel: [] };
+    repList(id).forEach(function (p) {
+      var r = p[1];
+      if (!repOpen(r)) return;
+      var x = repResearch(r), ps = x ? repPartsSum(x) : null;
+      if (ps && ps.sum > 0) { o.sum += ps.sum; o.n++; o.titel.push(r.titel); } else o.ohne++;
+    });
+    return o;
+  }
+  function mwPct(a, b) { var p = b > 0 ? a / b * 100 : 0; return p > 0 && p < 1 ? 'unter 1 %' : nf.format(Math.round(p)) + ' %'; }
+  function mwSec(id, car) {
+    if (car.archiviert) return '';
+    var d = xDoc('mw', id), can = canWrite(), h = '<div class="sh-sec mw-sec">' + xHead('mw', id, d, can);
+    if (!xDone(d)) {
+      if (!xPending(d)) h += '<p class="note">Noch keine Angebote gesucht. Claude sucht Inserate vergleichbarer Autos (Modell, Motor, ähnliches Baujahr) mit Preis, Link und Datum. Daraus rechnet die App eine Spanne; das sind Angebotspreise, keine Verkaufspreise.</p>';
+      return h + '</div>';
+    }
+    var s = mwStats(d), stand = xStand(d), off = mwOffers(d);
+    h += '<div class="pv-sum mw-sum"><b>' + esc(s.n ? s.n + (s.n === 1 ? ' Angebot' : ' Angebote') + (s.n > 1 ? ' von ' + mwEur(s.min) + ' bis ' + mwEur(s.max) : ' um ' + mwEur(s.min)) : 'Keine passenden Angebote gefunden') + '</b>' +
+      (s.n > 1 ? '<span>' + esc('Median ' + mwEur(s.med)) + '</span>' : '') + '<span>' + esc('Angebotspreise aus Inseraten, keine Verkaufspreise' + (stand ? '. Stand ' + datum(stand) : '') + '.') + '</span></div>';
+    if (d.kurz) h += '<p class="rtext">' + esc(d.kurz) + '</p>';
+    if (s.n) {
+      var rc = mwOpenRepCost(id), st = carStats(id);
+      h += '<div class="mw-cmp"><h4 class="sb-h">Lohnt sich das noch?</h4><dl class="br-dl mw-dl"><dt>' + esc(s.n > 1 ? 'Angebote, Median' : 'Angebot') + '</dt><dd>' + esc(mwEur(s.med)) + '</dd>' +
+        '<dt>' + esc('Anstehend, Teile laut Recherche' + (rc.n ? ' (' + rc.n + (rc.n === 1 ? ' Arbeit' : ' Arbeiten') + ')' : '')) + '</dt><dd>' + esc(rc.n ? 'ca. ' + eur(rc.sum) : '–') + '</dd>' +
+        (rc.n ? '<dt>' + esc(s.n > 1 ? 'Anteil am Median' : 'Anteil am Angebot') + '</dt><dd>' + esc(mwPct(rc.sum, s.med)) + '</dd>' : '') +
+        (!car.fremd && st.total > 0 ? '<dt>Bisher investiert</dt><dd>' + esc(eur(st.total)) + '</dd>' : '') + '</dl>' +
+        '<p class="help">' + esc((rc.ohne ? rc.ohne + (rc.ohne === 1 ? ' anstehende Arbeit hat' : ' anstehende Arbeiten haben') + ' noch keine Teilepreise. ' : '') + 'Arbeitszeit ist nicht eingerechnet. Der Zustand deines Autos entscheidet, wo es in der Spanne liegt.') + '</p></div>';
+    }
+    if (off.length) h += '<details class="rr-src" data-k="mw-list"><summary>' + esc('Angebote · ' + off.length) + '</summary><ul class="mw-l">' + off.slice().sort(function (a, b) { return num(a.preis) - num(b.preis); }).map(function (a) {
+      var meta = [numOrNull(a.baujahr) !== null ? 'Bj. ' + a.baujahr : '', numOrNull(a.km) !== null ? nf.format(num(a.km)) + ' km' : '', a.ort || a.land || '', isDay(a.gesehen) ? 'gesehen ' + datum(a.gesehen) : ''].filter(Boolean).join(' · ');
+      var t = esc(a.titel || 'Angebot');
+      return '<li><span class="mw-t">' + (safeUrl(a.url) ? '<a href="' + esc(a.url) + '" target="_blank" rel="noopener noreferrer">' + t + '</a>' : t) + '<small>' + esc(meta) + (a.zustand ? esc(' · ' + a.zustand) : '') + srcRefs(d, a.quelle) + '</small></span><b>' + esc(mwEur(a.preis)) + '</b></li>';
+    }).join('') + '</ul></details>';
+    xList(d, 'hinweise').forEach(function (n) { h += '<p class="help">' + esc(typeof n === 'string' ? n : n.text) + (typeof n === 'string' ? '' : srcRefs(d, n.quelle)) + '</p>'; });
+    h += xQuellen(d);
+    if (stand && dayNum(dayKey(new Date())) - dayNum(stand) > 180) h += '<p class="note">Die Angebote sind über ein halbes Jahr alt. Für einen aktuellen Stand neu suchen lassen.</p>';
+    return h + '</div>';
+  }
+  async function xRequest(kind, carId) {
+    var K = XR_KIND[kind];
+    if (!K || !canWrite() || S.busy || S.xFiring) return;
+    var car = S.cars.get(carId);
+    if (!car) return;
+    var now = new Date().toISOString(), had = !!xDoc(kind, carId);
+    var fuer = { name: car.name || null, baujahr: numOrNull(car.baujahr), erstzulassung: car.erstzulassung || null, kraftstoff: car.kraftstoff || null, leistungPs: numOrNull(car.leistungPs), hubraum: car.hubraum || null };
+    S.xFiring = { kind: kind, car: carId }; S.xMsg = null; refreshSheet();
+    try {
+      await write(function () { var ref = S.db.doc(K.col + '/' + carId); return had ? ref.update({ anfrage: now, fuer: fuer, laeuft: false }) : ref.set({ fahrzeug: carId, anfrage: now, fuer: fuer, laeuft: false }); });
+      S[K.map].set(carId, Object.assign({}, xDoc(kind, carId) || { fahrzeug: carId }, { anfrage: now, fuer: fuer, laeuft: false }));
+    } catch (e) {
+      S.xFiring = null;
+      writeError(e, function (m) { S.xMsg = { kind: kind, car: carId, text: m }; });
+      refreshSheet();
+      return;
+    }
+    S.xFiring = null;
+    toast(kind === 'sb' ? 'Auftrag abgelegt. Claude recherchiert den Steckbrief beim nächsten geplanten Lauf.' : 'Auftrag abgelegt. Claude sucht Angebote beim nächsten geplanten Lauf.');
+    refreshSheet(); renderAll();
+  }
+  /* Steckbrief als Notiz nach der Vorlage „Modell-Steckbrief“ */
+  function sbMd(carId) {
+    var d = xDoc('sb', carId), car = S.cars.get(carId) || {};
+    if (!d) return '';
+    var M = gaObj(d.modell), V = xList(d, 'varianten'), qs = arr(d.quellen), o = [];
+    var ref = function (q) { var ids = Array.isArray(q) ? q : q ? [q] : []; return ids.map(function (n) { var s = qs[Number(n) - 1]; return s && safeUrl(s.url) ? ' [' + n + '](' + s.url + ')' : ''; }).join(''); };
+    var one = function (s) { return gaStr(s).replace(/\s*\n\s*/g, ' ').replace(/\|/g, '\\|'); };
+    var li = function (x) { return '- ' + one(typeof x === 'string' ? x : x.text) + (typeof x === 'string' ? '' : ref(x.quelle)); };
+    var s = mwStats(xDoc('mw', carId)), mw = xDoc('mw', carId);
+    o.push('---', 'tags: [technik, oldtimer, modell]', 'status: entwurf', 'quelle: Werkstatt-App (Recherche ' + (xStand(d) || '') + ')', '---', '', '# ' + one(M.name || car.name || 'Modell'), '');
+    if (M.kurz) o.push(one(M.kurz) + ref(M.quelle), '');
+    o.push('## Eckdaten', '| | |', '|---|---|', '| Hersteller | ' + one(M.hersteller) + ' |', '| Bauzeit | ' + one(M.bauzeit) + ' |', '| Varianten | ' + V.map(function (v) { return one(v.name); }).join(', ') + ' |', '| Motoren | ' + V.map(function (v) { return one(v.motor); }).filter(Boolean).filter(function (x, i, a) { return a.indexOf(x) === i; }).join(', ') + ' |', '');
+    if (V.length) {
+      o.push('### Varianten', '| Variante | Bauzeit | Motor | Leistung | Stück | Quelle |', '|---|---|---|---|---|---|');
+      V.forEach(function (v) { var n = numOrNull(v.stueck); o.push('| ' + one(v.name) + ' | ' + one(v.bauzeit) + ' | ' + one(v.motor) + ' | ' + one(v.leistung) + ' | ' + [n !== null ? nf.format(n) : '', v.stueckHinweis ? '(' + one(v.stueckHinweis) + ')' : ''].filter(Boolean).join(' ') + ' |' + ref(v.quelle) + ' |'); });
+      o.push('');
+    }
+    o.push('## Typische Roststellen');
+    xList(d, 'rost').forEach(function (x) { o.push(li(x)); });
+    o.push('', '## Technik / Schwachstellen');
+    xList(d, 'schwach').forEach(function (x) { o.push(li(x)); });
+    o.push('', '## Originalität / Matching Numbers');
+    xList(d, 'original').forEach(function (x) { o.push(li(x)); });
+    o.push('', '## Markt', '- Marktwert-Spanne (Quelle, Datum): ' + (s.n > 1 ? 'Angebote aus Inseraten von ' + mwEur(s.min) + ' bis ' + mwEur(s.max) + ', Median ' + mwEur(s.med) + ' (' + s.n + ' Inserate' + (xStand(mw) ? ', Stand ' + datum(xStand(mw)) : '') + '); keine Verkaufspreise' : s.n ? 'Ein Inserat um ' + mwEur(s.min) + (xStand(mw) ? ' (Stand ' + datum(xStand(mw)) + ')' : '') + '; kein Verkaufspreis' : '–'));
+    if (xList(d, 'hinweise').length) { o.push('', '## Hinweise'); xList(d, 'hinweise').forEach(function (x) { o.push(li(x)); }); }
+    o.push('', '## Quellen');
+    qs.forEach(function (q, i) { if (q && safeUrl(q.url)) o.push((i + 1) + '. [' + one(q.titel || urlHost(q.url)) + '](' + q.url + ')'); });
+    o.push('');
+    return o.join('\n');
+  }
+  function sbObsUri(carId) {
+    var d = xDoc('sb', carId), M = gaObj(d && d.modell), name = fileSafe(M.name || carName(carId));
+    return 'obsidian://new?vault=' + encodeURIComponent(gaConf().vault) + '&file=' + encodeURIComponent('60 Technik/Oldtimer/Modelle/' + name) + '&clipboard=true';
+  }
+  function sbObs(carId) {
+    var md = sbMd(carId);
+    if (!md) return;
+    var p;
+    try { p = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(md) : Promise.reject(new Error('kein Zugriff')); } catch (e) { p = Promise.reject(e); }
+    p.then(function () { try { window.location.href = sbObsUri(carId); } catch (_) {} toast('Steckbrief kopiert, Obsidian legt die Notiz an.'); }, function () { klCopy(md, 'Markdown kopiert. In Obsidian eine neue Notiz anlegen und einfügen.'); });
+  }
+  /* Gutachten: Roststellen und Schwachstellen aus dem Steckbrief, Angebote als Vergleichsfahrzeuge */
+  function gaSbBox(g) {
+    var d = xDoc('sb', g.fahrzeug);
+    if (!xDone(d) || gaArt(g).ck !== 'o') return '';
+    var R = xList(d, 'rost'), W = xList(d, 'schwach');
+    if (!R.length && !W.length) return '';
+    return '<details class="wp-more ga-sb" data-k="ga-sb"><summary>' + esc('Typisch für ' + (gaObj(d.modell).name || 'dieses Modell') + ' laut Steckbrief') + '</summary>' +
+      (R.length ? '<h4 class="sb-h">Roststellen</h4><ul class="sb-l">' + R.map(function (x) { return xLi(d, x); }).join('') + '</ul>' : '') +
+      (W.length ? '<h4 class="sb-h">Technik und Schwachstellen</h4><ul class="sb-l">' + W.map(function (x) { return xLi(d, x); }).join('') + '</ul>' : '') + '</details>';
+  }
+  function gaSbOrig(g) {
+    var d = xDoc('sb', g.fahrzeug), O = xList(d, 'original');
+    if (!xDone(d) || !O.length) return '';
+    return '<details class="wp-more ga-sb" data-k="ga-sbo"><summary>Originalitätsmerkmale laut Steckbrief</summary><ul class="sb-l">' + O.map(function (x) { return xLi(d, x); }).join('') + '</ul></details>';
+  }
+  function gaMwNew(g) {
+    var d = xDoc('mw', g.fahrzeug), have = {};
+    gaVglRows(g).forEach(function (r) { if (gaStr(r.quelle)) have[gaStr(r.quelle)] = true; });
+    return xDone(d) ? mwOffers(d).filter(function (a) { return !(safeUrl(a.url) && have[a.url]); }) : [];
+  }
+  function gaMwImport() {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    if (!g || !canWrite()) return;
+    var d = xDoc('mw', g.fahrzeug), add = gaMwNew(g);
+    if (!add.length) { toast('Alle Angebote sind schon übernommen.'); return; }
+    gaSet(s.id, function (dd) {
+      dd.bew = gaObj(dd.bew);
+      dd.bew.vgl = arr(dd.bew.vgl).concat(add.map(function (a) {
+        var fz = [gaStr(a.titel), numOrNull(a.baujahr) !== null ? 'Bj. ' + a.baujahr : '', numOrNull(a.km) !== null ? nf.format(num(a.km)) + ' km' : ''].filter(Boolean).join(', ');
+        return { id: rid(8), fz: fz.slice(0, 160), quelle: safeUrl(a.url) ? a.url : gaStr(a.ort), datum: isDay(a.gesehen) ? a.gesehen : xStand(d), zustand: '', preis: String(num(a.preis)), anp: '', notiz: ('Aus der Marktrecherche' + (xStand(d) ? ' vom ' + datum(xStand(d)) : '') + (a.zustand ? '. Laut Inserat: ' + a.zustand : '') + '. Zustand und Anpassung selbst beurteilen.').slice(0, 600), fotos: [] };
+      }));
+    });
+    gaRerender();
+    toast(add.length === 1 ? 'Ein Angebot übernommen. Zustand, Anpassung und Screenshot ergänzen.' : add.length + ' Angebote übernommen. Zustand, Anpassung und Screenshot ergänzen.');
+  }
+  function userFocused(f) { var a = document.activeElement, sh = f && f.closest ? f.closest('#sheet') : null; return !!(a && a !== f && sh && a.closest && a.closest('#sheet') === sh && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)); }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -12496,6 +12743,10 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'pv-plan': pvPlan(t.dataset.pos); break;
       case 'pv-st': pvSt(t.dataset.pos, t.dataset.v); break;
       case 'pv-fertig': pvFertig(); break;
+      case 'x-req': xRequest(t.dataset.k, t.dataset.id); break;
+      case 'sb-obs': e.preventDefault(); sbObs(t.dataset.id); break;
+      case 'sb-copy': klCopy(sbMd(t.dataset.id), 'Markdown kopiert. In Obsidian eine neue Notiz anlegen und einfügen.'); break;
+      case 'ga-mw-import': gaMwImport(); break;
       case 'ga-new': openGaNew(t.dataset.id); break;
       case 'ga-open': openGa(t.dataset.id, 'start'); break;
       case 'ga-p': gaGo(t.dataset.p); break;
