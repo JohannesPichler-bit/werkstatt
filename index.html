@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "34", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "35", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1889,6 +1889,23 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .mw-t small { font-size: 12.5px; color: var(--muted); }
 .mw-l b { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ga-sb .sb-l { margin-bottom: 8px; }
+/* Rechnung und Erinnerungen an Kunden */
+.re-chk { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; line-height: 1.45; }
+.re-chk p { margin: 0; overflow-wrap: anywhere; }
+.re-art b { display: block; font-size: 15px; margin-bottom: 2px; }
+.re-art { color: var(--muted); }
+.re-art b { color: var(--ink); }
+.re-miss { color: var(--kaufen); font-weight: 700; }
+.re-ok { color: var(--in-text); font-weight: 700; }
+.re-est { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.ke-l { list-style: none; margin: 0 0 4px; padding: 0; display: flex; flex-direction: column; }
+.ke-l li { display: flex; flex-direction: column; gap: 1px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14.5px; line-height: 1.4; overflow-wrap: anywhere; }
+.ke-l li:first-child { border-top: 0; }
+.ke-l li b { font-size: 13px; color: var(--muted); }
+.ke-l li small { font-size: 12.5px; color: var(--muted); }
+.ke-l li.ruhe span { color: var(--muted); }
+.ke-sec .kva-act a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.ke-wid { margin-top: 6px; align-self: flex-start; }
 </style>
 
 <div class="wrap">
@@ -3967,6 +3984,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       wpBanner(id, car) +
       pvBanner(id, car) +
       gaSec(id, car) +
+      reCarSec(id, car) +
       carWartSec(id, car) +
       reifenSec(id, car) +
       brSec(id, car) +
@@ -4344,6 +4362,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       h += '<p class="help">Recherche von Claude' + (isDay(x.stand) ? ', Stand ' + datum(x.stand) : '') + '. Preise ändern sich, vor dem Bestellen prüfen.</p>';
     }
     h += kvaSec(id, r);
+    h += reSec(id, r);
     var st = open && (r.anfrage || !x) ? researchStatus() : null;
     h += (S.rMsg && open ? '<p class="rstat ' + S.rMsg.kind + '" role="status">' + esc(S.rMsg.text) + '</p>' : st ? '<p class="rstat ' + st.kind + '">' + esc(st.text) + '</p>' : '') +
       '<p class="err" id="rep-err" role="alert"></p><div class="sh-foot">' +
@@ -7654,6 +7673,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         (KL_ON ? '<button type="button" class="btn ghost" data-act="kd-paste">Daten aus Nachricht</button>' : '') + '</div>';
       if (KL_ON) h += '<p class="help">Mit dem Link trägt der Kunde seine Daten und die seines Autos selbst ein und schickt sie dir per WhatsApp oder E-Mail. Tippst du in seiner Nachricht auf den Link, übernimmt die App alles nach deiner Kontrolle.</p>';
     }
+    h += keListSec();
     h += '<div class="sh-sec"><h3 class="sec">Kunden · ' + list.length + '</h3>' + (list.length ? '<ul class="works kl">' + list.map(function (p) {
       var k = p[1], cars = kundeCars(p[0]).filter(function (c) { return !c[1].archiviert; });
       var sub = cars.map(function (c) { return String(c[1].name || 'Auto') + (c[1].kennzeichen ? ' (' + c[1].kennzeichen + ')' : ''); }).join(', ');
@@ -7703,6 +7723,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var r = p[1], due = repDue(r);
       return '<li><button type="button" class="wbtn" data-act="open-rep" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(r.titel) + '<small>' + esc(carName(r.fahrzeug) + (due ? ' · fällig bis ' + due : '')) + '</small></span></button></li>';
     }).join('') + '</ul>' : '<p class="note">Nichts offen.</p>') + '</div>';
+    h += keSec(id, k) + reKundeSec(id);
     h += '<div class="tot"><div><span>Erledigte Arbeiten</span><b>' + nWork + '</b></div><div><span>Summe</span><b>' + esc(eur(sum)) + '</b></div></div>';
     if (k.einwilligung && isDay(String(k.einwilligung.am || '').slice(0, 10))) h += '<p class="help">' + esc('Einverständnis zur Speicherung über das Formular am ' + datum(String(k.einwilligung.am).slice(0, 10)) + '.') + '</p>';
     h += '<p class="err" id="sh-err" role="alert"></p><div class="sh-foot">' + (can ? '<button type="button" class="btn ghost" data-act="kunde-edit" data-id="' + esc(id) + '">Bearbeiten</button>' : '') +
@@ -7952,6 +7973,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       t: typeof o.t === 'string' && !isNaN(Date.parse(o.t)) ? o.t : null,
       k: kOne(o.k, 40).replace(/[^A-Za-z0-9_-]/g, ''),
       ok: o.ok === true,
+      eri: o.eri === true,
       p: { n: kOne(o.p.n, 80), tel: kOne(o.p.tel, 30), mail: kOne(o.p.mail, 120), adr: kOne(o.p.adr, 160) },
       f: { ma: kOne(f.ma, 40), mo: kOne(f.mo, 60), kz: kOne(f.kz, 15).toUpperCase(), fin: kOne(f.fin, 20).toUpperCase().replace(/[^A-Z0-9]/g, ''),
         ez: /^\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?$/.test(f.ez || '') ? f.ez : '', km: int(f.km, 3000000), ccm: int(f.ccm, 20000), kw: int(f.kw, 2000),
@@ -8089,6 +8111,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         (d.a.txt ? '<label class="check"><input type="checkbox" id="ki-rep" checked><span>Unter „Anstehend“ beim Auto eintragen</span></label>' : '') + '</div>';
     }
     h += (d.ok ? '<p class="help">Der Kunde hat im Formular der Speicherung seiner Angaben zugestimmt.</p>' : '') +
+      (d.eri ? '<p class="help">Im Formular angehakt: Erinnerungen an Pickerl, Service und Reifenwechsel.</p>' : '') +
       '<p class="err" id="ki-err" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Übernehmen</button><button type="button" class="btn ghost" data-act="close">Verwerfen</button></div></form>';
     return h;
   }
@@ -8123,10 +8146,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         var kp = { geaendert: now, letztesFormular: d.t || now };
         KD_K.forEach(function (x) { if (on['k.' + x.k] && x.v(d)) kp[x.f] = x.v(d); });
         if (einw) kp.einwilligung = einw;
+        if (d.eri) kp.erinnerung = { ja: true, am: d.t || now, ueber: 'formular' };
         await write(function () { return S.db.doc('kunden/' + kid).update(kp); });
         S.kunden.set(kid, Object.assign({}, S.kunden.get(kid), kp));
       } else {
-        var kref = S.db.collection('kunden').doc(), kd = { name: d.p.n, telefon: on['k.tel'] ? d.p.tel || null : null, email: on['k.mail'] ? d.p.mail || null : null, adresse: on['k.adr'] ? d.p.adr || null : null, notiz: '', quelle: 'formular', erstellt: now, geaendert: now, letztesFormular: d.t || now, einwilligung: einw };
+        var kref = S.db.collection('kunden').doc(), kd = { name: d.p.n, telefon: on['k.tel'] ? d.p.tel || null : null, email: on['k.mail'] ? d.p.mail || null : null, adresse: on['k.adr'] ? d.p.adr || null : null, notiz: '', quelle: 'formular', erstellt: now, geaendert: now, letztesFormular: d.t || now, einwilligung: einw, erinnerung: d.eri ? { ja: true, am: d.t || now, ueber: 'formular' } : null };
         kid = kref.id;
         await write(function () { return kref.set(kd); });
         if (!S.kunden.has(kid)) S.kunden.set(kid, kd);
@@ -12381,6 +12405,582 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     toast(add.length === 1 ? 'Ein Angebot übernommen. Zustand, Anpassung und Screenshot ergänzen.' : add.length + ' Angebote übernommen. Zustand, Anpassung und Screenshot ergänzen.');
   }
   function userFocused(f) { var a = document.activeElement, sh = f && f.closest ? f.closest('#sheet') : null; return !!(a && a !== f && sh && a.closest && a.closest('#sheet') === sh && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)); }
+  /* ---------- Rechnung aus dem Kostenvoranschlag (§ 11 UStG, Kleinbetragsrechnung, Kleinunternehmen) ---------- */
+  var RE_Q = { quellen: [
+    { titel: 'Unternehmensserviceportal: Formerfordernisse einer Rechnung', url: 'https://www.usp.gv.at/themen/steuern-finanzen/umsatzsteuer-ueberblick/weitere-informationen-zur-umsatzsteuer/vorsteuerabzug-und-rechnung/formerfordernisse.html' },
+    { titel: 'Unternehmensserviceportal: Kleinbetragsrechnungen', url: 'https://www.usp.gv.at/themen/steuern-finanzen/umsatzsteuer-ueberblick/weitere-informationen-zur-umsatzsteuer/vorsteuerabzug-und-rechnung/kleinbetragsrechnungen.html' },
+    { titel: 'Unternehmensserviceportal: Kleinunternehmen (Regelung seit 1. Jänner 2025)', url: 'https://www.usp.gv.at/themen/steuern-finanzen/umsatzsteuer-ueberblick/weitere-informationen-zur-umsatzsteuer/weitere-steuertatbestaende-und-befreiungen/kleinunternehmen.html' },
+    { titel: 'WKO: Kleinunternehmerregelung Österreich, FAQ', url: 'https://www.wko.at/sbg/steuern/kleinunternehmerregelung-oesterreich-faq' }
+  ] };
+  var RE_ZIEL = [[0, 'Sofort (bar oder Karte)'], [7, 'In 7 Tagen'], [14, 'In 14 Tagen'], [30, 'In 30 Tagen']];
+  var RE_KLEIN = 'Umsatzsteuerfrei aufgrund der Kleinunternehmerregelung.';
+  function reOf(r) { var x = r && r.rechnung; return x && typeof x === 'object' && Array.isArray(x.pos) ? x : null; }
+  function reConf() {
+    var raw = S.kvaConf && typeof S.kvaConf === 'object' ? S.kvaConf : {};
+    return Object.assign(kvaConf(), { uid: kOne(raw.uid, 20), iban: kOne(raw.iban, 42), bic: kOne(raw.bic, 15) });
+  }
+  function reNextNr() {
+    var y = dayKey(new Date()).slice(0, 4), max = 0;
+    S.reps.forEach(function (r) { var x = reOf(r), m = x && /^R-(\d{4})-(\d+)$/.exec(String(x.nr || '')); if (m && m[1] === y) max = Math.max(max, Number(m[2])); });
+    return 'R-' + y + '-' + String(max + 1).padStart(3, '0');
+  }
+  function reNrTaken(nr, repId) {
+    var key = String(nr || '').trim().toLowerCase(), hit = false;
+    S.reps.forEach(function (r, id) { var x = reOf(r); if (!hit && id !== repId && x && String(x.nr || '').trim().toLowerCase() === key) hit = true; });
+    return hit;
+  }
+  function reDue(x) { var z = numOrNull(x && x.ziel); return x && isDay(x.datum) && z !== null && z > 0 ? addDays(x.datum, z) : null; }
+  function reStatus(x) {
+    if (isDay(x.bezahlt)) return { k: 'ok', chip: 'bezahlt', t: 'bezahlt am ' + datum(x.bezahlt) };
+    var d = reDue(x);
+    if (d && d < dayKey(new Date())) return { k: 'faellig', chip: 'überfällig', t: 'fällig seit ' + datum(d) };
+    return { k: 'bald', chip: 'offen', t: d ? 'zahlbar bis ' + datum(d) : 'offen' };
+  }
+  function reLeistung(x) { return isDay(x.leistungVon) ? datum(x.leistungVon) + (isDay(x.leistungBis) && x.leistungBis !== x.leistungVon ? ' bis ' + datum(x.leistungBis) : '') : ''; }
+  function reIbanFmt(s) { return String(s || '').replace(/\s+/g, '').toUpperCase().replace(/(.{4})/g, '$1 ').trim(); }
+  /* Was laut Unternehmensserviceportal auf die Rechnung muss. Kleinbetragsrechnung: bis 400 € brutto oder als Kleinunternehmen. */
+  function reCheck(pos, ust, kunde, conf, leistung) {
+    var t = kvaTotals(pos, ust), klein = ust === 'klein' || t.brutto <= 400, miss = [];
+    if (!conf.name) miss.push('dein Name oder der Name der Werkstatt');
+    if (!conf.adresse) miss.push('deine Adresse');
+    if (!leistung) miss.push('das Leistungsdatum');
+    if (!klein) {
+      if (!kunde || !kunde.name) miss.push('der Name des Kunden');
+      if (!kunde || !kunde.adresse) miss.push('die Adresse des Kunden');
+      if (!conf.uid) miss.push('deine UID-Nummer');
+    }
+    return { t: t, klein: klein, miss: miss, gross: t.brutto > 10000 };
+  }
+  function reCheckHtml(c, ust) {
+    var h = '<p class="re-art"><b>' + esc(c.klein ? 'Kleinbetragsrechnung' : 'Rechnung über 400 €') + '</b> ' +
+      esc(c.klein ? (ust === 'klein' ? 'Als Kleinunternehmen darfst du die vereinfachte Rechnung auch über 400 € ausstellen: Name und Adresse des Kunden, die fortlaufende Nummer und die UID-Nummer dürfen fehlen. Der Hinweis auf die Steuerbefreiung muss draufstehen, die App setzt ihn ein.'
+        : 'Bis 400 € brutto dürfen Name und Adresse des Kunden, die fortlaufende Nummer und die UID-Nummer fehlen. Die App setzt sie trotzdem ein, wenn sie da sind.')
+        : 'Pflicht sind Name und Adresse von dir und vom Kunden, Menge und Bezeichnung der Leistung, Leistungsdatum, Entgelt, Steuersatz und Steuerbetrag, Ausstellungsdatum, fortlaufende Nummer und deine UID-Nummer.') +
+      srcRefs(RE_Q, c.klein ? (ust === 'klein' ? [2, 4] : [2]) : [1]) + '</p>';
+    h += c.miss.length ? '<p class="re-miss">' + esc('Es fehlt noch: ' + c.miss.join(', ') + '.') + '</p>' : '<p class="re-ok">Alle Pflichtangaben sind da.</p>';
+    if (c.gross) h += '<p class="help">' + esc('Ist der Kunde ein Unternehmen, gehört ab 10.000 € auch seine UID-Nummer auf die Rechnung.') + srcRefs(RE_Q, [1]) + '</p>';
+    return h;
+  }
+  /* Abschnitt im Eintrag unter „Anstehend“ (nur Kundenautos) */
+  function reSec(id, r) {
+    var car = S.cars.get(r.fahrzeug);
+    if (!car || !car.fremd) return '';
+    var x = reOf(r), can = canWrite();
+    if (!x) {
+      if (r.status === 'verworfen') return '';
+      return '<div class="sh-sec re-sec"><h3 class="sec">Rechnung</h3><p class="note">' + esc(kvaOf(r) ? 'Positionen aus dem Kostenvoranschlag übernehmen, die tatsächlichen Stunden eintragen und als PDF schicken.' : 'Teile und Arbeitszeit eintragen und als PDF schicken.') + '</p>' +
+        (can ? '<div class="kva-act"><button type="button" class="btn small" data-act="re-open" data-id="' + esc(id) + '">Rechnung erstellen</button></div>' : '') + '</div>';
+    }
+    var t = kvaTotals(kvaPos(x), x.ust), st = reStatus(x);
+    return '<div class="sh-sec re-sec"><h3 class="sec">Rechnung</h3><div class="kva-card"><b>' + esc('Nr. ' + (x.nr || '–') + ' · ' + eur(t.brutto)) + '</b><span>' +
+      esc([isDay(x.datum) ? 'vom ' + datum(x.datum) : '', st.t].filter(Boolean).join(' · ')) + '</span></div>' +
+      '<div class="kva-act">' + (S.dl ? '<button type="button" class="btn small" data-act="re-pdf" data-id="' + esc(id) + '" aria-label="Rechnung als PDF">PDF</button>' : '') +
+      (can ? '<button type="button" class="btn ghost small" data-act="re-open" data-id="' + esc(id) + '" aria-label="Rechnung bearbeiten">Bearbeiten</button>' : '') +
+      (can && !isDay(x.bezahlt) ? '<button type="button" class="btn ghost small" data-act="re-paid" data-id="' + esc(id) + '">Bezahlt</button>' : '') + '</div></div>';
+  }
+  /* Abrechnung im Auto und beim Kunden: Rechnungen und erledigte Arbeiten der letzten 90 Tage ohne Rechnung */
+  function reBills(carIds) {
+    var list = [], cut = addDays(dayKey(new Date()), -90);
+    S.reps.forEach(function (r, rid) {
+      if (!r || carIds.indexOf(r.fahrzeug) < 0) return;
+      var x = reOf(r);
+      if (x || (r.status === 'erledigt' && String(r.erledigtAm || '').slice(0, 10) >= cut)) list.push([rid, r, x]);
+    });
+    var rank = function (p) { return p[2] ? (isDay(p[2].bezahlt) ? 2 : 0) : 1; };
+    var when = function (p) { return String((p[2] && p[2].datum) || p[1].erledigtAm || ''); };
+    return list.sort(function (a, b) { return rank(a) - rank(b) || when(b).localeCompare(when(a)); });
+  }
+  function reListHtml(list, showCar) {
+    return '<ul class="works">' + list.slice(0, 10).map(function (p) {
+      var r = p[1], x = p[2], t = x ? kvaTotals(kvaPos(x), x.ust) : null, st = x ? reStatus(x) : null;
+      var sub = x ? [x.nr, eur(t.brutto), st.t] : ['erledigt' + (r.erledigtAm ? ' am ' + datum(String(r.erledigtAm).slice(0, 10)) : ''), 'noch keine Rechnung'];
+      if (showCar) sub.unshift(carName(r.fahrzeug));
+      return '<li><button type="button" class="wbtn" data-act="open-rep" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(r.titel) + '<small>' + esc(sub.join(' · ')) + '</small></span><span class="i-p">' +
+        (x ? '<span class="wst ' + st.k + '">' + esc(st.chip) + '</span>' : '<span class="wst plan">ohne Rechnung</span>') + '</span></button></li>';
+    }).join('') + '</ul>';
+  }
+  function reOpenSum(list) { var o = list.filter(function (p) { return p[2] && !isDay(p[2].bezahlt); }); return { n: o.length, sum: round2(o.reduce(function (a, p) { return a + kvaTotals(kvaPos(p[2]), p[2].ust).brutto; }, 0)) }; }
+  function reCarSec(id, car) {
+    if (!car.fremd || car.archiviert) return '';
+    var list = reBills([id]);
+    if (!list.length) return '';
+    var o = reOpenSum(list);
+    return '<div class="sh-sec"><h3 class="sec">' + esc('Abrechnung' + (o.n ? ' · ' + o.n + ' offen' : '')) + '</h3>' + reListHtml(list, false) + '</div>';
+  }
+  function reKundeSec(kid) {
+    var ids = kundeCars(kid).map(function (c) { return c[0]; }), list = reBills(ids);
+    if (!list.length) return '';
+    var o = reOpenSum(list);
+    return '<div class="sh-sec"><h3 class="sec">' + esc('Rechnungen' + (o.n ? ' · ' + o.n + ' offen, ' + eur(o.sum) : '')) + '</h3>' + reListHtml(list, ids.length > 1) + '</div>';
+  }
+  /* Formular */
+  function reRow(p, i) {
+    var nv = function (v) { return numOrNull(v) === null ? '' : nfIn.format(v); }, pv = function (v) { return numOrNull(v) === null ? '' : nfPrice.format(v); };
+    var e = KVA_EH.indexOf(p.e) >= 0 ? p.e : 'Stk', kv = numOrNull(p.kv);
+    return '<div class="kvp" data-i="' + i + '"' + (kv !== null ? ' data-kv="' + kv + '"' : '') + '><div class="kvp-h"><span class="kvp-n">Position ' + (i + 1) + '</span><span class="kvp-s" id="rp-s' + i + '"></span>' +
+      '<button type="button" class="kvp-x" data-act="re-rm" data-i="' + i + '" aria-label="' + esc('Position ' + (i + 1) + ' entfernen') + '">×</button></div>' +
+      '<label class="f"><span class="vh">' + esc('Beschreibung Position ' + (i + 1)) + '</span><input id="rp-t' + i + '" value="' + esc(p.t || '') + '" maxlength="120" placeholder="z. B. Bremsscheiben vorne" autocomplete="off"></label>' +
+      '<div class="kvp-g"><label class="f"><span>Menge</span><input id="rp-m' + i + '" inputmode="decimal" value="' + nv(p.m) + '" autocomplete="off"></label>' +
+      '<label class="f"><span>Einheit</span><select id="rp-e' + i + '">' + KVA_EH.map(function (u) { return '<option' + (u === e ? ' selected' : '') + '>' + u + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Einzelpreis (€)</span><input id="rp-p' + i + '" inputmode="decimal" value="' + pv(p.p) + '" autocomplete="off"></label></div>' +
+      (kv !== null && e === 'h' ? '<small class="re-est">' + esc('Im Kostenvoranschlag: ' + nf.format(kv) + ' h. Trag hier die tatsächliche Arbeitszeit ein.') + '</small>' : '') + '</div>';
+  }
+  function reRead() {
+    return $$('#reform .kvp').map(function (row) {
+      var i = row.dataset.i, g = function (k) { var el = $('#rp-' + k + i); return el ? el.value.trim() : ''; };
+      return { t: g('t').slice(0, 120), m: parseNum(g('m')), e: g('e'), p: parseNum(g('p')), kv: row.dataset.kv ? Number(row.dataset.kv) : null };
+    });
+  }
+  function reRows(pos) { var box = $('#re-rows'); if (box) box.innerHTML = pos.map(reRow).join(''); reUpdate(); }
+  function reFormConf() {
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    return { name: g('re-an'), adresse: g('re-aa'), uid: g('re-uid') };
+  }
+  function reUpdate() {
+    var s = S.sheet;
+    if (!s || s.type !== 're') return;
+    var pos = reRead(), ust = ($('#re-ust') || {}).value || 'inkl', ok = function (v) { return v !== null && !isNaN(v); };
+    pos.forEach(function (p, i) { var el = $('#rp-s' + i); if (el) el.textContent = ok(p.m) && ok(p.p) ? eur(round2(p.m * p.p)) : ''; });
+    var good = pos.filter(function (p) { return ok(p.m) && ok(p.p); }), t = kvaTotals(good, ust), el = $('#re-sum');
+    if (el) {
+      el.innerHTML = (ust === 'klein' ? '' : '<div><span>Netto</span><b>' + esc(eur(t.netto)) + '</b></div><div><span>20 % USt</span><b>' + esc(eur(t.ust)) + '</b></div>') +
+        '<div class="kva-tot"><span>Gesamtbetrag</span><b>' + esc(eur(t.brutto)) + '</b></div>' +
+        (ust === 'klein' ? '<div><span>' + esc(RE_KLEIN) + '</span></div>' : '') +
+        (pos.some(function (p) { return p.t && !ok(p.p); }) ? '<div><span>Positionen ohne Preis zählen nicht mit. Auf der Rechnung braucht jede Position einen Preis.</span></div>' : '');
+    }
+    var r = S.reps.get(s.id), car = r ? S.cars.get(r.fahrzeug) : null, ce = $('#re-chk');
+    if (ce) ce.innerHTML = reCheckHtml(reCheck(good, ust, car ? kundeOf(car) : null, reFormConf(), isDay(($('#re-lv') || {}).value || '')), ust);
+    var bz = $('#re-bezd-f'), bc = $('#re-bez');
+    if (bz && bc) bz.hidden = !bc.checked;
+  }
+  function openRe(repId) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var r = S.reps.get(repId), car = r ? S.cars.get(r.fahrzeug) : null;
+    if (!r || !car) { toast('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var conf = reConf(), x = reOf(r), k = kvaOf(r), kunde = kundeOf(car), today = dayKey(new Date()), pos, help;
+    if (x) { pos = kvaPos(x); help = ''; }
+    else if (k) { pos = kvaPos(k).map(function (p) { return { t: p.t, m: p.m, e: p.e, p: p.p, kv: p.e === 'h' ? numOrNull(p.m) : null }; }); help = 'Übernommen aus dem Kostenvoranschlag Nr. ' + (k.nr || '–') + '. Bei den Stunden die tatsächliche Arbeitszeit eintragen.'; }
+    else { pos = kvaPrefill(r, conf); help = 'Vorschlag aus der Recherche: Teile mit dem ersten Angebot mit Preis, Arbeitszeit mit dem oberen Wert der Schätzung. Alles lässt sich ändern.'; }
+    if (!pos.length) pos = [{ t: '', m: 1, e: 'Stk', p: null }];
+    var ust = x ? (KVA_UST[x.ust] ? x.ust : 'inkl') : k && KVA_UST[k.ust] ? k.ust : conf.ust;
+    var done = String(r.erledigtAm || '').slice(0, 10), lv = x && isDay(x.leistungVon) ? x.leistungVon : isDay(done) ? done : today;
+    var ziel = x && numOrNull(x.ziel) !== null ? num(x.ziel) : 14, bez = !!(x && isDay(x.bezahlt));
+    var shv = conf.stundensatz === null ? '' : nfPrice.format(conf.stundensatz), absOpen = !conf.name || !conf.adresse;
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Rechnung · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title' + (String(r.titel).length > 26 ? ' long' : '') + '" id="sheet-title">' + esc(r.titel) + '</h2>' +
+      '<p class="buy">' + esc(kunde ? 'An ' + kunde.name + (kunde.adresse ? ', ' + kunde.adresse : '') : 'Noch kein Kunde zugeordnet. Im Auto unter „Bearbeiten“ einen Kunden wählen, dann steht er auf der Rechnung.') + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="reform" novalidate>' +
+      '<div class="kva-row3"><label class="f"><span>Rechnungsnummer</span><input id="re-nr" value="' + esc(x ? x.nr || '' : reNextNr()) + '" maxlength="20" autocomplete="off"><small>Fortlaufend, jede Nummer nur einmal.</small></label>' +
+      '<label class="f"><span>Rechnungsdatum</span><input type="date" id="re-d" value="' + esc(x && isDay(x.datum) ? x.datum : today) + '"></label>' +
+      '<label class="f"><span>Leistungsdatum</span><input type="date" id="re-lv" value="' + esc(lv) + '"></label></div>' +
+      '<label class="f"><span>Bis <span class="muted">(nur bei mehreren Tagen)</span></span><input type="date" id="re-lb" value="' + esc(x && isDay(x.leistungBis) ? x.leistungBis : '') + '"></label>' +
+      '<h3 class="sec">Positionen</h3>' + (help ? '<p class="help">' + esc(help) + '</p>' : '') +
+      '<div id="re-rows">' + pos.map(reRow).join('') + '</div>' +
+      '<button type="button" class="linkbtn" data-act="re-add">+ Position</button>' +
+      '<label class="f kva-sh"><span>Stundensatz (€)</span><input id="re-sh" inputmode="decimal" value="' + shv + '" data-prev="' + shv + '" placeholder="z. B. 50" autocomplete="off"><small>Gilt für Positionen in Stunden ohne eigenen Preis und wird gemerkt.</small></label>' +
+      '<label class="f"><span>Umsatzsteuer</span><select id="re-ust">' + Object.keys(KVA_UST).map(function (u) { return '<option value="' + u + '"' + (u === ust ? ' selected' : '') + '>' + esc(KVA_UST[u]) + '</option>'; }).join('') + '</select>' +
+      '<small>Als Kleinunternehmen keine Umsatzsteuer ausweisen; wer sie trotzdem ausweist, schuldet sie dem Finanzamt.' + srcRefs(RE_Q, [3]) + '</small></label>' +
+      '<div class="kva-sum" id="re-sum" aria-live="polite"></div>' +
+      '<div class="re-chk" id="re-chk" aria-live="polite"></div>' +
+      '<label class="f"><span>Zahlungsziel</span><select id="re-ziel">' + RE_ZIEL.map(function (z) { return '<option value="' + z[0] + '"' + (z[0] === ziel ? ' selected' : '') + '>' + esc(z[1]) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="check"><input type="checkbox" id="re-bez"' + (bez ? ' checked' : '') + '><span>Schon bezahlt</span></label>' +
+      '<label class="f" id="re-bezd-f"' + (bez ? '' : ' hidden') + '><span>Bezahlt am</span><input type="date" id="re-bezd" value="' + esc(bez ? x.bezahlt : today) + '"></label>' +
+      '<label class="f"><span>Bemerkung</span><textarea id="re-bem" rows="2" maxlength="400" placeholder="z. B. Altteile wurden entsorgt">' + esc(x ? x.bem || '' : '') + '</textarea></label>' +
+      '<details class="kva-abs"' + (absOpen ? ' open' : '') + '><summary>Absender und Bankverbindung' + (conf.name ? ': ' + esc(conf.name) : '') + '</summary><div class="kva-absb">' +
+      '<label class="f"><span>Name oder Werkstatt</span><input id="re-an" value="' + esc(conf.name) + '" maxlength="80" autocomplete="off"></label>' +
+      '<label class="f"><span>Adresse</span><textarea id="re-aa" rows="2" maxlength="200">' + esc(conf.adresse) + '</textarea></label>' +
+      '<div class="row2"><label class="f"><span>Telefon</span><input id="re-at" value="' + esc(conf.telefon) + '" maxlength="40" inputmode="tel" autocomplete="off"></label>' +
+      '<label class="f"><span>E-Mail</span><input id="re-ae" value="' + esc(conf.email) + '" maxlength="120" inputmode="email" autocomplete="off"></label></div>' +
+      '<label class="f"><span>UID-Nummer <span class="muted">(falls vorhanden)</span></span><input id="re-uid" value="' + esc(conf.uid) + '" maxlength="20" autocomplete="off" placeholder="ATU…"></label>' +
+      '<div class="row2"><label class="f"><span>IBAN</span><input id="re-iban" value="' + esc(conf.iban) + '" maxlength="42" autocomplete="off" spellcheck="false"></label>' +
+      '<label class="f"><span>BIC <span class="muted">(optional)</span></span><input id="re-bic" value="' + esc(conf.bic) + '" maxlength="15" autocomplete="off" spellcheck="false"></label></div>' +
+      '<p class="help">Gilt auch für den Kostenvoranschlag. Die IBAN steht nur auf Rechnungen mit Zahlungsziel.</p></div></details>' +
+      '<p class="help">Hinweis: Das ersetzt keine Steuerberatung.</p>' +
+      '<p class="err" id="re-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
+      (S.dl ? '<button type="button" class="btn ghost" data-act="re-save-pdf">Speichern und PDF</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="open-rep" data-id="' + esc(repId) + '">Zurück</button></div></form>';
+    openSheet('re', { id: repId }, h);
+    reUpdate();
+  }
+  async function saveRe(andPdf) {
+    var s = S.sheet;
+    if (!s || s.type !== 're' || S.busy) return;
+    var r = S.reps.get(s.id), err = function (m) { var el = $('#re-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    if (!r) { err('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var pos = reRead().filter(function (p) { return p.t || p.p !== null; });
+    if (!pos.length) { err('Bitte mindestens eine Position eintragen.'); return; }
+    for (var i = 0; i < pos.length; i++) {
+      var p = pos[i];
+      if (!p.t) { err('Position ' + (i + 1) + ': Bitte eine Beschreibung eintragen.'); return; }
+      if (p.m === null || isNaN(p.m) || p.m <= 0) { err('Position ' + (i + 1) + ': Bitte die Menge als Zahl eintragen, z. B. 1 oder 2,5.'); return; }
+      if (p.p === null || isNaN(p.p) || p.p < 0) { err('Position ' + (i + 1) + ': Auf der Rechnung braucht jede Position einen Preis, z. B. 89,90.'); return; }
+      pos[i] = { t: p.t, m: round3(p.m), e: KVA_EH.indexOf(p.e) >= 0 ? p.e : 'Stk', p: round2(p.p) };
+    }
+    var nr = g('re-nr').slice(0, 20), d = g('re-d'), lv = g('re-lv'), lb = g('re-lb'), sh = parseNum(g('re-sh')), bez = !!(($('#re-bez') || {}).checked), bd = g('re-bezd');
+    if (!nr) { err('Bitte eine Rechnungsnummer eintragen.'); return; }
+    if (reNrTaken(nr, s.id)) { err('Die Nummer ' + nr + ' ist schon vergeben. Jede Rechnungsnummer darf nur einmal vorkommen.'); return; }
+    if (!isDay(d)) { err('Bitte das Rechnungsdatum eintragen.'); return; }
+    if (!isDay(lv)) { err('Bitte das Leistungsdatum eintragen, also wann die Arbeit gemacht wurde.'); return; }
+    if (lb && (!isDay(lb) || lb < lv)) { err('„Bis“ muss nach dem Leistungsdatum liegen.'); return; }
+    if (sh !== null && (isNaN(sh) || sh < 0)) { err('Den Stundensatz bitte als Zahl eintragen, z. B. 50.'); return; }
+    if (bez && !isDay(bd)) { err('Bitte eintragen, wann bezahlt wurde.'); return; }
+    var iban = g('re-iban').toUpperCase().replace(/\s+/g, ''), uid = g('re-uid').toUpperCase().replace(/\s+/g, ''), bic = g('re-bic').toUpperCase().replace(/\s+/g, '');
+    if (iban && !/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(iban)) { err('Die IBAN sieht nicht vollständig aus, z. B. AT61 1904 3002 3457 3201.'); return; }
+    if (bic && !/^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(bic)) { err('Der BIC hat 8 oder 11 Zeichen, z. B. BKAUATWW.'); return; }
+    var zi = Number(g('re-ziel')), ust = KVA_UST[g('re-ust')] ? g('re-ust') : 'inkl', now = new Date().toISOString(), old = reOf(r), k = kvaOf(r);
+    var x = { nr: nr, datum: d, leistungVon: lv, leistungBis: lb && lb !== lv ? lb : null, ust: ust, pos: pos, ziel: RE_ZIEL.some(function (z) { return z[0] === zi; }) ? zi : 14,
+      bezahlt: bez ? bd : null, bem: g('re-bem').slice(0, 400), kva: old ? old.kva || null : k ? k.nr || null : null, erstellt: old && old.erstellt ? old.erstellt : now, geaendert: now };
+    var conf = { name: g('re-an').slice(0, 80) || null, adresse: g('re-aa').slice(0, 200) || null, telefon: g('re-at').slice(0, 40) || null, email: g('re-ae').slice(0, 120) || null,
+      uid: uid.slice(0, 20) || null, iban: iban ? reIbanFmt(iban) : null, bic: bic || null, stundensatz: sh === null ? null : round2(sh) };
+    var prev = S.kvaConf || {}, same = Object.keys(conf).every(function (q) { return (prev[q] == null ? null : prev[q]) === conf[q]; });
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('reparaturen/' + s.id).update({ rechnung: x, geaendert: now }); });
+      S.reps.set(s.id, Object.assign({}, S.reps.get(s.id) || r, { rechnung: x, geaendert: now }));
+      if (!same) {
+        var had = !!S.kvaConf;
+        try { await write(function () { var ref = S.db.doc('meta/kva'); return had ? ref.update(conf) : ref.set(Object.assign({ ust: ust }, conf)); }); S.kvaConf = Object.assign({}, S.kvaConf || {}, conf); } catch (_) {}
+      }
+      setBusy(false);
+      openRep(s.id); renderAll();
+      toast('Rechnung ' + x.nr + ' gespeichert.');
+      if (andPdf) await saveRePdf(s.id);
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  async function rePaid(id) {
+    var r = S.reps.get(id), x = reOf(r);
+    if (!x || !canWrite() || S.busy) return;
+    var now = new Date().toISOString(), nx = Object.assign({}, x, { bezahlt: dayKey(new Date()), geaendert: now });
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('reparaturen/' + id).update({ rechnung: nx, geaendert: now }); });
+      S.reps.set(id, Object.assign({}, S.reps.get(id) || r, { rechnung: nx, geaendert: now }));
+      setBusy(false);
+      refreshSheet(); renderAll();
+      toast('Rechnung ' + x.nr + ' ist als bezahlt vermerkt.');
+    } catch (e) { writeError(e, function (m) { var el = $('#rep-err'); if (el) el.textContent = m; else toast(m); }); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Stundensatz ändert Stunden-Positionen mit leerem oder bisherigem Preis */
+  function reShInput(t) {
+    var nv = parseNum(t.value.trim()), old = parseNum(t.dataset.prev || '');
+    $$('#reform .kvp').forEach(function (row) {
+      var i = row.dataset.i, e = $('#rp-e' + i), p = $('#rp-p' + i);
+      if (!e || !p || e.value !== 'h') return;
+      var cur = parseNum(p.value.trim());
+      if (cur === null || (old !== null && !isNaN(old) && cur !== null && !isNaN(cur) && Math.abs(cur - old) < 0.005)) p.value = nv === null || isNaN(nv) ? '' : nfPrice.format(nv);
+    });
+    t.dataset.prev = t.value.trim();
+    reUpdate();
+  }
+  function reInput(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 're' || !t || !t.id) return false;
+    if (t.id === 're-sh') { reShInput(t); return true; }
+    if (/^rp-[mp]\d+$/.test(t.id) || /^re-(an|aa|uid|lv)$/.test(t.id)) { reUpdate(); return true; }
+    return false;
+  }
+  function reChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 're' || !t) return false;
+    if (t.id === 're-ust' || t.id === 're-bez' || t.id === 're-lv' || /^rp-e\d+$/.test(t.id || '')) { reUpdate(); return true; }
+    return false;
+  }
+  function reAdd() {
+    var pos = reRead();
+    pos.push({ t: '', m: 1, e: 'Stk', p: null });
+    reRows(pos);
+    var el = $('#rp-t' + (pos.length - 1));
+    if (el) { try { el.focus(); } catch (_) {} }
+  }
+  function reRm(i) {
+    var pos = reRead();
+    pos.splice(Number(i), 1);
+    if (!pos.length) pos.push({ t: '', m: 1, e: 'Stk', p: null });
+    reRows(pos);
+    var b = $('[data-act="re-add"]');
+    if (b) { try { b.focus(); } catch (_) {} }
+  }
+  /* PDF */
+  function rePdf(lib, r, car, kunde, x, conf) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, M = 18, X1 = W - M, BOT = H - 22, y = M, PT = 0.3528;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243] };
+    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/[^\u0000-ÿ€„“”‘’–—…•]/g, '?'); };
+    var txt = function (s, xx, yy, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), xx, yy, o); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.3; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    var need = function (hh) { if (y + hh > BOT) { doc.addPage(); y = M; return true; } return false; };
+    var lines = function (s) { return String(s || '').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean); };
+    var due = reDue(x), paid = isDay(x.bezahlt), pos = kvaPos(x), t = kvaTotals(pos, x.ust), k = kvaOf(r);
+    doc.setLineHeightFactor(1.3);
+    doc.setProperties({ title: 'Rechnung ' + (x.nr || ''), subject: String(r.titel || ''), creator: 'Werkstatt-Inventar' });
+    // Kopf: Titel und Angaben links, Absender rechts
+    f('bold', 20); tc(C.ink); txt('Rechnung', M, y + 7);
+    var ly = y + 12.5;
+    [['Nummer', x.nr || '–'], ['Rechnungsdatum', datum(x.datum) || '–'], [isDay(x.leistungBis) && x.leistungBis !== x.leistungVon ? 'Leistungszeitraum' : 'Leistungsdatum', reLeistung(x) || '–']]
+      .concat(!paid && due ? [['Zahlbar bis', datum(due)]] : []).forEach(function (p) {
+        f('normal', 9.5); tc(C.mut); txt(p[0], M, ly + 3.5); tc(C.ink); f('bold', 9.5); txt(p[1], M + 32, ly + 3.5); ly += lh(9.5) + 0.4;
+      });
+    var ry = y;
+    if (conf.name) { f('bold', 11); tc(C.ink); txt(split(conf.name, 78)[0], X1, ry + 4.5, { align: 'right' }); ry += 6; }
+    f('normal', 9); tc(C.mut);
+    lines(conf.adresse).concat(conf.telefon ? ['Tel. ' + conf.telefon] : [], conf.email ? [conf.email] : [], conf.uid ? ['UID ' + conf.uid] : []).forEach(function (l) { txt(split(l, 78)[0], X1, ry + 3.5, { align: 'right' }); ry += lh(9); });
+    y = Math.max(ly, ry) + 8;
+    if (kunde) {
+      f('normal', 8.5); tc(C.mut); txt('Rechnung an', M, y + 3); y += 4.6;
+      f('bold', 10.5); tc(C.ink); txt(split(kunde.name || '', 110)[0], M, y + 4); y += 5.4;
+      f('normal', 9.5);
+      lines(kunde.adresse).forEach(function (l) { txt(split(l, 110)[0], M, y + 3.6); y += lh(9.5); });
+      y += 5;
+    }
+    var fz = [car.name || 'Auto', car.kennzeichen ? 'Kennzeichen ' + car.kennzeichen : '', car.fin ? 'FIN ' + car.fin : '', numOrNull(car.km) !== null ? nf.format(num(car.km)) + ' km' : ''].filter(Boolean).join(' · ');
+    f('normal', 9.5); var fzl = split(fz, X1 - M - 8), bh = 8.6 + fzl.length * lh(9.5);
+    fc(C.soft); doc.roundedRect(M, y, X1 - M, bh, 2, 2, 'F');
+    f('normal', 8.5); tc(C.mut); txt('Fahrzeug', M + 4, y + 4.8);
+    f('normal', 9.5); tc(C.ink); txt(fzl, M + 4, y + 9.3);
+    y += bh + 7;
+    f('bold', 13); tc(C.ink); var bt = split(String(r.titel || ''), X1 - M); txt(bt, M, y + 4.6); y += bt.length * lh(13) + 4;
+    var cols = [{ t: 'Pos.', w: 11 }, { t: 'Bezeichnung', w: X1 - M - 11 - 22 - 27 - 27 }, { t: 'Menge', w: 22, r: true }, { t: 'Einzelpreis', w: 27, r: true }, { t: 'Betrag', w: 27, r: true }], pad = 1.6;
+    var hdr = function () { f('bold', 8.5); tc(C.mut); var xx = M; cols.forEach(function (cl) { txt(cl.t, cl.r ? xx + cl.w - pad : xx + pad, y + 4, cl.r ? { align: 'right' } : undefined); xx += cl.w; }); y += 6; dc(C.ink); doc.setLineWidth(0.4); doc.line(M, y, X1, y); y += 0.6; };
+    hdr();
+    pos.forEach(function (p, i) {
+      f('normal', 9.5);
+      var d = split(p.t, cols[1].w - 2 * pad), rh = d.length * lh(9.5) + 2 * pad + 0.6, m = numOrNull(p.m), pr = numOrNull(p.p);
+      if (need(rh)) hdr();
+      var yy = y + pad + lh(9.5) * 0.74, xx = M;
+      tc(C.mut); txt(String(i + 1), xx + pad, yy); xx += cols[0].w;
+      tc(C.ink); txt(d, xx + pad, yy); xx += cols[1].w;
+      txt(m === null ? '' : nf.format(m) + ' ' + (p.e || ''), xx + cols[2].w - pad, yy, { align: 'right' }); xx += cols[2].w;
+      txt(pr === null ? '' : eur(pr), xx + cols[3].w - pad, yy, { align: 'right' }); xx += cols[3].w;
+      txt(m === null || pr === null ? '' : eur(round2(m * pr)), xx + cols[4].w - pad, yy, { align: 'right' });
+      y += rh; dc(C.line); doc.setLineWidth(0.2); doc.line(M, y, X1, y);
+    });
+    var sx = X1 - 80;
+    var srow = function (lab, val, bold) { need(8); f(bold ? 'bold' : 'normal', bold ? 11.5 : 9.5); tc(C.ink); txt(lab, sx, y + 4.6); txt(val, X1 - pad, y + 4.6, { align: 'right' }); y += bold ? 7.6 : 6; };
+    y += 2;
+    if (x.ust !== 'klein') { srow('Entgelt (netto)', eur(t.netto)); srow('zuzüglich 20 % Umsatzsteuer', eur(t.ust)); }
+    need(10); dc(C.ink); doc.setLineWidth(0.4); doc.line(sx, y + 0.6, X1, y + 0.6); y += 1.2;
+    srow('Gesamtbetrag', eur(t.brutto), true);
+    if (x.ust === 'klein') { need(6); f('normal', 9); tc(C.ink); txt(RE_KLEIN, X1 - pad, y + 3.6, { align: 'right' }); y += 5.4; }
+    y += 6;
+    // Zahlung
+    var pay = [];
+    if (paid) pay.push('Betrag am ' + datum(x.bezahlt) + ' dankend erhalten.');
+    else if (!due) pay.push('Zahlbar sofort ohne Abzug.');
+    else if (!conf.iban) pay.push('Zahlbar bis ' + datum(due) + ' ohne Abzug.');
+    else {
+      pay.push('Bitte überweisen Sie den Betrag bis ' + datum(due) + ' ohne Abzug.');
+      pay.push('IBAN ' + conf.iban + (conf.bic ? ' · BIC ' + conf.bic : '') + (conf.name ? ' · lautend auf ' + conf.name : ''));
+      pay.push('Verwendungszweck: Rechnung ' + (x.nr || ''));
+    }
+    f('normal', 9.5);
+    var pl = []; pay.forEach(function (l) { pl = pl.concat(split(l, X1 - M - 10)); });
+    var ph = pl.length * lh(9.5) + 7;
+    need(ph + 4);
+    dc(C.ink); doc.setLineWidth(0.35); doc.roundedRect(M, y, X1 - M, ph, 1.5, 1.5, 'S');
+    tc(C.ink); txt(pl, M + 5, y + 5.4); y += ph + 5;
+    var extra = [];
+    if (x.kva && k && k.nr === x.kva) extra.push('Grundlage: Kostenvoranschlag Nr. ' + k.nr + (isDay(k.datum) ? ' vom ' + datum(k.datum) : '') + '.');
+    if (x.bem) extra.push(x.bem);
+    extra.push('Vielen Dank für Ihren Auftrag.');
+    extra.forEach(function (e) { f('normal', 9.5); var l = split(e, X1 - M); need(l.length * lh(9.5) + 2); tc(C.ink); txt(l, M, y + 3.6); y += l.length * lh(9.5) + 2.4; });
+    var n = doc.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 13, X1, H - 13);
+      txt('Rechnung Nr. ' + (x.nr || '') + (conf.name ? ' · ' + conf.name : '') + (conf.uid ? ' · UID ' + conf.uid : ''), M, H - 9);
+      txt('Seite ' + i + ' von ' + n, X1, H - 9, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveRePdf(repId) {
+    var r = S.reps.get(repId), car = r ? S.cars.get(r.fahrzeug) : null, x = reOf(r);
+    var err = function (m) { var el = $('#re-err') || $('#rep-err'); if (el) el.textContent = m; else toast(m); };
+    if (!r || !car || !x) { err('Erst die Rechnung speichern.'); return; }
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var blob;
+    try { blob = rePdf(lib, r, car, kundeOf(car), x, reConf()).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    var name = 'Rechnung ' + fileSafe(x.nr || '') + ' ' + fileSafe(car.name || 'Auto') + '.pdf';
+    try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
+  /* ---------- Erinnerungen an Kunden: nur mit Einverständnis (§ 174 TKG 2021) ---------- */
+  var KE_Q = { quellen: [
+    { titel: 'WKO: E-Mail-, Fax- und Telefonwerbung nach dem Telekommunikationsgesetz', url: 'https://www.wko.at/internetrecht/e-mail-fax-telefonwerbung-telekommunikationsgesetz-detail' }
+  ] };
+  var KE_WIE = { formular: 'über das Formular', muendlich: 'mündlich', schriftlich: 'schriftlich', nachricht: 'per Nachricht' };
+  var KE_RUHE = 30;
+  function keEin(k) { var e = k && k.erinnerung; return e && typeof e === 'object' && e.ja === true ? e : null; }
+  /* Fällige Punkte der Kundenautos: Pickerl, Wartung laut Plan, Reifenwechsel */
+  function keItems(kid) {
+    var k = S.kunden.get(kid), out = [], today = dayKey(new Date());
+    if (!k) return out;
+    kundeCars(kid).forEach(function (p) {
+      var cid = p[0], car = p[1];
+      if (car.archiviert) return;
+      var pk = pickerlInfo(car);
+      if (pk && pk.status !== 'ok') out.push({ key: 'pk-' + cid + '-' + pk.due, car: cid, s: 'Pickerl ' + ymTxt(pk.due),
+        t: 'Pickerl (§57a) fällig ' + ymTxt(pk.due) + (pk.neu ? ', möglich ab ' + ymTxt(pk.from) : ', möglich von ' + ymTxt(pk.from) + ' bis ' + ymTxt(pk.to)) });
+      wartRows(cid).forEach(function (r) {
+        if (!r.p || r.plan || !(r.status === 'faellig' || r.status === 'bald' || r.over)) return;
+        var now = r.status === 'faellig' || r.over, w = [];
+        if (!now && r.nextKm !== null && r.nextKm !== undefined) w.push('bei ' + kmTxt(r.nextKm, r.kmCa));
+        if (!now && isDay(r.nextD)) w.push('spätestens ' + fmtGenau(r.nextD, 'monat'));
+        out.push({ key: 'w-' + cid + '-' + r.p.id, car: cid, s: String(r.p.name), t: String(r.p.name) + ': ' + (now ? 'fällig' : 'bald fällig' + (w.length ? ' (' + w.join(', ') + ')' : '')) });
+      });
+      var rs = reifenSaison(car);
+      if (rs && rs.now) out.push({ key: 'rf-' + cid + '-' + rs.auf + '-' + today.slice(0, 4), car: cid, s: rs.title,
+        t: rs.title + (rs.auf === 'winter' ? ' (Winterreifenpflicht bei Schnee, Schneematsch oder Eis vom 1.11. bis 15.4.)' : '') });
+    });
+    var done = k.erinnert && typeof k.erinnert === 'object' ? k.erinnert : {};
+    return out.map(function (it) { var d = done[it.key]; it.am = isDay(d) ? d : null; it.ruhe = !!(it.am && dayNum(today) - dayNum(it.am) < KE_RUHE); return it; });
+  }
+  function keOffen(kid) { return keItems(kid).filter(function (it) { return !it.ruhe; }); }
+  function keText(kid, items) {
+    var k = S.kunden.get(kid) || {}, snd = wpSender(), vn = wpVorname(k), L = [], byCar = {}, order = [];
+    items.forEach(function (it) { if (!byCar[it.car]) { byCar[it.car] = []; order.push(it.car); } byCar[it.car].push(it); });
+    L.push('Hallo' + (vn ? ' ' + vn : '') + ', eine kurze Erinnerung:');
+    order.forEach(function (cid) {
+      var car = S.cars.get(cid) || {};
+      L.push('');
+      L.push((car.name || 'Dein Auto') + (car.kennzeichen ? ' (' + car.kennzeichen + ')' : '') + ':');
+      byCar[cid].forEach(function (it) { L.push('• ' + it.t); });
+    });
+    L.push('');
+    L.push('Sag Bescheid, wenn du einen Termin möchtest.');
+    L.push('');
+    L.push('Viele Grüße' + (snd.name ? '\n' + snd.name : ''));
+    L.push('');
+    L.push('Keine Erinnerungen mehr? Kurz zurückschreiben, dann höre ich damit auf.');
+    return L.join('\n');
+  }
+  function keLinks(kid, items) {
+    var k = S.kunden.get(kid) || {}, text = keText(kid, items), tk = telKey(k.telefon), mail = k.email ? String(k.email).trim() : '';
+    var names = []; items.forEach(function (it) { var n = carName(it.car); if (names.indexOf(n) < 0) names.push(n); });
+    return { text: text, wa: tk ? 'https://wa.me/' + tk + '?text=' + encodeURIComponent(text) : '', mail: 'mailto:' + (mail ? encodeURIComponent(mail) : '') + '?subject=' + encodeURIComponent('Erinnerung: ' + names.join(', ')) + '&body=' + encodeURIComponent(text), hasMail: !!mail };
+  }
+  function keSec(kid, k) {
+    var can = canWrite(), e = keEin(k), w = k.erinnerung && typeof k.erinnerung === 'object' ? k.erinnerung : null;
+    var h = '<div class="sh-sec ke-sec"><h3 class="sec">Erinnerungen</h3>';
+    if (!e) {
+      h += '<p class="note">' + esc(w && w.ja === false && isDay(w.widerrufen) ? 'Erinnerungen am ' + datum(w.widerrufen) + ' abbestellt.'
+        : 'An Pickerl, Service und Reifenwechsel erinnern geht nur mit Einverständnis: per Häkchen im Formular oder hier eingetragen, wenn die Zustimmung mündlich oder schriftlich kam.') + srcRefs(KE_Q, [1]) + '</p>';
+      if (can) h += '<div class="kva-act"><button type="button" class="btn ghost small" data-act="ke-ein" data-id="' + esc(kid) + '">Einverständnis eintragen</button></div>';
+      return h + '</div>';
+    }
+    var am = String(e.am || '').slice(0, 10), items = keItems(kid), open = items.filter(function (it) { return !it.ruhe; });
+    h += '<p class="help">' + esc('Einverstanden ' + (KE_WIE[e.ueber] || '') + (isDay(am) ? ' am ' + datum(am) : '') + '.') + '</p>';
+    if (!items.length) h += '<p class="note">Gerade ist nichts fällig.</p>';
+    else {
+      h += '<ul class="ke-l">' + items.map(function (it) {
+        return '<li' + (it.ruhe ? ' class="ruhe"' : '') + '><b>' + esc(carName(it.car)) + '</b><span>' + esc(it.t) + '</span>' + (it.am ? '<small>' + esc('erinnert am ' + datum(it.am)) + '</small>' : '') + '</li>';
+      }).join('') + '</ul>';
+      if (open.length && can) {
+        var L = keLinks(kid, open);
+        h += '<div class="kva-act">' + (L.wa ? '<a class="btn small" href="' + esc(L.wa) + '" target="_blank" rel="noopener noreferrer" data-act="ke-sent" data-id="' + esc(kid) + '" data-via="WhatsApp">Per WhatsApp</a>' : '') +
+          '<a class="btn ghost small" href="' + esc(L.mail) + '" data-act="ke-sent" data-id="' + esc(kid) + '" data-via="E-Mail">E-Mail-Entwurf</a>' +
+          '<button type="button" class="btn ghost small" data-act="ke-copy" data-id="' + esc(kid) + '">Text kopieren</button></div>' +
+          '<p class="help">' + esc('Die Nachricht schickst du selbst ab. Beim Antippen merkt sich die App die Erinnerung; dieselbe Sache kommt frühestens nach ' + KE_RUHE + ' Tagen wieder.') + '</p>';
+      }
+    }
+    if (can) h += '<button type="button" class="linkbtn ke-wid" data-act="ke-wid" data-id="' + esc(kid) + '">Abbestellt? Widerruf eintragen</button>';
+    return h + '</div>';
+  }
+  function keListSec() {
+    var rows = [];
+    kundenList().forEach(function (p) { if (!keEin(p[1])) return; var o = keOffen(p[0]); if (o.length) rows.push([p[0], p[1], o]); });
+    if (!rows.length) return '';
+    return '<div class="sh-sec"><h3 class="sec">' + esc('Erinnerungen fällig · ' + rows.length) + '</h3><ul class="works">' + rows.map(function (p) {
+      var sub = p[2].slice(0, 3).map(function (it) { return carName(it.car) + ': ' + it.s; }).join(' · ') + (p[2].length > 3 ? ' …' : '');
+      return '<li><button type="button" class="wbtn" data-act="kunde-open" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(p[1].name) + '<small>' + esc(sub) + '</small></span><span class="i-p"><span class="kl-n">' + p[2].length + '</span></span></button></li>';
+    }).join('') + '</ul><p class="help">Nur Kunden, die Erinnerungen wollen. Antippen, dann die Nachricht beim Kunden abschicken.</p></div>';
+  }
+  async function keMark(kid, via) {
+    var k = S.kunden.get(kid);
+    if (!k || !canWrite()) return;
+    var open = keOffen(kid);
+    if (!open.length) return;
+    var today = dayKey(new Date()), map = Object.assign({}, k.erinnert && typeof k.erinnert === 'object' ? k.erinnert : {});
+    open.forEach(function (it) { map[it.key] = today; });
+    var patch = { erinnert: map, erinnertZuletzt: { am: today, ueber: via || '' }, geaendert: new Date().toISOString() };
+    try {
+      await write(function () { return S.db.doc('kunden/' + kid).update(patch); });
+      S.kunden.set(kid, Object.assign({}, S.kunden.get(kid) || k, patch));
+      refreshSheet();
+    } catch (e) { writeError(e, function (m) { toast(m); }); }
+  }
+  function keCopy(kid) {
+    var open = keOffen(kid);
+    if (!open.length) return;
+    klCopy(keLinks(kid, open).text, 'Text kopiert. In WhatsApp, SMS oder E-Mail einfügen und abschicken.');
+    keMark(kid, 'kopiert');
+  }
+  async function keWiderruf(kid, btn) {
+    var k = S.kunden.get(kid);
+    if (!k || !canWrite() || S.busy) return;
+    if (!(btn.dataset.armed && Number(btn.dataset.armed) > Date.now())) {
+      btn.dataset.armed = String(Date.now() + 4000);
+      btn.textContent = 'Wirklich? Dann keine Erinnerungen mehr';
+      setTimeout(function () { if (btn.isConnected && btn.dataset.armed && Number(btn.dataset.armed) <= Date.now()) { delete btn.dataset.armed; btn.textContent = 'Abbestellt? Widerruf eintragen'; } }, 4100);
+      return;
+    }
+    var now = new Date().toISOString(), w = Object.assign({}, k.erinnerung && typeof k.erinnerung === 'object' ? k.erinnerung : {}, { ja: false, widerrufen: dayKey(new Date()) });
+    var patch = { erinnerung: w, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('kunden/' + kid).update(patch); });
+      S.kunden.set(kid, Object.assign({}, S.kunden.get(kid) || k, patch));
+      setBusy(false);
+      refreshSheet();
+      toast('Vermerkt: keine Erinnerungen mehr an ' + k.name + '.');
+    } catch (e) { writeError(e, function (m) { toast(m); }); } finally { if (S.busy) setBusy(false); }
+  }
+  function openKeEin(kid) {
+    var k = S.kunden.get(kid);
+    if (!k) return;
+    if (!canWrite()) { toast('Du kannst dieses Inventar nur ansehen.'); return; }
+    var today = dayKey(new Date());
+    openSheet('keein', { id: kid },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Erinnerungen · ' + k.name) + '</p><h2 class="sh-title" id="sheet-title">Einverständnis eintragen</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="keein" novalidate><fieldset class="kva-v"><legend>Wie hat der Kunde zugestimmt?</legend>' +
+      ['muendlich', 'schriftlich', 'nachricht'].map(function (v, i) { return '<label class="check"><input type="radio" name="ke-wie" value="' + v + '"' + (i ? '' : ' checked') + '><span>' + esc(KE_WIE[v].charAt(0).toUpperCase() + KE_WIE[v].slice(1)) + '</span></label>'; }).join('') + '</fieldset>' +
+      '<label class="f"><span>Wann</span><input type="date" id="ke-d" value="' + today + '" max="' + today + '"></label>' +
+      '<label class="check"><input type="checkbox" id="ke-hw"><span>Ich habe darauf hingewiesen, dass die Erinnerungen jederzeit abbestellt werden können.</span></label>' +
+      '<p class="help">' + esc('Persönliche Werbung per WhatsApp, SMS oder E-Mail an Verbraucher braucht in der Regel ein vorheriges Einverständnis, und auf das Widerrufsrecht ist hinzuweisen. Ob eine reine Service-Erinnerung schon Werbung ist, sagt die Quelle nicht eindeutig; mit Einverständnis bist du auf der sicheren Seite.') + srcRefs(KE_Q, [1]) + '</p>' +
+      '<p class="err" id="ke-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="kunde-open" data-id="' + esc(kid) + '">Zurück</button></div></form>');
+  }
+  async function saveKeEin() {
+    var s = S.sheet;
+    if (!s || s.type !== 'keein' || S.busy) return;
+    var k = S.kunden.get(s.id), err = function (m) { var el = $('#ke-err'); if (el) el.textContent = m; };
+    err('');
+    if (!k) { err('Diesen Kunden gibt es nicht mehr.'); return; }
+    var wie = ($('input[name="ke-wie"]:checked') || {}).value || '', d = (($('#ke-d') || {}).value || '').trim(), today = dayKey(new Date());
+    if (!KE_WIE[wie]) { err('Bitte wählen, wie der Kunde zugestimmt hat.'); return; }
+    if (!isDay(d) || d > today) { err('Bitte das Datum eintragen, an dem er zugestimmt hat.'); return; }
+    if (!(($('#ke-hw') || {}).checked)) { err('Bitte bestätige, dass du auf das Abbestellen hingewiesen hast.'); return; }
+    var now = new Date().toISOString(), patch = { erinnerung: { ja: true, am: d, ueber: wie, hinweis: true, eingetragen: now }, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('kunden/' + s.id).update(patch); });
+      S.kunden.set(s.id, Object.assign({}, S.kunden.get(s.id) || k, patch));
+      setBusy(false);
+      openKunde(s.id); renderAll();
+      toast('Einverständnis eingetragen.');
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -12728,6 +13328,16 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'wpt-pdf': saveWpTippsPdf(t.dataset.id); break;
       case 'wpt-share': wpTippsShare(t.dataset.id); break;
       case 'wpt-copy': klCopy(wpTippsCur(), 'Kopiert. Jetzt in WhatsApp oder in eine E-Mail einfügen.'); break;
+      case 're-open': openRe(t.dataset.id); break;
+      case 're-pdf': saveRePdf(t.dataset.id); break;
+      case 're-save-pdf': saveRe(true); break;
+      case 're-paid': rePaid(t.dataset.id); break;
+      case 're-add': reAdd(); break;
+      case 're-rm': reRm(t.dataset.i); break;
+      case 'ke-ein': openKeEin(t.dataset.id); break;
+      case 'ke-sent': keMark(t.dataset.id, t.dataset.via || ''); break;
+      case 'ke-copy': keCopy(t.dataset.id); break;
+      case 'ke-wid': keWiderruf(t.dataset.id, t); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
@@ -12827,6 +13437,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (t.id === 'wp-kl') { wpSetKl(t.checked); return; }
     if (wpChange(t)) return;
     if (kvaChange(t)) return;
+    if (reChange(t)) return;
     if (brChange(t)) return;
     if (pvChange(t)) return;
     if (gaChange(t)) return;
@@ -12887,6 +13498,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'ubform') { e.preventDefault(); saveUb(); }
       else if (e.target.id === 'wpstart') { e.preventDefault(); saveWpStart(); }
       else if (e.target.id === 'kvaform') { e.preventDefault(); saveKva(false); }
+      else if (e.target.id === 'reform') { e.preventDefault(); saveRe(false); }
+      else if (e.target.id === 'keein') { e.preventDefault(); saveKeEin(); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
       else if (e.target.id === 'gaconf') { e.preventDefault(); saveGaConf(); }
@@ -12903,6 +13516,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       if (etInput(e.target)) return;
       if (ubInput(e.target)) return;
       if (kvaInput(e.target)) return;
+      if (reInput(e.target)) return;
       if (wpTippsInput(e.target)) return;
       if (gaInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
