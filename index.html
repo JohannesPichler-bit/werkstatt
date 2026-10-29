@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "32", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "33", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1771,6 +1771,93 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .pvm { padding-left: calc(3.3em + 8px); }
 .pvm { display: flex; flex-direction: column; gap: 8px; }
 .pv-sum .wp-bar { background: var(--line); }
+/* Gutachten-Modus */
+.gab .wpb-i { color: var(--muted); }
+.note.warn { color: var(--kaufen); font-weight: 700; }
+.ga-top { display: flex; flex-direction: column; gap: 8px; }
+.ga-stsel { max-width: 240px; }
+.ga-ablauf { gap: 2px; }
+.ga-sgh { margin-top: 10px; }
+.ga-sgh:first-child { margin-top: 0; }
+.ga-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ga-stb { width: 100%; display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 0; border: 0; border-top: 1px solid var(--line); background: none; text-align: left; color: inherit; font: inherit; }
+.ga-steps li:first-child .ga-stb { border-top: 0; }
+.ga-sn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.ga-st.done .ga-sn { border-color: var(--in); background: var(--in); color: var(--in-ink); }
+.ga-stt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ga-stt b { font-size: 16px; line-height: 1.25; }
+.ga-stt > span { font-size: 13px; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
+.ga-stb:focus-visible, .ga-qcb:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+.ga-qc { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ga-qcb { width: 100%; display: flex; gap: 10px; align-items: baseline; padding: 7px 0; border: 0; background: none; text-align: left; color: inherit; font: inherit; font-size: 14.5px; line-height: 1.35; }
+.ga-qcb::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: 1px; border-radius: 50%; background: var(--kaufen); transform: translateY(-1px); }
+.ga-ex { display: flex; flex-wrap: wrap; gap: 8px; }
+.ga-ex a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.ga-pml { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ga-pm { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+.ga-pm:first-child { border-top: 0; padding-top: 0; }
+.ga-pmsug { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.ga-chip { min-height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 13.5px; font-weight: 700; }
+/* Checkliste */
+.pvi-r.ga-ckr { grid-template-columns: minmax(0, 1fr) auto; }
+.ga-ck .pvi-x, .ga-ck .pvm { padding-left: 0; }
+.pvs-b.nb[aria-pressed="true"] { background: var(--surface-2); color: var(--ink); }
+.ga-ck.nb .pvi-t { color: var(--muted); }
+/* Lackmessung */
+.ga-lk { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: start; }
+.ga-skw { width: 100%; max-width: 260px; justify-self: center; }
+@media (min-width: 560px) { .ga-lk { grid-template-columns: minmax(0, 260px) minmax(0, 1fr); } .ga-skw { justify-self: start; order: -1; } }
+.ga-sk { display: block; width: 100%; height: auto; }
+.ga-zo { fill: var(--surface-2); stroke: var(--line); stroke-width: 0.6; }
+.ga-z { fill: var(--bg); stroke: var(--line); stroke-width: 0.5; cursor: pointer; }
+.ga-z.mess { fill: var(--wb-soft); stroke: var(--wb); }
+.ga-z.auff { fill: var(--kaufen-soft); stroke: var(--kaufen); stroke-width: 1.1; }
+.ga-z.kunst { fill: var(--surface-2); stroke-dasharray: 1.6 1.2; }
+.ga-zg { fill: var(--surface); stroke: var(--line); stroke-width: 0.35; }
+.ga-zt { fill: var(--ink); font-family: var(--f-body); font-weight: 700; pointer-events: none; }
+.ga-zt.auff { fill: var(--kaufen); }
+.ga-zv { fill: var(--muted); font-family: var(--f-body); font-size: 5px; font-weight: 700; letter-spacing: 0.08em; }
+.ga-lks .warn { color: var(--kaufen); font-weight: 700; }
+.ga-lkl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ga-lp { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line); scroll-margin: 90px; }
+.ga-lp:first-child { border-top: 0; }
+.ga-lph { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.ga-lph b { flex: 1 1 auto; min-width: 0; font-size: 15px; }
+.ga-lp.auff .ga-lph b { color: var(--kaufen); }
+.ga-lpa { font-size: 13.5px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ga-lp.auff .ga-lpa { color: var(--kaufen); }
+.ga-lpi { display: grid; grid-template-columns: 96px repeat(5, minmax(0, 1fr)); gap: 6px; }
+.ga-lpi select, .ga-lpi input { width: 100%; min-width: 0; min-height: 44px; padding: 0 4px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 16px; }
+.ga-lpi input { text-align: center; font-variant-numeric: tabular-nums; }
+.ga-lpi select { font-size: 14px; padding: 0 2px; }
+.ga-lpi input:disabled { background: var(--surface-2); }
+.ga-lp.auff .ga-lpi input { border-color: var(--kaufen); }
+/* Fotos */
+.ga-fl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ga-fi { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+.ga-fi:first-child { border-top: 0; }
+.ga-fh { display: flex; align-items: baseline; gap: 10px; }
+.ga-fn { flex: none; width: 2em; font-family: var(--f-mono); font-size: 13px; font-weight: 700; color: var(--muted); }
+.ga-fi.on .ga-fn { color: var(--in-text); }
+.ga-fh b { font-size: 15px; line-height: 1.3; overflow-wrap: anywhere; }
+/* Befund und Noten */
+.ga-bg { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.ga-bg.ga-ges { border-color: var(--ink); border-width: 2px; }
+.ga-bgh { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; }
+.ga-bgh b { font-size: 16px; }
+.ga-ns .pvs-b { min-width: 40px; padding: 0 6px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.ga-ns .pvs-b[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.ga-nd { font-size: 13px; line-height: 1.4; color: var(--muted); }
+.ga-nd.warn { color: var(--kaufen); font-weight: 700; }
+.ga-ntl { margin: 0 0 10px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; font-size: 14px; }
+.ga-ntl dt { font-weight: 700; margin-top: 6px; }
+.ga-ntl dd { margin: 0; color: var(--muted); }
+.ga-odl dd { white-space: normal; overflow-wrap: anywhere; }
+/* Bewertung */
+.ga-vl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ga-v { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.ga-vh { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ga-va { font-size: 13.5px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
 </style>
 
 <div class="wrap">
@@ -1932,7 +2019,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2322,14 +2409,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         renderAll(); refreshSheet();
       }, function () { S.repsReady = true; renderAll(); });
       S.db.collection('meta').onSnapshot(function (snap) {
-        var m = null, e = null, ri = null, kl = null, kv = null;
+        var m = null, e = null, ri = null, kl = null, kv = null, gk = null;
         snap.docs.forEach(function (d) {
           if (!d.exists) return;
           var v = d.data();
           if (!v || typeof v !== 'object') return;
-          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v;
+          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v; else if (d.id === 'gutachten') gk = v;
         });
-        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.metaReady = true; renderAll(); refreshSheet();
+        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.gaConf = gk; S.metaReady = true; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('wartung').onSnapshot(function (snap) {
         var m = new Map();
@@ -2343,6 +2430,10 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         S.rr = m;
         renderAll(); refreshSheet();
       }, function () {});
+      S.db.collection('gutachten').onSnapshot(function (snap) {
+        S.ga = gaMerge(snap); S.gaReady = true; gaReapply();
+        renderAll(); refreshSheet();
+      }, function () { S.gaReady = true; });
       S.db.collection('karte').onSnapshot(function (snap) {
         var next = { wb: null, ro: null };
         snap.docs.forEach(function (d) { if (d.exists && (d.id === 'wb' || d.id === 'ro')) { var v = d.data(); if (v && typeof v === 'object') next[d.id] = v; } });
@@ -3505,7 +3596,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 
   /* ---------- Blätter ---------- */
   function openSheet(type, data, html) {
-    wpFlush(); pvFlush();
+    wpFlush(); pvFlush(); gaFlush();
     S.sheet = Object.assign({ type: type }, data || {});
     var sh = $('#sheet'), back = $('#sheetback');
     sh._html = html; sh.innerHTML = html;
@@ -3515,7 +3606,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     sh.scrollTop = 0;
   }
   function closeSheet() {
-    wpFlush(); pvFlush();
+    wpFlush(); pvFlush(); gaFlush();
     S.sheet = null;
     var back = $('#sheetback');
     back.classList.remove('open'); back.hidden = true;
@@ -3834,6 +3925,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       shBanner(id, car) +
       wpBanner(id, car) +
       pvBanner(id, car) +
+      gaSec(id, car) +
       carWartSec(id, car) +
       reifenSec(id, car) +
       brSec(id, car) +
@@ -7149,7 +7241,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     input.value = '';
     if (!files.length || !BL) return;
     if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
-    var prepared = [], errs = [], max = ctx.charAt(0) === 'e' || (ctx === 'f' && S.sheet && S.sheet.type === 'workform') ? 2000 : 1600;
+    var prepared = [], errs = [], max = ctx.charAt(0) === 'e' || /^ga:[^:]+:[vu]/.test(ctx) || (ctx === 'f' && S.sheet && S.sheet.type === 'workform') ? 2000 : 1600;
     if (files.length > 1 || /^image\//.test(files[0].type || '')) toast(files.length > 1 ? files.length + ' Dateien werden vorbereitet …' : 'Foto wird vorbereitet …');
     for (var i = 0; i < files.length; i++) {
       try { var p = await blPrepare(files[i], max); p.url = URL.createObjectURL(p.blob); prepared.push(p); }
@@ -7166,6 +7258,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       toast(errs.length ? errs[0] : prepared.length === 1 ? 'Hinzugefügt. Wird beim Speichern hochgeladen.' : prepared.length + ' Dateien hinzugefügt. Werden beim Speichern hochgeladen.');
       return;
     }
+    if (ctx.indexOf('ga:') === 0) { await gaAddPhotos(ctx, prepared); if (errs.length) setTimeout(function () { toast(errs[0]); }, 2600); return; }
     if (ctx.indexOf('pv:') === 0) { await pvAddPhotos(ctx, prepared); if (errs.length) setTimeout(function () { toast(errs[0]); }, 2600); return; }
     await blDirect(ctx, prepared);
     if (errs.length) setTimeout(function () { toast(errs[0]); }, 2600);
@@ -7228,6 +7321,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
   function blCtxList(ctx) {
     if (ctx === 'f') return blFormList();
+    if (String(ctx).indexOf('ga:') === 0) return gaCtxList(ctx);
     if (String(ctx).indexOf('z:') === 0) return ubZoneFormList(String(ctx).slice(2));
     if (String(ctx).indexOf('uz:') === 0) { var uq = String(ctx).split(':'); return ubZonePhotos(uq[1], uq[2]).map(function (x) { return x.r; }); }
     var p = String(ctx || '').split(':'), car = S.cars.get(p[1]);
@@ -7335,6 +7429,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var ctx = BV.ctx, r = BV.list[BV.i];
     if (ctx === 'f') { blFormRemove(BV.i); }
     else if (ctx.indexOf('z:') === 0) { ubZoneRemove(ctx.slice(2), BV.i); }
+    else if (ctx.indexOf('ga:') === 0) { if (!(await gaDropPhoto(ctx, r.pfad))) return; }
     else {
       var p = ctx.split(':'), carId = p[1], car = S.cars.get(carId);
       if (!car || S.busy) return;
@@ -10504,6 +10599,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var patch = { pickerlCheck: c, geaendert: new Date().toISOString() };
       await write(function () { return S.db.doc('fahrzeuge/' + carId).update(patch); });
       S.cars.set(carId, Object.assign({}, car, patch));
+      /* eine während des Hochladens noch offene Notiz-Änderung bekommt die Fotos auch, sonst überschreibt sie sie */
+      if (PVQ.car === carId && PVQ.c) { var qi = Object.assign({}, pvItems(PVQ.c)); qi[pos] = Object.assign({}, pvItem(PVQ.c, pos), { fotos: c.items[pos].fotos }); PVQ.c = Object.assign({}, PVQ.c, { items: qi }); pvReapply(); }
       setBusy(false);
       pvRerender(); renderAll();
       toast(refs.length === 1 ? 'Foto gespeichert.' : refs.length + ' Fotos gespeichert.');
@@ -10517,6 +10614,1525 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var c = pvBase(car);
     c.items[pos] = Object.assign({}, pvItem(c, pos), { fotos: blList(pvItem(c, pos).fotos).filter(function (x) { return x.pfad !== pfad; }) });
     return c;
+  }
+  /* ---------- Gutachten-Modus: Zustandsaufnahme nach den Vorlagen im Obsidian-Vault (Gliederung, Zustandsnoten, Checklisten) ---------- */
+  var GA_Q = { quellen: [
+    { titel: 'Land OÖ: Informationsblatt Historische Fahrzeuge', url: 'https://www.land-oberoesterreich.gv.at/Mediendateien/Formulare/Dokumente%20SVD%20Abt_Verk/Historische%20Fahrzeuge%20Infoblatt%202022.11.11.pdf' },
+    { titel: 'Deutsche Kommission für Lack und Karosserieinstandsetzung: Merkblatt Gesamtlackschichtdicke, Stand 11.03.2025', url: 'https://www.azt-automotive.com/_Resources/Persistent/d441a1ad80f1e5e6e4ae86ea5d36f1c7000b6f51/2025_DeKoLaKa-Merkblatt_Gesamtlackschichtdicke_final.pdf' },
+    { titel: 'Kfz-Meisterbetrieb Dietrich: Lackdickenmessung, Nachlackierungen sicher erkennen', url: 'https://kfz-dietrich.com/blog/lackdicken-messung-werkstatt-diagnose/' },
+    { titel: 'Obsidian-Hilfe: Obsidian URI', url: 'https://obsidian.md/help/Extending+Obsidian/Obsidian+URI' }
+  ] };
+  /* Arten wie im Auftragsformular; voll = Oldtimer-Gliederung mit Lack, Noten und Originalität */
+  var GA_ART = {
+    wert: { n: 'Oldtimer-Wertgutachten', ck: 'o', voll: true, bew: true },
+    sammlung: { n: 'Sammlungsbewertung', ck: 'o', voll: true, bew: true },
+    zustand: { n: 'Kaufberatung / Zustandsbericht', ck: 'o', voll: true, bew: 'opt' },
+    radreifen: { n: 'Gutachten Rad-Reifen', ck: 'rr', voll: false, bew: false },
+    fahrwerk: { n: 'Gutachten Fahrwerk', ck: 'fw', voll: false, bew: false },
+    sonst: { n: 'Sonstiges', ck: 'o', voll: true, bew: 'opt' }
+  };
+  var GA_ART_L = ['wert', 'sammlung', 'zustand', 'radreifen', 'fahrwerk', 'sonst'];
+  var GA_ZWECK = [['', '–'], ['versicherung', 'Versicherung'], ['kauf', 'Kauf'], ['verkauf', 'Verkauf'], ['nachlass', 'Nachlass'], ['sonst', 'Sonstiges']];
+  var GA_ZWECKM = {};
+  GA_ZWECK.forEach(function (z) { if (z[0]) GA_ZWECKM[z[0]] = z[1]; });
+  var GA_UEB_ZWECK = 'Übung – Wertermittlung wie für eine Oldtimer-Kaskoversicherung';
+  var GA_STATUS = [['angefragt', 'Angefragt'], ['geplant', 'Geplant'], ['besichtigt', 'Besichtigt'], ['abgeschlossen', 'Abgeschlossen']];
+  var GA_ST_CLS = { angefragt: '', geplant: 'plan', besichtigt: 'bald', abgeschlossen: 'ok' };
+  /* Checklisten wortgleich aus dem Vault (40 Gutachten/Checklisten); dritter Wert = Baugruppe für den Befund */
+  var GA_CK = {
+    o: { n: 'Checkliste Besichtigung Oldtimer', g: [
+      { t: 'Identifikation', it: [['i1', 'FIN am Fahrzeug = Dokumente (Foto)', ''], ['i2', 'Typenschild, Motor- und Getriebenummer (Matching Numbers?)', ''], ['i3', 'Farbcode, Ausstattungscodes', ''], ['i4', 'Kilometerstand (plausibel?)', '']] },
+      { t: 'Karosserie & Lack', it: [['k1', 'Spaltmaße rundum', 'karosserie'], ['k2', 'Lackschichtdicke an allen Teilen (Messraster), Werte protokollieren', 'lack'], ['r1', 'Rost: Schweller', 'karosserie'], ['r2', 'Rost: Radläufe', 'karosserie'], ['r3', 'Rost: Türunterkanten', 'karosserie'], ['r4', 'Rost: Kofferraumboden', 'karosserie'], ['r5', 'Rost: Reserveradmulde', 'karosserie'], ['r6', 'Rost: Wagenheberaufnahmen', 'karosserie'], ['r7', 'Rost: A-/B-Säulen', 'karosserie'], ['k3', 'Spachtel / Nachlackierungen / Unfallspuren', 'karosserie'], ['k4', 'Chrom, Dichtungen, Glas (Kennzeichnung original?)', 'chrom']] },
+      { t: 'Unterboden (Hebebühne)', it: [['u1', 'Rahmen / Längsträger, Bodenbleche', 'unterboden'], ['u2', 'Unterbodenschutz: Zustand, verdeckte Reparaturen?', 'unterboden'], ['u3', 'Leitungen (Brems-, Kraftstoff-), Auspuff', 'unterboden'], ['u4', 'Achsen, Lager, Manschetten, Dämpfer', 'fahrwerk'], ['u5', 'Ölverlust Motor / Getriebe / Differenzial', 'motor']] },
+      { t: 'Motorraum & Technik', it: [['m1', 'Originalität der Komponenten', 'motor'], ['m2', 'Undichtigkeiten, Zustand Kühlung, Kabelbaum', 'motor'], ['m3', 'Kaltstart, Laufkultur, Rauch', 'motor'], ['m4', 'Endoskop (Hohlräume, ggf. Zylinder)', 'motor']] },
+      { t: 'Innenraum', it: [['n1', 'Sitze, Himmel, Teppich, Armaturenbrett, Instrumente', 'innen'], ['n2', 'Originalität (Lenkrad, Radio)', 'innen'], ['n3', 'Feuchtigkeit / Geruch', 'innen']] },
+      { t: 'Rad & Reifen', it: [['d1', 'Felgen original / zeitgenössisch', 'raeder'], ['d2', 'Reifenalter (DOT)', 'raeder'], ['d3', 'Profiltiefe', 'raeder']] },
+      { t: 'Probefahrt (falls möglich)', it: [['p1', 'Lenkung', 'fahrwerk'], ['p2', 'Bremsen', 'fahrwerk'], ['p3', 'Schaltung', 'motor'], ['p4', 'Geräusche', 'fahrwerk']] }
+    ] },
+    rr: { n: 'Checkliste Rad-Reifen-Kombination', g: [
+      { t: 'Unterlagen', it: [['a1', 'Typenschein / Datenauszug (eingetragene Größen)'], ['a2', 'Felgen-Gutachten: Herstellerfreigabe, TÜV-Gutachten oder ABE (Traglastbescheinigung allein reicht in OÖ nicht)'], ['a3', 'Reifen-Freigabe / Auflagen aus dem Gutachten']] },
+      { t: 'Rad', it: [['b1', 'Felgengröße, ET (Einpresstiefe), Lochkreis, Mittenzentrierung (Zentrierringe?)'], ['b2', 'Traglast der Felge ≥ Achslast/2'], ['b3', 'Befestigungsmittel (Schrauben/Muttern, Kegel/Kugelbund, Einschraubtiefe)'], ['b4', 'Anzugsdrehmoment geprüft (kalibrierter Drehmomentschlüssel, ID notieren)'], ['b5', 'Spurverbreiterung? In OÖ nur mit Original-Serienfahrwerk']] },
+      { t: 'Reifen', it: [['c1', 'Größe, Last- und Geschwindigkeitsindex ≥ Mindestanforderung'], ['c2', 'DOT-Alter, Profil, Schäden'], ['c3', 'Abrollumfang / Tachoabweichung']] },
+      { t: 'Freigängigkeit', it: [['e1', 'Voller Lenkeinschlag links/rechts'], ['e2', 'Einfederung (Radlauf, Innenkotflügel, Federbein, Bremsleitungen)'], ['e3', 'Radabdeckung (Radlaufkante)'], ['e4', 'Bei Tieferlegung: Kombination mit Fahrwerk prüfen']] },
+      { t: 'Ergebnis', it: [['f1', 'Auflagen aus Gutachten erfüllt'], ['f2', 'Fotos: Rad/Reifen-Beschriftung, Freigängigkeit, Gesamtansicht']] }
+    ] },
+    fw: { n: 'Checkliste Fahrwerksänderung', g: [
+      { t: 'Unterlagen', it: [['a1', 'Teilegutachten / Freigabe des Fahrwerksherstellers, Einbauanleitung'], ['a2', 'Eingetragene Rad-Reifen-Kombinationen'], ['a3', 'Einbaunachweis (Werkstattrechnung)']] },
+      { t: 'Prüfung', it: [['b1', 'Bauteile identifizieren (Kennzeichnung = Gutachten)'], ['b2', 'Einbau fachgerecht, Anzugsmomente'], ['b3', 'Tieferlegungsmaß gemessen (Messpunkte laut Gutachten)'], ['b4', 'Mindestbodenfreiheit'], ['b5', 'Freigängigkeit Räder bei Einfederung und Lenkeinschlag'], ['b6', 'Leitungen, Kabel, ABS-Sensoren nicht beschädigt/scheuernd'], ['b7', 'Scheinwerfereinstellung angepasst'], ['b8', 'Achsvermessung durchgeführt (Protokoll)'], ['b9', 'Luftfahrwerk: Mindesthöhe / Absicherung, Leitungen, Kompressor']] },
+      { t: 'Dokumentation', it: [['c1', 'Fotos Federbeine, Kennzeichnung, Höhe, Freigängigkeit'], ['c2', 'Messprotokoll, verwendete Prüfmittel (ID + Kalibrierdatum)']] }
+    ] }
+  };
+  var GA_CKM = {};
+  Object.keys(GA_CK).forEach(function (c) { GA_CK[c].g.forEach(function (gr) { gr.it.forEach(function (it) { GA_CKM[c + '.' + it[0]] = { key: c + '.' + it[0], t: it[1], bg: it[2] || '', grp: gr.t }; }); }); });
+  var GA_VORB = [['v1', 'Auftrag + AGB unterschrieben, Zweck des Gutachtens geklärt'], ['v2', 'Unterlagen angefordert: Typenschein/Zulassung, Rechnungen, Restaurierungsdoku, Fotos, Historie'], ['v3', 'Marktrecherche zum Modell vorbereitet'], ['v4', 'Prüfmittel kalibriert und eingepackt']];
+  /* Baugruppen aus Gliederung (Befund) und Zustandsnoten-Tabelle zusammengeführt */
+  var GA_BG = [['karosserie', 'Karosserie'], ['lack', 'Lack'], ['unterboden', 'Unterboden / Rahmen'], ['motor', 'Motor & Antrieb'], ['fahrwerk', 'Fahrwerk & Bremsen'], ['elektrik', 'Elektrik'], ['innen', 'Innenraum'], ['chrom', 'Chrom & Anbauteile'], ['raeder', 'Räder & Reifen']];
+  var GA_BGM = {};
+  GA_BG.forEach(function (b) { GA_BGM[b[0]] = b[1]; });
+  /* Arbeitsdefinition aus 40 Gutachten/Zustandsnoten */
+  var GA_NOTE = [
+    [1, 'makellos', 'Bestzustand, keine Mängel, keine Gebrauchsspuren, perfekt restauriert'],
+    [2, 'gut', 'Guter Zustand, mängelfrei, geringe Gebrauchsspuren, original oder fachgerecht restauriert'],
+    [3, 'gebraucht', 'Normale Gebrauchsspuren, kleinere Mängel, voll fahrbereit, keine Durchrostungen'],
+    [4, 'verbraucht', 'Deutliche Mängel, eingeschränkt fahrbereit, Arbeiten sofort nötig'],
+    [5, 'restaurierungsbedürftig', 'Nicht fahrbereit, umfangreiche Arbeiten nötig, ggf. unvollständig']
+  ];
+  var GA_NOTEDEF = 'Arbeitsdefinition, 5-stufige Skala wie bei Marktpreis-Datenbanken üblich';
+  /* Bauteile aus dem Lackmessprotokoll; Schweller links und rechts getrennt */
+  var GA_LACK = [['haube', 'Motorhaube'], ['kfvl', 'Kotflügel vorne links'], ['tvl', 'Tür vorne links'], ['thl', 'Tür hinten links'], ['swhl', 'Seitenwand hinten links'], ['kd', 'Kofferraumdeckel'], ['swhr', 'Seitenwand hinten rechts'], ['thr', 'Tür hinten rechts'], ['tvr', 'Tür vorne rechts'], ['kfvr', 'Kotflügel vorne rechts'], ['dach', 'Dach'], ['saeulen', 'A-/B-/C-Säulen'], ['schwl', 'Schweller links'], ['schwr', 'Schweller rechts']];
+  var GA_LACKM = {};
+  GA_LACK.forEach(function (p) { GA_LACKM[p[0]] = p[1]; });
+  var GA_LR = [['kfvl', 'kfvr', 'Kotflügel vorne'], ['tvl', 'tvr', 'Tür vorne'], ['thl', 'thr', 'Tür hinten'], ['swhl', 'swhr', 'Seitenwand hinten'], ['schwl', 'schwr', 'Schweller']];
+  /* Draufsicht, vorne oben: x, y, Breite, Höhe in einem Raster 100 × 210 */
+  var GA_GEO = { haube: [24, 10, 52, 56], kfvl: [6, 12, 16, 54], kfvr: [78, 12, 16, 54], tvl: [6, 70, 14, 43], thl: [6, 115, 14, 41], tvr: [80, 70, 14, 43], thr: [80, 115, 14, 41], swhl: [6, 158, 16, 42], swhr: [78, 158, 16, 42], kd: [24, 162, 52, 38], schwl: [0, 72, 4.5, 84], schwr: [95.5, 72, 4.5, 84] };
+  var GA_GEO_S = [22, 72, 56, 86], GA_GEO_D = [27, 92, 46, 48], GA_GEO_GL = [[27, 77, 46, 15], [27, 140, 46, 13]];
+  /* Fotodokumentation Standard: Reihenfolge und Dateiname JJJJ-NNN_##_Beschreibung.jpg */
+  var GA_FOTO = [['Front schräg links', 'Front-schraeg-links'], ['Front gerade', 'Front-gerade'], ['Front schräg rechts', 'Front-schraeg-rechts'], ['Seite rechts', 'Seite-rechts'], ['Heck schräg rechts', 'Heck-schraeg-rechts'], ['Heck gerade', 'Heck-gerade'], ['Heck schräg links', 'Heck-schraeg-links'], ['Seite links', 'Seite-links'], ['FIN (am Fahrzeug) + Typenschild', 'FIN-Typenschild'], ['Kilometerstand', 'Kilometerstand'], ['Motorraum gesamt + Motornummer', 'Motorraum-Motornummer'], ['Innenraum vorne / hinten, Armaturenbrett', 'Innenraum'], ['Kofferraum, Reserveradmulde', 'Kofferraum'], ['Unterboden (vorne, Mitte, hinten, Schweller links/rechts)', 'Unterboden'], ['Räder + Reifenbeschriftung (DOT)', 'Raeder-Reifen'], ['Alle Mängel und Besonderheiten mit Maßstab', 'Maengel'], ['Lackmesswerte (Foto vom Protokoll oder Messgerät)', 'Lackmesswerte']];
+  var GA_GRENZEN = [['hebe', 'Keine Hebebühne: Unterboden nur eingeschränkt beurteilbar'], ['demontage', 'Keine Demontage'], ['fahrt', 'Keine Probefahrt']];
+  /* Unterboden-Zonen der App, die zu einem Prüfpunkt passen */
+  var GA_UBMAP = { r1: ['sw_l', 'sw_r', 'h_sw'], r2: ['rhv_l', 'rhv_r', 'rhh_l', 'rhh_r'], r3: ['h_tu'], r4: ['kb'], r5: ['kb'], r6: ['sw_l', 'sw_r'], r7: ['h_tu'], u1: ['ltv_l', 'ltv_r', 'lth_l', 'lth_r', 'h_lt', 'bb_l', 'bb_r', 'mt'], u3: ['lt', 'ag'], u4: ['va', 'ha'] };
+  var GA_PAGES = [['auftrag', 'Auftrag', 'Auftrag'], ['grundlagen', 'Vorbereitung und Grundlagen', 'Auftrag'], ['fahrzeug', 'Fahrzeug', 'Besichtigung'], ['check', 'Checkliste', 'Besichtigung'], ['lack', 'Lackmessung', 'Besichtigung'], ['fotos', 'Fotos', 'Besichtigung'], ['befund', 'Befund und Zustandsnoten', 'Auswertung'], ['orig', 'Originalität', 'Auswertung'], ['bew', 'Bewertung', 'Auswertung'], ['schluss', 'Zusammenfassung und Erklärung', 'Gutachten']];
+  var GA_ICON = '<svg class="wpb-i" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4.5H6.5v16h11v-16h-2"></path><rect x="8.5" y="3" width="7" height="3.2" rx="1"></rect><path d="M9 11.2l1.6 1.6 3.2-3.4M9 16.5h6"></path></g></svg>';
+
+  /* ---------- Daten ---------- */
+  function gaClone(o) { return JSON.parse(JSON.stringify(o)); }
+  function gaDoc(id) { var g = id && S.ga ? S.ga.get(id) : null; return g && typeof g === 'object' ? g : null; }
+  function gaArt(g) { return GA_ART[g && g.art] || GA_ART.wert; }
+  function gaObj(x) { return x && typeof x === 'object' && !Array.isArray(x) ? x : {}; }
+  function gaA(g) { return gaObj(g && g.auftrag); }
+  function gaG(g) { return gaObj(g && g.grundlagen); }
+  function gaF(g) { return gaObj(g && g.fzg); }
+  function gaL(g) { return gaObj(g && g.lack); }
+  function gaO(g) { return gaObj(g && g.orig); }
+  function gaBw(g) { return gaObj(g && g.bew); }
+  function gaS(g) { return gaObj(g && g.schluss); }
+  function gaBg(g, k) { return gaObj(gaObj(g && g.bg)[k]); }
+  function gaStr(v) { return String(v == null ? '' : v).trim(); }
+  function gaNum(v) { var n = parseNum(String(v == null ? '' : v).replace(/−/g, '-')); return n === null || isNaN(n) ? null : n; }
+  /* Euro-Beträge: 18.500 oder 18.500,50 heißt achtzehntausendfünfhundert */
+  function gaEur(v) { var t = String(v == null ? '' : v).trim().replace(/\u2212/g, '-').replace(/[\s€]/g, ''); if (/^[+-]?\d{1,3}(\.\d{3})+(,\d*)?$/.test(t)) t = t.replace(/\./g, ''); return gaNum(t); }
+  function gaNoteOk(n) { return n === 1 || n === 2 || n === 3 || n === 4 || n === 5; }
+  function gaPad2(n) { return String(n).padStart(2, '0'); }
+  function gaList(carId) {
+    var out = [];
+    if (S.ga) S.ga.forEach(function (g, id) { if (g && typeof g === 'object' && (!carId || g.fahrzeug === carId)) out.push([id, g]); });
+    out.sort(function (a, b) { var x = String(a[1].erstellt || ''), y = String(b[1].erstellt || ''); return x < y ? 1 : x > y ? -1 : 0; });
+    return out;
+  }
+  /* Nummern laut Übersicht Gutachten: JJJJ-NNN fortlaufend, Übungen UEB-NNN */
+  function gaNextNr(uebung) {
+    var y = dayKey(new Date()).slice(0, 4), max = 0, re = uebung ? /^UEB-(\d{1,4})$/i : new RegExp('^' + y + '-(\\d{1,4})$');
+    gaList(null).forEach(function (p) { var m = re.exec(gaStr(p[1].nr)); if (m) max = Math.max(max, Number(m[1])); });
+    return (uebung ? 'UEB-' : y + '-') + String(max + 1).padStart(3, '0');
+  }
+  function gaStatusName(st) { var x = GA_STATUS.filter(function (p) { return p[0] === st; })[0]; return x ? x[1] : 'Angefragt'; }
+  function gaConf() {
+    var c = S.gaConf && typeof S.gaConf === 'object' ? S.gaConf : {};
+    return { sv: gaStr(c.sv).slice(0, 80) || kvaConf().name || '', quali: gaStr(c.quali).slice(0, 120), vault: gaStr(c.vault).slice(0, 80) || 'Obsidian Vault' };
+  }
+  function gaCkItems(g) {
+    var c = gaArt(g).ck, out = [];
+    GA_CK[c].g.forEach(function (gr) { gr.it.forEach(function (it) { out.push(GA_CKM[c + '.' + it[0]]); }); });
+    return out;
+  }
+  function gaCk(g, key) { return gaObj(gaObj(g && g.check)[key]); }
+  function gaCkSt(x) { return x.st === 'ok' || x.st === 'mangel' || x.st === 'nb' ? x.st : ''; }
+  function gaCkCount(g) {
+    var o = { n: 0, m: 0, nb: 0, mOhne: 0, total: 0 };
+    gaCkItems(g).forEach(function (it) {
+      var x = gaCk(g, it.key), st = gaCkSt(x);
+      o.total++;
+      if (st) o.n++;
+      if (st === 'mangel') { o.m++; if (!gaStr(x.n)) o.mOhne++; }
+      if (st === 'nb') o.nb++;
+    });
+    return o;
+  }
+  function gaFotos(g, n) { return blList(gaObj(g && g.fotos)[String(n)]); }
+  function gaFotoCount(g) { var n = 0; GA_FOTO.forEach(function (f, i) { if (gaFotos(g, i + 1).length) n++; }); return n; }
+  function gaAllFotoN(g) {
+    var n = 0;
+    GA_FOTO.forEach(function (f, i) { n += gaFotos(g, i + 1).filter(function (r) { return r.typ !== 'pdf'; }).length; });
+    gaCkItems(g).forEach(function (it) { var x = gaCk(g, it.key); if (gaCkSt(x) === 'mangel' || gaCkSt(x) === 'nb') n += blList(x.fotos).filter(function (r) { return r.typ !== 'pdf'; }).length; });
+    gaVglRows(g).forEach(function (r) { n += blList(r.fotos).filter(function (x) { return x.typ !== 'pdf'; }).length; });
+    return n + blList(gaG(g).dateien).filter(function (r) { return r.typ !== 'pdf'; }).length;
+  }
+  function gaSlug(s) {
+    return String(s || '').replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').replace(/ß/g, 'ss')
+      .replace(/\(.*?\)/g, ' ').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40).replace(/-+$/, '') || 'Foto';
+  }
+  function gaNrFile(g) { return gaStr(g.nr).replace(/[^A-Za-z0-9\-]/g, '') || 'Gutachten'; }
+  function gaVglRows(g) { return arr(gaBw(g).vgl).filter(function (r) { return r && typeof r === 'object' && r.id; }); }
+  function gaVglAdj(r) { var p = gaEur(r.preis); if (p === null) return null; var a = gaEur(r.anp); return p + (a === null ? 0 : a); }
+  function gaVglStats(g) {
+    var v = gaVglRows(g).map(gaVglAdj).filter(function (x) { return x !== null; }).sort(function (a, b) { return a - b; });
+    if (!v.length) return { n: 0 };
+    var m = v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
+    return { n: v.length, min: v[0], max: v[v.length - 1], med: m };
+  }
+  function gaBewAny(g) { var B = gaBw(g); return gaVglRows(g).length > 0 || gaEur(B.markt) !== null || gaEur(B.wbw) !== null; }
+  function gaThr(g) { var t = gaNum(gaL(g).schwelle); return t === null ? 50 : Math.max(10, Math.min(300, Math.round(t))); }
+  /* Lack: Mittel je Bauteil, Fahrzeugdurchschnitt, auffällig = mehr als die Schwelle über dem Durchschnitt (ab drei Bauteilen) */
+  function gaLackStats(g) {
+    var T = gaObj(gaL(g).teile), out = { parts: {}, n: 0, avg: null, auff: [], lr: [] }, avgs = [], thr = gaThr(g);
+    GA_LACK.forEach(function (p) {
+      var x = gaObj(T[p[0]]), mat = x.mat === 'NFe' || x.mat === 'Kunst' ? x.mat : 'Fe';
+      var vals = mat === 'Kunst' ? [] : arr(x.p).slice(0, 5).map(gaNum).filter(function (v) { return v !== null && v >= 0; });
+      var a = vals.length ? vals.reduce(function (s, v) { return s + v; }, 0) / vals.length : null;
+      out.parts[p[0]] = { mat: mat, vals: vals, avg: a, min: vals.length ? Math.min.apply(null, vals) : null, max: vals.length ? Math.max.apply(null, vals) : null, auff: false };
+      if (a !== null) { out.n++; avgs.push(a); }
+    });
+    out.avg = avgs.length ? avgs.reduce(function (s, v) { return s + v; }, 0) / avgs.length : null;
+    if (out.avg !== null && out.n >= 3) GA_LACK.forEach(function (p) { var pa = out.parts[p[0]]; if (pa.avg !== null && pa.avg > out.avg * (1 + thr / 100)) { pa.auff = true; out.auff.push(p[0]); } });
+    GA_LR.forEach(function (q) {
+      var a = out.parts[q[0]].avg, b = out.parts[q[1]].avg;
+      if (a !== null && b !== null && Math.min(a, b) > 0 && Math.max(a, b) >= Math.min(a, b) * (1 + thr / 100)) out.lr.push({ t: q[2], l: a, r: b });
+    });
+    return out;
+  }
+  function gaPmAll(g) {
+    var out = arr(gaG(g).pm).filter(function (r) { return r && (gaStr(r.g) || gaStr(r.id)); }).map(function (r) { return { g: gaStr(r.g), id: gaStr(r.id), kal: isDay(r.kal) ? r.kal : '' }; });
+    var L = gaL(g);
+    if (gaArt(g).voll && (gaStr(L.geraet) || gaStr(L.pm)) && !out.some(function (r) { return r.id && r.id === gaStr(L.pm); })) out.push({ g: gaStr(L.geraet) || 'Schichtdickenmessgerät', id: gaStr(L.pm), kal: isDay(L.kal) ? L.kal : '', lack: true });
+    return out;
+  }
+  function gaPmSuggest(gid, g) {
+    var have = {}, seen = {}, out = [];
+    gaPmAll(g).forEach(function (r) { have[(r.g + '|' + r.id).toLowerCase()] = true; });
+    gaList(null).forEach(function (p) {
+      if (p[0] === gid) return;
+      gaPmAll(p[1]).forEach(function (r) {
+        var k = (r.g + '|' + r.id).toLowerCase();
+        if (have[k] || !r.g) return;
+        if (!seen[k]) { seen[k] = { g: r.g, id: r.id, kal: r.kal }; out.push(seen[k]); }
+        else if (r.kal > seen[k].kal) seen[k].kal = r.kal;
+      });
+    });
+    return out.slice(0, 4);
+  }
+  function gaGrenzenTxt(g) {
+    var a = gaA(g), gr = gaObj(a.grenzen), out = GA_GRENZEN.filter(function (x) { return gr[x[0]] === true; }).map(function (x) { return x[1]; });
+    if (gaStr(a.grenzenText)) out.push(gaStr(a.grenzenText));
+    return out;
+  }
+  function gaZweckTxt(g) {
+    var a = gaA(g), z = GA_ZWECKM[a.zweck] || '', t = gaStr(a.zweckText), s = z && t ? z + ': ' + t : z || t;
+    if (a.zweck === 'versicherung' && gaStr(a.versicherer)) s += ' (' + gaStr(a.versicherer) + ')';
+    return s;
+  }
+  function gaName(g, car) { return gaStr(gaF(g).name) || (car && car.name) || 'Auto'; }
+  function gaKmTxt(v) { var n = gaNum(v); return n === null ? gaStr(v) : nf.format(n) + ' km'; }
+  function gaErklDefault(art) {
+    var A = GA_ART[art] || GA_ART.wert;
+    return 'Dieses Gutachten wurde unabhängig und nach bestem Wissen erstellt. Es ist nur für den im Auftrag genannten Zweck und für den Auftraggeber bestimmt. Die Besichtigung erfolgte zerstörungsfrei und ohne Demontage; Mängel, die ohne Demontage nicht erkennbar sind, sind nicht Gegenstand des Gutachtens.' +
+      (A.bew ? ' Wertangaben beziehen sich auf den Stichtag und die angegebenen Datenquellen; tatsächlich erzielte Preise können abweichen.' : '');
+  }
+  function gaNewDoc(carId, car, o) {
+    var now = new Date().toISOString(), k = kundeOf(car), ck = curKmEst(car);
+    return {
+      fahrzeug: carId, nr: o.nr, uebung: !!o.uebung, art: o.art, status: o.uebung ? 'geplant' : 'angefragt',
+      auftrag: { auftraggeber: k ? String(k.name || '') : '', anschrift: k && k.adresse ? String(k.adresse) : '', zweck: o.zweck || '', zweckText: o.zweckText || '', versicherer: '', stichtag: o.stichtag || '', grenzen: {}, grenzenText: '' },
+      vorb: {},
+      grundlagen: { unterlagen: '', datum: '', ort: '', anwesende: '', bedingungen: '', quellenMarkt: '', pm: [], dateien: [] },
+      fzg: { name: String(car.name || ''), typ: '', baujahr: numOrNull(car.baujahr) === null ? '' : String(car.baujahr), ez: String(car.erstzulassung || ''), fin: String(car.fin || ''), kz: String(car.kennzeichen || ''), motorNr: '', getriebeNr: '', farbe: '', ausstattung: '', km: ck ? String(ck.km) : '', hubraum: String(car.hubraum || ''), ps: numOrNull(car.leistungPs) === null ? '' : String(car.leistungPs), kraftstoff: String(car.kraftstoff || ''), historie: '' },
+      check: {},
+      lack: { geraet: '', pm: '', kal: '', refSoll: '', refIst: '', schwelle: '50', teile: {} },
+      fotos: {},
+      bg: {}, gesamt: { note: null, begr: '' }, notendef: GA_NOTEDEF, befundText: '',
+      orig: { matching: '', matchingN: '', aenderungen: '', fremdteile: '' },
+      bew: { vgl: [], markt: '', marktDef: '', wbw: '', wbwDef: '', zuab: '', herleitung: '' },
+      schluss: { zusammenfassung: '', erklaerung: gaErklDefault(o.art), ort: '' },
+      selbst: { fehlt: '', anders: '', vorb: '', bes: '', rech: '', schr: '' },
+      erstellt: now, geaendert: now
+    };
+  }
+  function gaGetPath(d, path) { var o = d; String(path).split('.').forEach(function (k) { o = o !== null && o !== undefined && typeof o === 'object' ? o[k] : undefined; }); return o; }
+  function gaPutPath(d, path, v) {
+    var ks = String(path).split('.'), o = d;
+    if (ks.some(function (k) { return !k || k === '__proto__' || k === 'constructor' || k === 'prototype'; })) return;
+    for (var i = 0; i < ks.length - 1; i++) {
+      var k = ks[i], nk = ks[i + 1];
+      if (o[k] === null || typeof o[k] !== 'object') o[k] = /^\d+$/.test(nk) ? [] : {};
+      o = o[k];
+    }
+    o[ks[ks.length - 1]] = v;
+  }
+
+  /* ---------- Gebündeltes Speichern (wie Winterpause und Vorcheck) ---------- */
+  var GAQ = { t: 0, id: null, d: null };
+  function gaReapply() { if (GAQ.id && GAQ.d && S.ga) S.ga.set(GAQ.id, GAQ.d); }
+  function gaFlushNow() {
+    clearTimeout(GAQ.t);
+    var id = GAQ.id, d = GAQ.d;
+    GAQ.id = null; GAQ.d = null;
+    if (!id || !d) return Promise.resolve(null);
+    return write(function () { return S.db.doc('gutachten/' + id).set(d); });
+  }
+  function gaFlush() { return gaFlushNow().catch(function (e) { writeError(e); }); }
+  /* Abo: lokal neuere Fassung (noch nicht oder gerade gespeichert) behalten; Gutachten werden nie gelöscht */
+  function gaMerge(snap) {
+    var m = new Map(), old = S.ga;
+    snap.docs.forEach(function (d) {
+      if (!d.exists) return;
+      var v = d.data(), o = old ? old.get(d.id) : null;
+      if (!v || typeof v !== 'object') return;
+      m.set(d.id, o && String(o.geaendert || '') > String(v.geaendert || '') ? o : v);
+    });
+    if (old) old.forEach(function (v, id) { if (!m.has(id)) m.set(id, v); });
+    return m;
+  }
+  function gaSet(id, fn) {
+    var g = gaDoc(id);
+    if (!g || !canWrite()) return null;
+    var d = gaClone(g);
+    fn(d);
+    d.geaendert = new Date().toISOString();
+    if (GAQ.id && GAQ.id !== id) gaFlush();
+    S.ga.set(id, d);
+    GAQ.id = id; GAQ.d = d;
+    clearTimeout(GAQ.t);
+    GAQ.t = setTimeout(gaFlush, 3000);
+    return d;
+  }
+  function gaRerender(focusSel) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga') return;
+    var sh = $('#sheet'), g = gaDoc(s.id);
+    if (!sh || !g) return;
+    var top = sh.scrollTop, act = document.activeElement, keep = !focusSel && act && act.id && sh.contains(act) ? '#' + act.id : null;
+    var od = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; });
+    setHTML(sh, sheetGa(s.id, s.p));
+    $$('details[data-k]', sh).forEach(function (d) { if (od.indexOf(d.dataset.k) >= 0) d.open = true; });
+    sh.scrollTop = top;
+    var sel = focusSel || keep;
+    if (sel) { var el = $(sel, sh); if (el) { try { el.focus({ preventScroll: true }); } catch (_) {} } }
+  }
+
+  /* ---------- Auto-Blatt ---------- */
+  function gaSec(id, car) {
+    var list = gaList(id), can = canWrite();
+    if (!list.length) {
+      if (car.archiviert || !can) return '';
+      return '<button type="button" class="wpb off gab" data-act="ga-new" data-id="' + esc(id) + '">' + GA_ICON +
+        '<span class="wpb-t"><b>Gutachten</b><span>Zustandsaufnahme nach deiner Checkliste: Noten, Lackmessung und Fotos, als PDF und Notiz für Obsidian</span></span></button>';
+    }
+    return '<div class="sh-sec ga-sec"><div class="vhead"><h3 class="sec">Gutachten · ' + list.length + '</h3>' +
+      (can && !car.archiviert ? '<button type="button" class="linkbtn" data-act="ga-new" data-id="' + esc(id) + '">+ Neues Gutachten</button>' : '') + '</div><ul class="works">' +
+      list.map(function (p) {
+        var g = p[1], c = gaCkCount(g), G = gaG(g);
+        var sub = [gaArt(g).n, g.uebung ? 'Übung' : '', isDay(G.datum) ? 'Besichtigung ' + datum(G.datum) : '', c.n ? c.n + ' von ' + c.total + ' Prüfpunkten' : ''].filter(Boolean).join(' · ');
+        return '<li><button type="button" class="wbtn" data-act="ga-open" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc((g.uebung ? 'Übungsgutachten ' : 'Gutachten ') + gaStr(g.nr)) + '<small>' + esc(sub) + '</small></span>' +
+          '<span class="i-p"><span class="wst ' + (GA_ST_CLS[g.status] || '') + '">' + esc(gaStatusName(g.status)) + '</span></span></button></li>';
+      }).join('') + '</ul></div>';
+  }
+
+  /* ---------- Neues Gutachten ---------- */
+  function openGaNew(carId) {
+    var car = carId ? S.cars.get(carId) : null;
+    if (!car) { toast('Dieses Auto gibt es nicht mehr.'); return; }
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    if (!S.gaReady) { toast('Gutachten werden noch geladen, gleich nochmal.'); return; }
+    openSheet('ganeu', { id: carId }, sheetGaNew(carId, car));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function sheetGaNew(carId, car) {
+    var alt = carAlter(car), art = alt !== null && alt >= 20 ? 'wert' : 'zustand', nr = gaNextNr(false);
+    return '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Gutachten · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">Neues Gutachten</h2></div><button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<p class="rtext">Aufbau wie deine Gliederung im Vault: Auftrag, Grundlagen, Fahrzeug, Befund je Baugruppe, Originalität, Zustandsnoten, Bewertung, Zusammenfassung, Erklärung und Anhang.</p>' +
+      '<form class="form" id="ganeu" novalidate>' +
+      '<label class="f"><span>Art</span><select id="gan-art">' + GA_ART_L.map(function (k) { return '<option value="' + k + '"' + (k === art ? ' selected' : '') + '>' + esc(GA_ART[k].n) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="check"><input type="checkbox" id="gan-ueb"><span>Übungsgutachten (nicht zur Vorlage bei Dritten)</span></label>' +
+      '<label class="f"><span>Nummer</span><input id="gan-nr" class="mono" maxlength="30" value="' + esc(nr) + '" data-sug="' + esc(nr) + '" autocomplete="off" autocapitalize="characters" spellcheck="false"><small>Format JJJJ-NNN, fortlaufend; Übungen UEB-NNN.</small></label>' +
+      '<div class="row2"><label class="f"><span>Zweck</span><select id="gan-zweck">' + GA_ZWECK.map(function (z) { return '<option value="' + z[0] + '">' + esc(z[1]) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Stichtag</span><input type="date" id="gan-st" value="' + dayKey(new Date()) + '"></label></div>' +
+      '<label class="f"><span>Zweck genauer</span><input id="gan-zt" maxlength="200" placeholder="z. B. Wertermittlung für die Oldtimer-Kasko" autocomplete="off"></label>' +
+      '<p class="err" id="gan-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Anlegen</button><button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Abbrechen</button></div></form>';
+  }
+  function gaNewChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ganeu' || !t) return false;
+    if (t.id === 'gan-ueb') {
+      var nr = $('#gan-nr'), zt = $('#gan-zt'), sug = gaNextNr(t.checked);
+      if (nr && (!nr.value.trim() || nr.value.trim() === nr.dataset.sug)) { nr.value = sug; nr.dataset.sug = sug; }
+      if (zt && t.checked && !zt.value.trim()) zt.value = GA_UEB_ZWECK;
+      if (zt && !t.checked && zt.value.trim() === GA_UEB_ZWECK) zt.value = '';
+      return true;
+    }
+    return false;
+  }
+  async function saveGaNew() {
+    var s = S.sheet;
+    if (!s || s.type !== 'ganeu' || S.busy) return;
+    var car = S.cars.get(s.id), err = $('#gan-err');
+    var show = function (m) { if (err) err.textContent = m; else toast(m); };
+    if (!car) { show('Dieses Auto gibt es nicht mehr.'); return; }
+    var art = $('#gan-art').value, ueb = $('#gan-ueb').checked, nr = $('#gan-nr').value.trim().slice(0, 30), zweck = $('#gan-zweck').value, zt = $('#gan-zt').value.trim().slice(0, 200), st = $('#gan-st').value;
+    if (!GA_ART[art]) art = 'wert';
+    if (!GA_ZWECKM[zweck]) zweck = '';
+    if (!nr) { show('Bitte eine Nummer eintragen.'); return; }
+    if (gaList(null).some(function (p) { return gaStr(p[1].nr).toLowerCase() === nr.toLowerCase(); })) { show('Die Nummer ' + nr + ' gibt es schon. Frei ist ' + gaNextNr(ueb) + '.'); return; }
+    var doc = gaNewDoc(s.id, car, { art: art, uebung: ueb, nr: nr, zweck: zweck, zweckText: zt, stichtag: isDay(st) ? st : '' });
+    setBusy(true);
+    try {
+      var ref = S.db.collection('gutachten').doc();
+      await write(function () { return ref.set(doc); });
+      S.ga.set(ref.id, doc);
+      setBusy(false);
+      openGa(ref.id, 'start');
+      renderAll();
+      toast((ueb ? 'Übungsgutachten ' : 'Gutachten ') + nr + ' angelegt.');
+    } catch (e) { setBusy(false); writeError(e, show); } finally { if (S.busy) setBusy(false); }
+  }
+
+  /* ---------- Gutachten-Blatt mit Seiten ---------- */
+  function gaPages(g) {
+    var A = gaArt(g);
+    return GA_PAGES.filter(function (p) {
+      if (!A.voll && (p[0] === 'lack' || p[0] === 'orig')) return false;
+      if (p[0] === 'bew' && !A.bew) return false;
+      return true;
+    }).map(function (p) { return p[0] === 'befund' && !A.voll ? ['befund', 'Befund und Ergebnis', p[2]] : p; });
+  }
+  function openGa(gid, page) {
+    var g = gaDoc(gid);
+    if (!g) { toast('Dieses Gutachten gibt es nicht mehr.'); return; }
+    page = page || 'start';
+    if (page !== 'start' && !gaPages(g).some(function (p) { return p[0] === page; })) page = 'start';
+    openSheet('ga', { id: gid, p: page }, sheetGa(gid, page));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+    if (page === 'start') loadJsPdf().catch(function () {});
+  }
+  function gaGo(page) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga') return;
+    gaFlush();
+    openGa(s.id, page);
+  }
+  function gaBackCar() {
+    var s = S.sheet, g = s ? gaDoc(s.id) : null;
+    gaFlush();
+    if (g && S.cars.has(g.fahrzeug)) openCar(g.fahrzeug); else closeSheet();
+  }
+  function sheetGa(gid, page) {
+    var g = gaDoc(gid);
+    if (!g) return '<p class="note">Dieses Gutachten gibt es nicht mehr.</p>';
+    var car = S.cars.get(g.fahrzeug) || null, can = canWrite(), P = gaPages(g), i = -1;
+    P.forEach(function (p, k) { if (p[0] === page) i = k; });
+    var title = page === 'start' ? gaArt(g).n : i >= 0 ? P[i][1] : 'Gutachten';
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc((g.uebung ? 'Übungsgutachten ' : 'Gutachten ') + gaStr(g.nr) + ' · ' + gaName(g, car)) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + esc(title) + '</h2>' +
+      (page !== 'start' && i >= 0 ? '<p class="buy">' + esc('Schritt ' + (i + 1) + ' von ' + P.length + ' · ' + P[i][2]) + '</p>' : '') + '</div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    var fn = { start: gaPageStart, auftrag: gaPageAuftrag, grundlagen: gaPageGrund, fahrzeug: gaPageFzg, check: gaPageCheck, lack: gaPageLack, fotos: gaPageFotos, befund: gaPageBefund, orig: gaPageOrig, bew: gaPageBew, schluss: gaPageSchluss }[page] || gaPageStart;
+    h += fn(gid, g, car, can);
+    if (page === 'start') {
+      h += '<p class="err" id="ga-err" role="alert"></p><div class="sh-foot">' + (car ? '<button type="button" class="btn ghost" data-act="ga-car">Zum Auto</button>' : '') + '</div>';
+    } else {
+      var nx = P[i + 1];
+      h += '<p class="err" id="ga-err" role="alert"></p><div class="sh-foot">' + (nx ? '<button type="button" class="btn" data-act="ga-p" data-p="' + nx[0] + '">' + esc('Weiter: ' + nx[1]) + '</button>' : '<button type="button" class="btn" data-act="ga-p" data-p="start">Zur Übersicht und Ausgabe</button>') +
+        (nx ? '<button type="button" class="btn ghost" data-act="ga-p" data-p="start">Übersicht</button>' : '') + '</div>';
+    }
+    return h;
+  }
+  /* Eingabefeld, das direkt in das Gutachten schreibt (data-gf = Pfad im Dokument) */
+  function gaIn(g, path, label, o) {
+    o = o || {};
+    var v = gaGetPath(g, path), can = canWrite(), id = 'gf-' + String(path).replace(/[^A-Za-z0-9]/g, '-');
+    var at = ' data-gf="' + esc(path) + '"' + (o.t ? ' data-gt="' + o.t + '"' : '') + (o.r ? ' data-gr="1"' : '') + (can ? '' : ' disabled');
+    v = v === null || v === undefined ? '' : v;
+    if (o.t === 'b') return '<label class="check"><input type="checkbox" id="' + id + '"' + at + (v === true ? ' checked' : '') + '><span>' + esc(label) + '</span></label>';
+    var ctl;
+    if (o.ta) ctl = '<textarea id="' + id + '" rows="' + (o.rows || 3) + '" maxlength="' + (o.max || 4000) + '"' + at + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '>' + esc(v) + '</textarea>';
+    else if (o.sel) ctl = '<select id="' + id + '"' + at + '>' + o.sel.map(function (p) { return '<option value="' + esc(p[0]) + '"' + (String(v) === String(p[0]) ? ' selected' : '') + '>' + esc(p[1]) + '</option>'; }).join('') + '</select>';
+    else ctl = '<input id="' + id + '"' + (o.t === 'd' ? ' type="date"' : '') + (o.im ? ' inputmode="' + o.im + '"' : '') + ' maxlength="' + (o.max || 200) + '" value="' + esc(v) + '"' + at + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' autocomplete="off"' + (o.mono ? ' class="mono" autocapitalize="characters" spellcheck="false"' : '') + '>';
+    return '<label class="f' + (o.cls ? ' ' + o.cls : '') + '"><span>' + esc(label) + '</span>' + ctl + (o.help ? '<small>' + esc(o.help) + '</small>' : '') + '</label>';
+  }
+  function gaTiles(ctx, list, can, addLabel) {
+    if (!BL) return '';
+    return '<div class="bl-s">' + list.map(function (r, i) { return blTile(r, ctx, i, false); }).join('') + (can ? blAddTile(ctx, list.length ? 'Noch eins' : addLabel || 'Foto') : '') + '</div>';
+  }
+
+  /* ---------- Übersicht: Ablauf, Prüfung vor der Übergabe, Ausgabe ---------- */
+  function gaStepInfo(g, car, p) {
+    var A = gaArt(g), a = gaA(g), G = gaG(g), F = gaF(g), o = { sub: '', done: false, chip: null };
+    if (p === 'auftrag') { o.done = !!(gaZweckTxt(g) && isDay(a.stichtag) && gaStr(a.auftraggeber)); o.sub = [gaZweckTxt(g), isDay(a.stichtag) ? 'Stichtag ' + datum(a.stichtag) : ''].filter(Boolean).join(' · ') || 'Zweck, Stichtag, Umfang der Untersuchung'; }
+    else if (p === 'grundlagen') { var nv = GA_VORB.filter(function (v) { return gaObj(g.vorb)[v[0]] === true; }).length; o.done = isDay(G.datum) && !!gaStr(G.ort) && gaPmAll(g).length > 0; o.sub = ['Vorbereitung ' + nv + ' von ' + GA_VORB.length, isDay(G.datum) ? 'Besichtigung ' + datum(G.datum) : ''].filter(Boolean).join(' · '); }
+    else if (p === 'fahrzeug') { o.done = !!gaStr(F.fin) && (!A.voll || !!gaStr(F.motorNr)); o.sub = [gaStr(F.fin) ? 'FIN ' + gaStr(F.fin) : 'FIN fehlt', A.voll ? (gaStr(F.motorNr) ? 'Motornummer eingetragen' : 'Motornummer fehlt') : ''].filter(Boolean).join(' · '); }
+    else if (p === 'check') { var c = gaCkCount(g); o.done = c.total > 0 && c.n === c.total; o.sub = c.n + ' von ' + c.total + ' Prüfpunkten'; if (c.m) o.chip = ['faellig', c.m + (c.m === 1 ? ' Mangel' : ' Mängel')]; }
+    else if (p === 'lack') { var st = gaLackStats(g); o.done = st.n > 0; o.sub = st.n ? st.n + ' Bauteile · Durchschnitt ' + nf.format(Math.round(st.avg)) + ' µm' : 'Noch keine Messwerte'; if (st.auff.length) o.chip = ['faellig', st.auff.length + ' auffällig']; }
+    else if (p === 'fotos') { var nf2 = gaFotoCount(g); o.done = nf2 === GA_FOTO.length; o.sub = nf2 + ' von ' + GA_FOTO.length + ' Standardfotos'; }
+    else if (p === 'befund') {
+      if (!A.voll) { o.done = !!gaStr(g.befundText); o.sub = o.done ? 'Befund eingetragen' : 'Noch kein Befund'; }
+      else { var nn = GA_BG.filter(function (b) { return gaNoteOk(gaBg(g, b[0]).note); }).length, ges = gaObj(g.gesamt); o.done = gaNoteOk(ges.note) && !!gaStr(ges.begr); o.sub = 'Noten ' + nn + ' von ' + GA_BG.length + (gaNoteOk(ges.note) ? ' · Gesamtnote ' + ges.note : ''); }
+    }
+    else if (p === 'orig') { var O = gaO(g); o.done = !!O.matching; o.sub = O.matching ? 'Matching Numbers: ' + O.matching : 'Matching Numbers, Änderungen, Nicht-Originalteile'; }
+    else if (p === 'bew') { var B = gaBw(g), n = gaVglRows(g).length, mw = gaEur(B.markt), wb = gaEur(B.wbw); o.done = (mw !== null || wb !== null) && !!gaStr(B.herleitung); o.sub = [n + (n === 1 ? ' Vergleichsfahrzeug' : ' Vergleichsfahrzeuge'), mw !== null ? 'Marktwert ' + eur(mw) : wb !== null ? 'Wiederbeschaffungswert ' + eur(wb) : ''].filter(Boolean).join(' · ') + (A.bew === 'opt' ? ' · optional' : ''); }
+    else if (p === 'schluss') { o.done = !!gaStr(gaS(g).zusammenfassung); o.sub = o.done ? 'Zusammenfassung eingetragen' : 'Zusammenfassung in 3 bis 5 Sätzen, Erklärung'; }
+    return o;
+  }
+  /* Prüfung nach der Gliederung und dem Prüfablauf des Gutachten-Assistenten */
+  function gaQc(gid, g, car) {
+    var A = gaArt(g), a = gaA(g), G = gaG(g), F = gaF(g), out = [];
+    var add = function (t, p) { out.push({ t: t, p: p }); };
+    if (gaList(null).some(function (p) { return p[0] !== gid && gaStr(p[1].nr).toLowerCase() === gaStr(g.nr).toLowerCase(); })) add('Die Nummer ' + gaStr(g.nr) + ' ist doppelt vergeben', 'auftrag');
+    if (!gaZweckTxt(g)) add('Zweck des Gutachtens fehlt', 'auftrag');
+    if (!isDay(a.stichtag)) add('Stichtag der Bewertung fehlt', 'auftrag');
+    if (!gaStr(a.auftraggeber)) add('Auftraggeber fehlt', 'auftrag');
+    if (!gaGrenzenTxt(g).length) add('Umfang und Grenzen der Untersuchung angeben, zum Beispiel keine Demontage', 'auftrag');
+    if (!isDay(G.datum) || !gaStr(G.ort)) add('Besichtigung: Datum und Ort eintragen', 'grundlagen');
+    var pm = gaPmAll(g);
+    if (!pm.length) add('Verwendete Prüfmittel fehlen', 'grundlagen');
+    else if (pm.some(function (r) { return !r.kal; })) add('Prüfmittel ohne Kalibrierdatum: ' + pm.filter(function (r) { return !r.kal; }).map(function (r) { return r.id || r.g; }).join(', '), pm.some(function (r) { return !r.kal && r.lack; }) ? 'lack' : 'grundlagen');
+    if (A.bew === true && !gaStr(G.quellenMarkt)) add('Datenquellen für Marktwerte fehlen', 'grundlagen');
+    if (!gaStr(F.fin)) add('FIN fehlt', 'fahrzeug');
+    if (A.voll && !gaStr(F.motorNr)) add('Motornummer fehlt', 'fahrzeug');
+    var c = gaCkCount(g);
+    if (c.n < c.total) add((c.total - c.n) + ' von ' + c.total + ' Prüfpunkten offen', 'check');
+    if (c.mOhne) add(c.mOhne + (c.mOhne === 1 ? ' Mangel ohne Notiz' : ' Mängel ohne Notiz'), 'check');
+    if (A.voll) {
+      var st = gaLackStats(g), L = gaL(g);
+      if (!st.n) add('Keine Lackmesswerte', 'lack');
+      else {
+        if (gaNum(L.refIst) === null) add('Prüfung mit der Referenzfolie nicht dokumentiert', 'lack');
+        var bt = (gaStr(gaBg(g, 'lack').befund) + ' ' + gaStr(gaBg(g, 'karosserie').befund)).toLowerCase();
+        var miss = st.auff.filter(function (k) { return bt.indexOf(GA_LACKM[k].toLowerCase()) < 0; });
+        if (miss.length) add('Auffällig laut Lackmessung, im Befund nicht erwähnt: ' + miss.map(function (k) { return GA_LACKM[k]; }).join(', '), 'befund');
+      }
+    }
+    var nf2 = gaFotoCount(g);
+    if (nf2 < GA_FOTO.length) add((GA_FOTO.length - nf2) + ' von ' + GA_FOTO.length + ' Standardfotos fehlen', 'fotos');
+    if (A.voll) {
+      var ohne = GA_BG.filter(function (b) { return !gaNoteOk(gaBg(g, b[0]).note); });
+      if (ohne.length) add(ohne.length === 1 ? 'Ohne Zustandsnote: ' + ohne[0][1] : ohne.length + ' Baugruppen ohne Zustandsnote', 'befund');
+      var nb = GA_BG.filter(function (b) { var x = gaBg(g, b[0]); return gaNoteOk(x.note) && !gaStr(x.begr); });
+      if (nb.length) add('Note ohne Begründung: ' + nb.map(function (b) { return b[1]; }).join(', '), 'befund');
+      var ges = gaObj(g.gesamt);
+      if (!gaNoteOk(ges.note)) add('Gesamtnote fehlt', 'befund');
+      else if (!gaStr(ges.begr)) add('Gesamtnote ohne Begründung (gewichtet, nicht Durchschnitt)', 'befund');
+      if (!gaStr(g.notendef)) add('Angeben, nach welcher Definition die Noten vergeben wurden', 'befund');
+      if (!gaO(g).matching) add('Matching Numbers: ja, nein oder unklar angeben', 'orig');
+    } else if (!gaStr(g.befundText)) add('Befund und Ergebnis fehlen', 'befund');
+    if (A.bew === true || (A.bew === 'opt' && gaBewAny(g))) {
+      var B = gaBw(g), rows = gaVglRows(g), mw = gaEur(B.markt), wb = gaEur(B.wbw);
+      if (g.uebung && rows.length < 5) add('Erst ' + rows.length + ' von 5 Vergleichsfahrzeugen (deine Anleitung: fünf mit Datum und Screenshot)', 'bew');
+      else if (!rows.length && A.bew === true) add('Keine Vergleichsfahrzeuge', 'bew');
+      rows.forEach(function (r, i) {
+        if (!gaStr(r.quelle) || !isDay(r.datum)) add('Vergleichsfahrzeug ' + (i + 1) + ': Quelle oder Datum fehlt', 'bew');
+        else if (g.uebung && !blList(r.fotos).length) add('Vergleichsfahrzeug ' + (i + 1) + ': Screenshot fehlt', 'bew');
+      });
+      if (A.bew === true && mw === null && wb === null) add('Marktwert oder Wiederbeschaffungswert fehlt', 'bew');
+      if (mw !== null && !gaStr(B.marktDef)) add('Wertbegriff Marktwert nicht definiert', 'bew');
+      if (wb !== null && !gaStr(B.wbwDef)) add('Wertbegriff Wiederbeschaffungswert nicht definiert', 'bew');
+      if ((mw !== null || wb !== null) && !gaStr(B.herleitung)) add('Herleitung des Werts fehlt', 'bew');
+    }
+    if (!gaStr(gaS(g).zusammenfassung)) add('Zusammenfassung fehlt', 'schluss');
+    return out;
+  }
+  function gaObsPath(g) { return (g.uebung ? '40 Gutachten/Übungen/' : '40 Gutachten/Laufend/') + gaNoteName(g); }
+  function gaNoteName(g) { return fileSafe((g.uebung ? 'Übungsgutachten ' : 'Gutachten ') + gaStr(g.nr) + ' ' + gaName(g, S.cars.get(g.fahrzeug))); }
+  function gaPageStart(gid, g, car, can) {
+    var a = gaA(g), P = gaPages(g), qc = gaQc(gid, g, car), conf = gaConf(), h = '';
+    var facts = [gaZweckTxt(g), isDay(a.stichtag) ? 'Stichtag ' + datum(a.stichtag) : '', gaStr(a.auftraggeber) ? 'Auftraggeber ' + gaStr(a.auftraggeber) : ''].filter(Boolean).join(' · ');
+    h += '<div class="ga-top">' + (facts ? '<p class="rtext">' + esc(facts) + '</p>' : '<p class="note">Zweck, Stichtag und Auftraggeber trägst du unter „Auftrag“ ein.</p>') + gaIn(g, 'status', 'Status', { sel: GA_STATUS, r: 1, cls: 'ga-stsel' }) + '</div>';
+    var grp = null, n = 0, body = '';
+    P.forEach(function (p) {
+      n++;
+      if (p[2] !== grp) { if (grp !== null) body += '</ol>'; grp = p[2]; body += '<h3 class="sec ga-sgh">' + esc(grp) + '</h3><ol class="ga-steps" start="' + n + '">'; }
+      var info = gaStepInfo(g, car, p[0]);
+      body += '<li class="ga-st' + (info.done ? ' done' : '') + '"><button type="button" class="ga-stb" data-act="ga-p" data-p="' + p[0] + '"><span class="ga-sn" aria-hidden="true">' + (info.done ? '✓' : n) + '</span>' +
+        '<span class="ga-stt"><b>' + esc(p[1]) + (info.done ? '<span class="vh">, erledigt</span>' : '') + '</b><span>' + esc(info.sub) + '</span></span>' + (info.chip ? '<span class="wst ' + info.chip[0] + '">' + esc(info.chip[1]) + '</span>' : '') + '</button></li>';
+    });
+    h += '<div class="sh-sec ga-ablauf">' + body + '</ol></div>';
+    h += '<div class="sh-sec"><h3 class="sec">' + (qc.length ? 'Vor der Übergabe prüfen · ' + qc.length : 'Vor der Übergabe prüfen') + '</h3>' +
+      (qc.length ? '<ul class="ga-qc">' + qc.map(function (x) { return '<li><button type="button" class="ga-qcb" data-act="ga-p" data-p="' + x.p + '">' + esc(x.t) + '</button></li>'; }).join('') + '</ul>' : '<p class="note">Alles Wichtige aus deiner Gliederung ist ausgefüllt.</p>') +
+      '<p class="help">Geprüft wie im Gutachten-Assistenten: Zweck und Stichtag, Grenzen der Untersuchung, Prüfmittel mit Kalibrierstand, begründete Noten, auffällige Lackwerte im Befund, Vergleichsfahrzeuge mit Quelle und Datum, definierter Wertbegriff.</p></div>';
+    h += '<div class="sh-sec"><h3 class="sec">Ausgabe</h3><div class="ga-ex">' +
+      '<button type="button" class="btn" data-act="ga-pdf">PDF speichern</button>' +
+      '<a class="btn ghost" data-act="ga-obs" href="' + esc(gaObsUri(g)) + '">In Obsidian anlegen</a>' +
+      '<button type="button" class="btn ghost" data-act="ga-md-copy">Markdown kopieren</button>' +
+      (S.dl ? '<button type="button" class="btn ghost" data-act="ga-md-save">Als Datei</button>' : '') +
+      (!g.uebung ? '<button type="button" class="btn ghost" data-act="ga-row">Zeile für Laufend.md</button>' : '') + '</div>' +
+      (BL && gaAllFotoN(g) ? '<label class="check"><input type="checkbox" id="ga-pdf-f" checked><span>' + esc('Fotos ins PDF (' + gaAllFotoN(g) + ')') + '</span></label>' : '') +
+      '<p class="help">' + esc('„In Obsidian anlegen“ kopiert die Notiz und öffnet Obsidian mit einer neuen Notiz „' + gaObsPath(g) + '“ im Vault „' + conf.vault + '“') + srcRefs(GA_Q, [4]) + '. Bestehende Notizen werden nicht überschrieben. Geht Obsidian nicht auf, eine neue Notiz anlegen und einfügen.</p></div>';
+    h += '<details class="wp-more" data-k="ga-conf"><summary>Einstellungen für alle Gutachten</summary><form class="form" id="gaconf" novalidate>' +
+      '<label class="f"><span>Sachverständiger</span><input id="gc-sv" maxlength="80" value="' + esc(conf.sv) + '" autocomplete="off"' + (can ? '' : ' disabled') + '><small>Steht auf dem Deckblatt und unter der Erklärung.</small></label>' +
+      '<label class="f"><span>Qualifikation</span><input id="gc-q" maxlength="120" value="' + esc(conf.quali) + '" autocomplete="off"' + (can ? '' : ' disabled') + '><small>Laut deiner Gliederung gehört sie aufs Deckblatt.</small></label>' +
+      '<label class="f"><span>Name des Obsidian-Vaults</span><input id="gc-v" maxlength="80" value="' + esc(conf.vault) + '" autocomplete="off"' + (can ? '' : ' disabled') + '><small>So heißt der Vault in der Obsidian-App auf diesem Gerät.</small></label>' +
+      '<p class="err" id="gc-err" role="alert"></p>' + (can ? '<div class="sh-foot"><button type="submit" class="btn ghost">Einstellungen speichern</button></div>' : '') + '</form></details>';
+    return h;
+  }
+
+  /* ---------- Seite: Auftrag ---------- */
+  function gaPageAuftrag(gid, g, car, can) {
+    var a = gaA(g), h = '';
+    h += '<div class="row2">' + gaIn(g, 'art', 'Art', { sel: GA_ART_L.map(function (k) { return [k, GA_ART[k].n]; }), r: 1 }) + gaIn(g, 'nr', 'Nummer', { mono: 1, max: 30 }) + '</div>';
+    h += gaIn(g, 'uebung', 'Übungsgutachten (nicht zur Vorlage bei Dritten)', { t: 'b', r: 1 });
+    h += '<div class="sh-sec"><h3 class="sec">Auftraggeber</h3>' + gaIn(g, 'auftrag.auftraggeber', 'Name, Firma', { max: 120 }) + gaIn(g, 'auftrag.anschrift', 'Anschrift', { ta: 1, rows: 2, max: 300 }) + '</div>';
+    h += '<div class="sh-sec"><h3 class="sec">Zweck und Stichtag</h3><div class="row2">' + gaIn(g, 'auftrag.zweck', 'Zweck', { sel: GA_ZWECK, r: 1 }) + gaIn(g, 'auftrag.stichtag', 'Stichtag', { t: 'd' }) + '</div>' +
+      gaIn(g, 'auftrag.zweckText', 'Zweck genauer', { max: 200, ph: 'z. B. Wertermittlung für die Oldtimer-Kasko' }) +
+      (a.zweck === 'versicherung' ? gaIn(g, 'auftrag.versicherer', 'Versicherer', { max: 120 }) : '') +
+      '<p class="help">Aus deiner Notiz „Haftung als Gutachter“: Zweck im Auftrag und im Gutachten klar nennen, denn der Zweck entscheidet, wessen Interessen geschützt sind.</p></div>';
+    h += '<div class="sh-sec"><h3 class="sec">Umfang und Grenzen der Untersuchung</h3>' + GA_GRENZEN.map(function (x) { return gaIn(g, 'auftrag.grenzen.' + x[0], x[1], { t: 'b' }); }).join('') +
+      gaIn(g, 'auftrag.grenzenText', 'Weitere Einschränkungen', { ta: 1, rows: 2, max: 400, ph: 'z. B. Regen, schlechtes Licht, Fahrzeug nicht fahrbereit' }) + '</div>';
+    return h;
+  }
+  /* ---------- Seite: Vorbereitung und Grundlagen ---------- */
+  function gaPageGrund(gid, g, car, can) {
+    var G = gaG(g), L = gaL(g), h = '';
+    h += '<div class="sh-sec"><h3 class="sec">Vorbereitung</h3>' + GA_VORB.map(function (v) { return gaIn(g, 'vorb.' + v[0], v[1], { t: 'b' }); }).join('') + '</div>';
+    h += '<div class="sh-sec"><h3 class="sec">Unterlagen</h3>' + gaIn(g, 'grundlagen.unterlagen', 'Übergebene Unterlagen', { ta: 1, rows: 3, max: 1500, ph: 'z. B. Typenschein, Rechnungen der Restaurierung 2012, Fotos' }) +
+      gaTiles('ga:' + gid + ':u', blList(G.dateien), can, 'Unterlage fotografieren') + '</div>';
+    h += '<div class="sh-sec"><h3 class="sec">Besichtigung</h3><div class="row2">' + gaIn(g, 'grundlagen.datum', 'Datum', { t: 'd' }) + gaIn(g, 'grundlagen.ort', 'Ort', { max: 120 }) + '</div>' +
+      gaIn(g, 'grundlagen.anwesende', 'Anwesende', { max: 200 }) + gaIn(g, 'grundlagen.bedingungen', 'Licht und Wetter', { max: 200, ph: 'z. B. trocken, bewölkt, Halle mit Licht' }) + '</div>';
+    var pm = arr(G.pm), sug = can ? gaPmSuggest(gid, g) : [];
+    h += '<div class="sh-sec"><h3 class="sec">Prüfmittel</h3>' + (pm.length ? '<ul class="ga-pml">' + pm.map(function (r, i) {
+      return '<li class="ga-pm">' + gaIn(g, 'grundlagen.pm.' + i + '.g', 'Gerät', { max: 80, ph: 'z. B. Drehmomentschlüssel' }) + '<div class="row2">' + gaIn(g, 'grundlagen.pm.' + i + '.id', 'Nummer', { mono: 1, max: 20, ph: 'PM-002' }) + gaIn(g, 'grundlagen.pm.' + i + '.kal', 'Kalibriert am', { t: 'd' }) + '</div>' +
+        (can ? '<button type="button" class="linkbtn danger" data-act="ga-pm-rm" data-i="' + i + '">Entfernen</button>' : '') + '</li>';
+    }).join('') + '</ul>' : '') +
+      (gaArt(g).voll && (gaStr(L.geraet) || gaStr(L.pm)) ? '<p class="note">' + esc('Aus der Lackmessung: ' + [gaStr(L.geraet), gaStr(L.pm), isDay(L.kal) ? 'kalibriert ' + datum(L.kal) : 'Kalibrierdatum fehlt'].filter(Boolean).join(', ')) + '</p>' : '') +
+      (can ? '<div class="ga-pmsug"><button type="button" class="linkbtn" data-act="ga-pm-add">+ Prüfmittel</button>' + sug.map(function (x, i) { return '<button type="button" class="ga-chip" data-act="ga-pm-use" data-i="' + i + '">' + esc([x.g, x.id].filter(Boolean).join(' ')) + '</button>'; }).join('') + '</div>' : '') +
+      '<p class="help">Jedes Prüfmittel mit Nummer PM-### und Kalibrierdatum, wie in deiner Prüfmittelverwaltung. Das Schichtdickenmessgerät trägst du bei der Lackmessung ein.</p></div>';
+    if (gaArt(g).bew) h += '<div class="sh-sec"><h3 class="sec">Marktdaten</h3>' + gaIn(g, 'grundlagen.quellenMarkt', 'Datenquellen für Marktwerte', { ta: 1, rows: 2, max: 400, ph: 'z. B. Inserate und Auktionen mit Datum, Marktpreis-Datenbank' }) + '</div>';
+    return h;
+  }
+  /* ---------- Seite: Fahrzeug ---------- */
+  function gaPageFzg(gid, g, car, can) {
+    var F = gaF(g), h = '';
+    if (car && car.fin && gaStr(F.fin) && gaStr(F.fin).replace(/\s/g, '').toUpperCase() !== String(car.fin).replace(/\s/g, '').toUpperCase()) h += '<p class="note warn">' + esc('Die FIN im Gutachten weicht von der App ab (' + car.fin + '). Am Fahrzeug und in den Papieren prüfen.') + '</p>';
+    h += '<div class="sh-sec"><h3 class="sec">Identifikation</h3>' + gaIn(g, 'fzg.name', 'Marke / Modell', { max: 120 }) + gaIn(g, 'fzg.typ', 'Typ / Ausführung', { max: 120 }) +
+      '<div class="row2">' + gaIn(g, 'fzg.baujahr', 'Baujahr', { im: 'numeric', max: 4 }) + gaIn(g, 'fzg.ez', 'Erstzulassung', { max: 20, ph: 'TT.MM.JJJJ' }) + '</div>' +
+      gaIn(g, 'fzg.fin', 'FIN', { mono: 1, max: 24 }) +
+      '<div class="row2">' + gaIn(g, 'fzg.motorNr', 'Motornummer', { mono: 1, max: 40 }) + gaIn(g, 'fzg.getriebeNr', 'Getriebenummer', { mono: 1, max: 40 }) + '</div>' +
+      '<div class="row2">' + gaIn(g, 'fzg.kz', 'Kennzeichen', { mono: 1, max: 15 }) + gaIn(g, 'fzg.km', 'Kilometerstand', { im: 'numeric', max: 12 }) + '</div></div>';
+    h += '<div class="sh-sec"><h3 class="sec">Technische Daten und Ausstattung</h3><div class="row2">' + gaIn(g, 'fzg.ps', 'Leistung (PS)', { im: 'decimal', max: 8 }) + gaIn(g, 'fzg.hubraum', 'Hubraum', { max: 20 }) + '</div>' +
+      '<div class="row2">' + gaIn(g, 'fzg.kraftstoff', 'Kraftstoff', { max: 40 }) + gaIn(g, 'fzg.farbe', 'Farbe (Code)', { max: 80 }) + '</div>' +
+      gaIn(g, 'fzg.ausstattung', 'Ausstattung', { ta: 1, rows: 2, max: 800 }) + gaIn(g, 'fzg.historie', 'Vorbesitzer und Historie', { ta: 1, rows: 3, max: 1500 }) + '</div>';
+    h += (can && car ? '<button type="button" class="linkbtn" data-act="ga-fzg-sync">Leere Felder aus dem Auto übernehmen</button>' : '') +
+      '<p class="help">Das sind die Daten zum Stichtag. Spätere Änderungen am Auto ändern das Gutachten nicht.</p>';
+    return h;
+  }
+  /* ---------- Seite: Checkliste ---------- */
+  function gaHint(g, car, key) {
+    var q = key.split('.'), id = q[1], t = null, warn = false, btn = '';
+    if (q[0] !== 'o') return '';
+    if (id === 'i1' && car && car.fin) {
+      var F = gaF(g);
+      if (gaStr(F.fin) && gaStr(F.fin).replace(/\s/g, '').toUpperCase() !== String(car.fin).replace(/\s/g, '').toUpperCase()) { t = 'FIN im Gutachten (' + gaStr(F.fin) + ') weicht von der App ab (' + car.fin + ').'; warn = true; }
+      else t = 'FIN in der App: ' + car.fin + '.';
+    } else if (id === 'i4' && car) {
+      var ck = curKmEst(car);
+      if (ck) t = 'Zuletzt in der App: ' + nf.format(ck.km) + ' km' + (!ck.est && isDay(car.kmDatum) ? ' (' + datum(car.kmDatum) + ')' : '') + '.';
+    } else if (id === 'k2') {
+      var st = gaLackStats(g);
+      t = st.n ? 'Lackmessung: ' + st.n + ' Bauteile, Durchschnitt ' + nf.format(Math.round(st.avg)) + ' µm' + (st.auff.length ? ', auffällig: ' + st.auff.map(function (k) { return GA_LACKM[k]; }).join(', ') : '') + '.' : 'Noch keine Lackwerte.';
+      warn = st.auff.length > 0;
+      btn = '<button type="button" class="linkbtn inl" data-act="ga-p" data-p="lack">Zur Lackmessung</button>';
+    } else if (GA_UBMAP[id] && car) {
+      var u = ubState(car), zs = GA_UBMAP[id].filter(function (k) { return u[k] && u[k].st; });
+      if (zs.length) {
+        var lp = ubLastP(car);
+        t = 'Unterboden-Prüfung' + (lp && isDay(lp.datum) ? ' vom ' + datum(lp.datum) : '') + ': ' + zs.map(function (k) { return ubZoneLabel(k) + ' ' + UB_ST[u[k].st].k; }).join(', ') + '.';
+        warn = zs.some(function (k) { return u[k].st === 'rost' || u[k].st === 'durch'; });
+      }
+    } else if ((id === 'd2' || id === 'd3') && car) {
+      var mk = reifenDoc(car).montiert, s = mk && RSET[mk] ? reifenSet(car, mk) : null;
+      if (s && reifenHas(s)) {
+        if (id === 'd2') { var di = dotInfo(s.dot); if (di) { t = RSET[mk].n + ' in der App: DOT ' + s.dot + ', ' + ageTxt(di.age) + '.'; warn = di.age >= 10; } }
+        else { var mn = reifenMin(s); if (mn !== null) { t = RSET[mk].n + ' in der App: Profil mindestens ' + mmTxt(mn) + '.'; warn = mn < RSET[mk].min; } }
+      }
+    } else if ((id === 'p2' || id === 'u4') && car) {
+      var m = brLast(car);
+      if (m) {
+        var bad = BR_ACH.filter(function (p) { var b = brState(car, p[0]); return b.scheibe === 'tauschen' || b.belag === 'grenze'; }).map(function (p) { return p[1].toLowerCase(); });
+        t = 'Bremsmessung vom ' + datum(m.am) + ': ' + (bad.length ? 'Grenzwert erreicht ' + bad.join(', ') : 'kein Grenzwert erreicht') + '.';
+        warn = bad.length > 0;
+      }
+    }
+    if (!t) return '';
+    return '<small class="pvi-x ga-x' + (warn ? ' warn' : '') + '">' + esc(t) + (btn ? ' ' + btn : '') + '</small>';
+  }
+  function gaPageCheck(gid, g, car, can) {
+    var def = GA_CK[gaArt(g).ck], c = gaCkCount(g), h = '';
+    h += '<div class="pv-sum"><b>' + esc(c.n + ' von ' + c.total + ' angesehen') + '</b><span>' + esc([c.m ? c.m + (c.m === 1 ? ' Mangel' : ' Mängel') : 'keine Mängel eingetragen', c.nb ? c.nb + ' nicht beurteilbar' : ''].filter(Boolean).join(' · ')) + '</span>' + wpBar(c.n, c.total) + '</div>';
+    h += '<p class="help">' + esc(def.n + ' aus deinem Vault. Je Punkt OK, Mangel oder n. b. (nicht beurteilbar). Bei Mangel kurz notieren, was und wo, und mit Maßstab fotografieren.') + '</p>';
+    h += def.g.map(function (gr) {
+      return '<div class="sh-sec pv-g"><h3 class="sec">' + esc(gr.t) + '</h3><ul class="pvl">' + gr.it.map(function (it) {
+        var key = gaArt(g).ck + '.' + it[0], x = gaCk(g, key), st = gaCkSt(x), hint = gaHint(g, car, key), fotos = blList(x.fotos), ctx = 'ga:' + gid + ':c:' + key;
+        return '<li class="pvi ga-ck' + (st ? ' ' + st : '') + '"><div class="pvi-r ga-ckr"><b class="pvi-t">' + esc(it[1]) + '</b><span class="pvs">' + [['ok', 'OK', 'in Ordnung'], ['mangel', 'Mangel', 'Mangel'], ['nb', 'n. b.', 'nicht beurteilbar']].map(function (o) {
+          return '<button type="button" class="pvs-b ' + o[0] + '" data-act="ga-ck" data-k="' + esc(key) + '" data-v="' + o[0] + '" aria-pressed="' + (st === o[0]) + '" aria-label="' + esc(it[1] + ': ' + o[2]) + '"' + (can ? '' : ' disabled') + '>' + o[1] + '</button>';
+        }).join('') + '</span></div>' + hint +
+          (st === 'mangel' || st === 'nb' || gaStr(x.n) ? '<div class="pvm ga-ckm"><label class="f"><span class="vh">' + esc('Notiz zu ' + it[1]) + '</span><textarea rows="2" maxlength="500" data-gck="' + esc(key) + '" placeholder="' + (st === 'nb' ? 'Warum nicht beurteilbar?' : 'Was und wo?') + '"' + (can ? '' : ' disabled') + '>' + esc(x.n || '') + '</textarea></label>' +
+            (st === 'mangel' ? gaTiles(ctx, fotos, can, 'Foto machen') : '') + '</div>' : '') + '</li>';
+      }).join('') + '</ul></div>';
+    }).join('');
+    return h;
+  }
+  /* ---------- Seite: Lackmessung ---------- */
+  function gaLackAvgTxt(pa) { return pa.mat === 'Kunst' ? 'nicht messbar' : pa.avg === null ? '' : 'Ø ' + nf.format(Math.round(pa.avg)) + ' µm'; }
+  function gaSketchSvg(st) {
+    var z = function (k, r) {
+      var pa = st.parts[k], cls = 'ga-z' + (pa.auff ? ' auff' : pa.avg !== null ? ' mess' : pa.mat === 'Kunst' ? ' kunst' : '');
+      var s = '<rect class="' + cls + '" x="' + r[0] + '" y="' + r[1] + '" width="' + r[2] + '" height="' + r[3] + '" rx="2.2" data-act="ga-lack-go" data-k="' + k + '"><title>' + esc(GA_LACKM[k] + (pa.avg !== null ? ', ' + gaLackAvgTxt(pa) : '')) + '</title></rect>';
+      if (pa.avg !== null && r[2] >= 12) s += '<text class="ga-zt' + (pa.auff ? ' auff' : '') + '" x="' + (r[0] + r[2] / 2) + '" y="' + (r[1] + r[3] / 2 + 2.3) + '" text-anchor="middle" font-size="' + (r[2] >= 30 ? 7.5 : 6) + '">' + Math.round(pa.avg) + '</text>';
+      return s;
+    };
+    var aria = st.n ? 'Lackschichtdicke je Bauteil, Durchschnitt ' + Math.round(st.avg) + ' Mikrometer' + (st.auff.length ? ', auffällig: ' + st.auff.map(function (k) { return GA_LACKM[k]; }).join(', ') : '') : 'Skizze der Bauteile, noch keine Messwerte';
+    var h = '<svg class="ga-sk" viewBox="-2 -9 104 221" role="img" aria-label="' + esc(aria) + '">' +
+      '<text class="ga-zv" x="50" y="-3" text-anchor="middle">vorne</text>' +
+      '<rect class="ga-zo" x="4" y="4" width="92" height="202" rx="16"></rect>';
+    var sp = st.parts.saeulen, scl = 'ga-z ga-zs' + (sp.auff ? ' auff' : sp.avg !== null ? ' mess' : sp.mat === 'Kunst' ? ' kunst' : '');
+    h += '<rect class="' + scl + '" x="' + GA_GEO_S[0] + '" y="' + GA_GEO_S[1] + '" width="' + GA_GEO_S[2] + '" height="' + GA_GEO_S[3] + '" rx="4" data-act="ga-lack-go" data-k="saeulen"><title>' + esc(GA_LACKM.saeulen + (sp.avg !== null ? ', ' + gaLackAvgTxt(sp) : '')) + '</title></rect>';
+    GA_GEO_GL.forEach(function (r) { h += '<rect class="ga-zg" x="' + r[0] + '" y="' + r[1] + '" width="' + r[2] + '" height="' + r[3] + '" rx="1.5"></rect>'; });
+    h += z('dach', GA_GEO_D);
+    Object.keys(GA_GEO).forEach(function (k) { h += z(k, GA_GEO[k]); });
+    return h + '</svg>';
+  }
+  function gaLackSum(g, st) {
+    var thr = gaThr(g);
+    if (!st.n) return '<b>Noch keine Messwerte</b><span>Ein Bauteil in der Skizze antippen oder die Werte unten eintragen.</span>';
+    var h = '<b>' + esc('Durchschnitt ' + nf.format(Math.round(st.avg)) + ' µm') + '</b><span>' + esc(st.n + (st.n === 1 ? ' Bauteil gemessen' : ' Bauteile gemessen')) + '</span>';
+    if (st.n < 3) h += '<span>Ab drei Bauteilen markiert die App auffällige.</span>';
+    else h += st.auff.length ? '<span class="warn">' + esc('Auffällig, mehr als ' + thr + ' % über dem Durchschnitt: ' + st.auff.map(function (k) { return GA_LACKM[k] + ' ' + nf.format(Math.round(st.parts[k].avg)) + ' µm'; }).join(', ')) + '</span>' : '<span>' + esc('Kein Bauteil mehr als ' + thr + ' % über dem Durchschnitt.') + '</span>';
+    if (st.lr.length) h += '<span>' + esc('Links und rechts deutlich verschieden: ' + st.lr.map(function (x) { return x.t + ' ' + nf.format(Math.round(x.l)) + ' / ' + nf.format(Math.round(x.r)) + ' µm'; }).join(', ')) + '</span>';
+    return h;
+  }
+  function gaPageLack(gid, g, car, can) {
+    var st = gaLackStats(g), T = gaObj(gaL(g).teile), h = '';
+    h += '<p class="rtext">Pro Bauteil 3 bis 5 Messpunkte, Mitte und Ränder, Werte in µm. Deutlich höher als der Durchschnitt des Fahrzeugs heißt: Nachlackierung oder Spachtel möglich, aber kein Beweis.</p>';
+    h += '<div class="ga-lk"><div class="pv-sum ga-lks" id="ga-lks" aria-live="polite">' + gaLackSum(g, st) + '</div><div class="ga-skw" id="ga-sk">' + gaSketchSvg(st) + '</div></div>';
+    h += '<div class="sh-sec"><h3 class="sec">Bauteile</h3><ul class="ga-lkl">' + GA_LACK.map(function (p) {
+      var x = gaObj(T[p[0]]), pa = st.parts[p[0]], vals = arr(x.p), kunst = pa.mat === 'Kunst';
+      return '<li class="ga-lp' + (pa.auff ? ' auff' : '') + '" id="ga-lp-' + p[0] + '"><div class="ga-lph"><b>' + esc(p[1]) + '</b><span class="ga-lpa">' + esc(gaLackAvgTxt(pa)) + '</span><span class="wst faellig ga-lpf"' + (pa.auff ? '' : ' hidden') + '>auffällig</span></div>' +
+        '<div class="ga-lpi"><select id="ga-lm-' + p[0] + '" data-glm="' + p[0] + '" aria-label="' + esc('Material ' + p[1]) + '"' + (can ? '' : ' disabled') + '>' + [['Fe', 'Fe'], ['NFe', 'NFe'], ['Kunst', 'Kunststoff']].map(function (m) { return '<option value="' + m[0] + '"' + (pa.mat === m[0] ? ' selected' : '') + '>' + m[1] + '</option>'; }).join('') + '</select>' +
+        [0, 1, 2, 3, 4].map(function (j) { return '<input id="ga-lv-' + p[0] + '-' + j + '" data-glv="' + p[0] + ':' + j + '" inputmode="decimal" maxlength="7" autocomplete="off" value="' + esc(vals[j] == null ? '' : vals[j]) + '" aria-label="' + esc(p[1] + ', Punkt ' + (j + 1)) + '"' + (can && !kunst ? '' : ' disabled') + '>'; }).join('') + '</div></li>';
+    }).join('') + '</ul></div>';
+    h += '<div class="sh-sec"><h3 class="sec">Messgerät</h3><div class="row2">' + gaIn(g, 'lack.geraet', 'Gerät', { max: 80, ph: 'Hersteller, Modell' }) + gaIn(g, 'lack.pm', 'Prüfmittel-Nr.', { mono: 1, max: 20, ph: 'PM-001' }) + '</div>' +
+      '<div class="row2">' + gaIn(g, 'lack.kal', 'Kalibriert am', { t: 'd' }) + gaIn(g, 'lack.schwelle', 'Auffällig ab % über Ø', { im: 'numeric', max: 3 }) + '</div>' +
+      '<div class="row2">' + gaIn(g, 'lack.refSoll', 'Referenzfolie Soll (µm)', { im: 'decimal', max: 7 }) + gaIn(g, 'lack.refIst', 'Referenzfolie gemessen (µm)', { im: 'decimal', max: 7 }) + '</div>' +
+      '<p class="help">Vor jedem Einsatz mit der Referenzfolie prüfen, wie in deiner Gerätenotiz.</p></div>';
+    h += '<p class="help">Serienlackierungen liegen meist zwischen 80 und 130 µm; ein großer Hersteller gibt für die Außenhaut bis 350 µm an, bei Neuwagen kommen bis etwa 500 µm vor. Waagerechte Flächen sind meist dicker als senkrechte. Einen allgemeinen Grenzwert für Reparaturlack gibt es nicht' + srcRefs(GA_Q, [2]) + '. Auf Stahl (Fe) wird magnetinduktiv gemessen, auf Aluminium (NFe) mit Wirbelstrom; Kunststoffteile lassen sich so nicht messen. Auf ebener Fläche messen, nicht an Kanten, und links mit rechts vergleichen' + srcRefs(GA_Q, [3]) + '.</p>';
+    return h;
+  }
+  /* ---------- Seite: Fotos ---------- */
+  function gaPageFotos(gid, g, car, can) {
+    var n = gaFotoCount(g), mf = 0, h = '';
+    gaCkItems(g).forEach(function (it) { var x = gaCk(g, it.key); if (gaCkSt(x) === 'mangel') mf += blList(x.fotos).length; });
+    h += '<div class="pv-sum"><b>' + esc(n + ' von ' + GA_FOTO.length + ' Standardfotos') + '</b><span>' + esc('Dateinamen nach deinem Schema, zum Beispiel ' + gaNrFile(g) + '_01_' + GA_FOTO[0][1] + '.jpg') + '</span>' + wpBar(n, GA_FOTO.length) + '</div>';
+    h += '<ol class="ga-fl">' + GA_FOTO.map(function (f, i) {
+      var list = gaFotos(g, i + 1);
+      return '<li class="ga-fi' + (list.length ? ' on' : '') + '"><div class="ga-fh"><span class="ga-fn" aria-hidden="true">' + gaPad2(i + 1) + '</span><b>' + esc(f[0]) + '</b>' + (list.length ? '<span class="vh">, erledigt</span>' : '') + '</div>' +
+        gaTiles('ga:' + gid + ':f:' + (i + 1), list, can, 'Foto') +
+        (i === 15 && mf ? '<small class="help">' + esc('Dazu ' + mf + (mf === 1 ? ' Foto' : ' Fotos') + ' von Mängeln aus der Checkliste.') + '</small>' : '') + '</li>';
+    }).join('') + '</ol>';
+    h += '<p class="help">Gleichmäßiges Licht, kein Gegenlicht. Kennzeichen unkenntlich machen, falls Fotos auf eine Website oder in Social Media kommen.</p>';
+    return h;
+  }
+  /* ---------- Seite: Befund und Zustandsnoten ---------- */
+  function gaBrTxt(car) {
+    var m = car ? brLast(car) : null;
+    if (!m) return '';
+    var parts = BR_ACH.map(function (p) {
+      var mm = brLastAx(car, p[0]);
+      if (!mm) return '';
+      var typ = brTyp(car, p[0]), lim = numOrNull(brAch(car, p[0]).min), v = function (sd, k) { var x = brVal(mm, p[0], sd, k); return x === null ? '–' : nfIn.format(x); };
+      var s = p[1] + ' ' + (typ === 'trommel' ? 'Trommel-Ø ' : 'Scheibe ') + v('l', 's') + ' / ' + v('r', 's') + ' mm' + (lim !== null ? ' (' + (typ === 'trommel' ? 'max. Ø ' : 'MIN TH ') + nfIn.format(lim) + ')' : '');
+      if (typ !== 'trommel' && (brVal(mm, p[0], 'l', 'b') !== null || brVal(mm, p[0], 'r', 'b') !== null)) s += ', Belag ' + v('l', 'b') + ' / ' + v('r', 'b') + ' mm';
+      return s;
+    }).filter(Boolean);
+    return parts.length ? 'Bremsmessung vom ' + datum(m.am) + ': ' + parts.join('; ') + '.' : '';
+  }
+  function gaSug(g, car, bg) {
+    var lines = [];
+    gaCkItems(g).forEach(function (it) {
+      if (bg !== '_all' && it.bg !== bg) return;
+      var x = gaCk(g, it.key), st = gaCkSt(x);
+      if (st === 'mangel') lines.push(it.t + ': Mangel' + (gaStr(x.n) ? ', ' + gaStr(x.n) : '') + '.');
+      else if (st === 'nb') lines.push(it.t + ': nicht beurteilbar' + (gaStr(x.n) ? ', ' + gaStr(x.n) : '') + '.');
+    });
+    if (bg === 'lack') {
+      var st2 = gaLackStats(g);
+      if (st2.n) lines.push('Lackschichtdicke an ' + st2.n + ' Bauteilen gemessen, Durchschnitt ' + nf.format(Math.round(st2.avg)) + ' µm' + (st2.auff.length ? '; deutlich darüber: ' + st2.auff.map(function (k) { return GA_LACKM[k] + ' (Ø ' + nf.format(Math.round(st2.parts[k].avg)) + ' µm)'; }).join(', ') : '; kein Bauteil auffällig') + '. Messprotokoll im Anhang.');
+    }
+    if (bg === 'unterboden' && car) {
+      var u = ubState(car), zs = Object.keys(u).filter(function (k) { return u[k].st && u[k].st !== 'ok'; }), lp = ubLastP(car);
+      if (Object.keys(u).length) lines.push('Unterboden-Prüfung' + (lp && isDay(lp.datum) ? ' vom ' + datum(lp.datum) : '') + ': ' + (zs.length ? zs.map(function (k) { return ubZoneLabel(k) + ' ' + UB_ST[u[k].st].k + (u[k].n ? ' (' + u[k].n + ')' : ''); }).join(', ') : 'alle geprüften Zonen gesund') + '.');
+    }
+    if (bg === 'fahrwerk' && car) { var bt = gaBrTxt(car); if (bt) lines.push(bt); }
+    if (bg === 'raeder' && car) {
+      var mk = reifenDoc(car).montiert, s = mk && RSET[mk] ? reifenSet(car, mk) : null;
+      if (s && reifenHas(s)) {
+        var di = dotInfo(s.dot), mn = reifenMin(s);
+        lines.push(RSET[mk].n + [s.groesse ? ' ' + s.groesse : '', di ? ', DOT ' + s.dot + ' (' + ageTxt(di.age) + ')' : '', mn !== null ? ', Profil mindestens ' + mmTxt(mn) : ''].join('') + '.');
+      }
+    }
+    return lines;
+  }
+  function gaNoteSeg(bg, cur, can, label) {
+    return '<span class="pvs ga-ns" role="group" aria-label="' + esc('Note ' + label) + '">' + GA_NOTE.map(function (n) {
+      return '<button type="button" class="pvs-b ga-nb" data-act="ga-note" data-bg="' + bg + '" data-v="' + n[0] + '" aria-pressed="' + (cur === n[0]) + '" aria-label="' + esc(label + ': Note ' + n[0] + ', ' + n[1]) + '"' + (can ? '' : ' disabled') + '>' + n[0] + '</button>';
+    }).join('') + '</span>';
+  }
+  function gaNoteDesc(n) { var x = GA_NOTE[n - 1]; return x ? n + ' · ' + x[1] + ': ' + x[2] : ''; }
+  function gaPageBefund(gid, g, car, can) {
+    var h = '';
+    if (!gaArt(g).voll) {
+      var sa = gaSug(g, car, '_all');
+      h += gaIn(g, 'befundText', 'Befund und Ergebnis', { ta: 1, rows: 9, max: 6000, ph: 'Was geprüft wurde, Messwerte, ob die Auflagen erfüllt sind' });
+      if (sa.length && can) h += '<button type="button" class="linkbtn" data-act="ga-ins" data-bg="_all">' + esc('Mängel aus der Checkliste einfügen (' + sa.length + ')') + '</button>';
+      return h;
+    }
+    h += '<p class="rtext">Je Baugruppe der Befund und eine Note nach deiner Arbeitsdefinition. Die Gesamtnote ist gewichtet, nicht der Durchschnitt.</p>';
+    h += GA_BG.map(function (b) {
+      var x = gaBg(g, b[0]), sug = can ? gaSug(g, car, b[0]) : [], note = gaNoteOk(x.note) ? x.note : null;
+      return '<div class="ga-bg" id="ga-bg-' + b[0] + '"><div class="ga-bgh"><b>' + esc(b[1]) + '</b>' + gaNoteSeg(b[0], note, can, b[1]) + '</div>' +
+        (note ? '<small class="ga-nd">' + esc(gaNoteDesc(note)) + '</small>' : '') +
+        gaIn(g, 'bg.' + b[0] + '.begr', 'Begründung der Note', { max: 300, ph: 'Ein bis zwei Sätze' }) +
+        gaIn(g, 'bg.' + b[0] + '.befund', 'Befund', { ta: 1, rows: 3, max: 4000, ph: 'Was du festgestellt hast' }) +
+        (sug.length ? '<button type="button" class="linkbtn" data-act="ga-ins" data-bg="' + b[0] + '">' + esc('Aus Besichtigung und App einfügen (' + sug.length + ')') + '</button>' : '') + '</div>';
+    }).join('');
+    var ges = gaObj(g.gesamt), gn = gaNoteOk(ges.note) ? ges.note : null, set = GA_BG.map(function (b) { return gaBg(g, b[0]).note; }).filter(gaNoteOk);
+    var lo = set.length ? Math.min.apply(null, set) : null, hi = set.length ? Math.max.apply(null, set) : null, alt = car ? carAlter(car) : null;
+    if (alt === null) { var bj = gaNum(gaF(g).baujahr); if (bj !== null && bj > 1880) alt = Number(dayKey(new Date()).slice(0, 4)) - bj; }
+    h += '<div class="ga-bg ga-ges"><div class="ga-bgh"><b>Gesamtnote</b>' + gaNoteSeg('gesamt', gn, can, 'Gesamtnote') + '</div>' +
+      (gn ? '<small class="ga-nd">' + esc(gaNoteDesc(gn)) + '</small>' : '') +
+      (set.length ? '<small class="ga-nd' + (gn && (gn < lo || gn > hi) ? ' warn' : '') + '">' + esc((lo === hi ? 'Alle Baugruppen Note ' + lo : 'Baugruppen von Note ' + lo + ' bis ' + hi) + (gn && (gn < lo || gn > hi) ? '. Die Gesamtnote liegt außerhalb, bitte begründen.' : '.')) + '</small>' : '') +
+      (alt !== null && alt >= 30 ? '<small class="ga-nd' + (gn && gn > 3 ? ' warn' : '') + '">Für die Genehmigung als historisches Fahrzeug verlangt das Land OÖ Erhaltungszustand Note 1 bis 3' + srcRefs(GA_Q, [1]) + '.</small>' : '') +
+      gaIn(g, 'gesamt.begr', 'Begründung der Gesamtnote', { ta: 1, rows: 3, max: 2000, ph: 'Welche Baugruppen zählen mehr und warum?' }) +
+      gaIn(g, 'notendef', 'Bewertet nach', { max: 200, help: 'Im Gutachten immer angeben, nach welcher Definition bewertet wurde; bei einer Datenquelle deren Definition übernehmen.' }) + '</div>';
+    h += '<details class="wp-more" data-k="ga-noten"><summary>Notenskala: deine Arbeitsdefinition</summary><dl class="ga-ntl">' + GA_NOTE.map(function (n) { return '<dt>' + n[0] + ' · ' + esc(n[1]) + '</dt><dd>' + esc(n[2]) + '</dd>'; }).join('') + '</dl></details>';
+    return h;
+  }
+  /* ---------- Seite: Originalität ---------- */
+  function gaPageOrig(gid, g, car, can) {
+    var h = '', ck = function (k) { var x = gaCk(g, 'o.' + k), st = gaCkSt(x); return st === 'ok' ? 'OK' : st === 'mangel' ? 'Mangel' + (gaStr(x.n) ? ': ' + gaStr(x.n) : '') : st === 'nb' ? 'nicht beurteilbar' + (gaStr(x.n) ? ': ' + gaStr(x.n) : '') : 'offen'; };
+    h += '<dl class="br-dl ga-odl"><dt>FIN am Fahrzeug = Dokumente</dt><dd>' + esc(ck('i1')) + '</dd><dt>Typenschild, Motor- und Getriebenummer</dt><dd>' + esc(ck('i2')) + '</dd></dl>';
+    h += gaIn(g, 'orig.matching', 'Matching Numbers', { sel: [['', '–'], ['ja', 'ja'], ['nein', 'nein'], ['unklar', 'unklar, nicht belegt']] }) +
+      gaIn(g, 'orig.matchingN', 'Wie geprüft, was gefunden', { ta: 1, rows: 2, max: 1000, ph: 'z. B. Motornummer am Block = Typenschein' }) +
+      gaIn(g, 'orig.aenderungen', 'Zeitgenössische Änderungen', { ta: 1, rows: 3, max: 2000 }) +
+      gaIn(g, 'orig.fremdteile', 'Nicht-Originalteile', { ta: 1, rows: 3, max: 2000 });
+    h += '<p class="help">Bei Spezialversionen getrennt angeben: belegt, plausibel aber nicht belegt, widersprüchlich, nicht prüfbar. Keine Echtheit bestätigen, die über das Geprüfte hinausgeht (deine Notiz „Echtheitsprüfung Spezialversionen“).</p>';
+    return h;
+  }
+  /* ---------- Seite: Bewertung ---------- */
+  function gaVglSum(g) {
+    var s = gaVglStats(g), n = gaVglRows(g).length;
+    if (!n) return '<b>Noch keine Vergleichsfahrzeuge</b><span>Deine Anleitung: fünf aus Inseraten oder Auktionen, mit Datum und Screenshot.</span>';
+    return '<b>' + esc(n + (n === 1 ? ' Vergleichsfahrzeug' : ' Vergleichsfahrzeuge')) + '</b>' + (s.n ? '<span>' + esc(s.n === 1 ? 'Angepasster Preis ' + eur(s.min) : 'Angepasste Preise von ' + eur(s.min) + ' bis ' + eur(s.max) + ', Median ' + eur(s.med)) + '</span>' : '<span>Noch keine Preise.</span>') + '<span>Nur Rechnung mit deinen Angaben, kein Marktwert.</span>';
+  }
+  function gaPageBew(gid, g, car, can) {
+    var rows = gaVglRows(g), h = '';
+    if (gaArt(g).bew === 'opt') h += '<p class="note">Bei dieser Art ist die Bewertung freiwillig. Ohne Einträge fehlt sie im PDF.</p>';
+    h += '<div class="pv-sum" id="ga-vgs">' + gaVglSum(g) + '</div>';
+    h += '<ol class="ga-vl">' + rows.map(function (r, i) {
+      var b = 'bew.vgl.' + i + '.', adj = gaVglAdj(r), armed = S.gaArm && S.gaArm.id === r.id && S.gaArm.t > Date.now();
+      return '<li class="ga-v" id="ga-v-' + esc(r.id) + '"><div class="ga-vh"><b>' + esc('Vergleichsfahrzeug ' + (i + 1)) + '</b><span class="ga-va" id="ga-va-' + i + '">' + esc(adj !== null ? 'angepasst ' + eur(adj) : '') + '</span></div>' +
+        gaIn(g, b + 'fz', 'Fahrzeug', { max: 160, ph: 'Modell, Baujahr, km' }) +
+        '<div class="row2">' + gaIn(g, b + 'quelle', 'Quelle', { max: 300, ph: 'Plattform oder Link' }) + gaIn(g, b + 'datum', 'Datum', { t: 'd' }) + '</div>' +
+        '<div class="row2">' + gaIn(g, b + 'zustand', 'Zustand', { sel: [['', '–']].concat(GA_NOTE.map(function (n) { return [String(n[0]), 'Note ' + n[0]]; })) }) + gaIn(g, b + 'preis', 'Preis (€)', { im: 'decimal', max: 12 }) + '</div>' +
+        gaIn(g, b + 'anp', 'Anpassung (€, plus oder minus)', { max: 12, ph: 'z. B. -1500' }) +
+        gaIn(g, b + 'notiz', 'Begründung der Anpassung', { ta: 1, rows: 2, max: 600 }) +
+        gaTiles('ga:' + gid + ':v:' + r.id, blList(r.fotos), can, 'Screenshot') +
+        (can ? '<button type="button" class="linkbtn danger" data-act="ga-vgl-rm" data-id="' + esc(r.id) + '">' + (armed ? 'Wirklich entfernen?' : 'Entfernen') + '</button>' : '') + '</li>';
+    }).join('') + '</ol>';
+    if (can) h += '<button type="button" class="btn ghost" data-act="ga-vgl-add">+ Vergleichsfahrzeug</button>';
+    h += '<div class="sh-sec"><h3 class="sec">Ergebnis</h3><div class="row2">' + gaIn(g, 'bew.markt', 'Marktwert (€)', { im: 'decimal', max: 14 }) + gaIn(g, 'bew.wbw', 'Wiederbeschaffungswert (€)', { im: 'decimal', max: 14 }) + '</div>' +
+      gaIn(g, 'bew.marktDef', 'Definition Marktwert', { ta: 1, rows: 2, max: 600, ph: 'Definition mit Quelle, z. B. aus der verwendeten Marktdatenquelle' }) +
+      gaIn(g, 'bew.wbwDef', 'Definition Wiederbeschaffungswert', { ta: 1, rows: 2, max: 600, ph: 'Definition mit Quelle' }) +
+      gaIn(g, 'bew.zuab', 'Zu- und Abschläge', { ta: 1, rows: 3, max: 2000 }) +
+      gaIn(g, 'bew.herleitung', 'Herleitung', { ta: 1, rows: 4, max: 3000, ph: 'Wie du aus Vergleichsfahrzeugen, Zustand und Zu- und Abschlägen zum Wert kommst' }) +
+      (g.uebung ? '<p class="help">Übung: Der Wert ist nicht verbindlich und steht so auch im PDF.</p>' : '') + '</div>';
+    return h;
+  }
+  /* ---------- Seite: Zusammenfassung und Erklärung ---------- */
+  function gaPageSchluss(gid, g, car, can) {
+    var S2 = gaS(g), h = '';
+    h += gaIn(g, 'schluss.zusammenfassung', 'Zusammenfassung', { ta: 1, rows: 5, max: 3000, ph: 'Ergebnis in 3 bis 5 Sätzen' });
+    h += gaIn(g, 'schluss.erklaerung', 'Erklärung', { ta: 1, rows: 7, max: 3000 }) +
+      (can && gaStr(S2.erklaerung) !== gaErklDefault(g.art) ? '<button type="button" class="linkbtn" data-act="ga-erkl">Vorschlag wieder einsetzen</button>' : '') +
+      '<p class="help">Vorschlag aus deinem AGB-Entwurf (Punkte 2, 4 und 8). Vor dem ersten echten Gutachten rechtlich prüfen lassen.</p>';
+    h += gaIn(g, 'schluss.ort', 'Ort für die Unterschrift', { max: 80 });
+    if (g.uebung) {
+      h += '<div class="sh-sec"><h3 class="sec">Selbstkritik (nur in der Obsidian-Notiz)</h3>' + gaIn(g, 'selbst.fehlt', 'Was hat gefehlt?', { ta: 1, rows: 3, max: 2000 }) + gaIn(g, 'selbst.anders', 'Was würde ich beim nächsten Mal anders machen?', { ta: 1, rows: 3, max: 2000 }) +
+        '<div class="row2">' + gaIn(g, 'selbst.vorb', 'Dauer Vorbereitung', { max: 12, ph: 'z. B. 1,5 h' }) + gaIn(g, 'selbst.bes', 'Dauer Besichtigung', { max: 12 }) + '</div>' +
+        '<div class="row2">' + gaIn(g, 'selbst.rech', 'Dauer Recherche', { max: 12 }) + gaIn(g, 'selbst.schr', 'Dauer Schreiben', { max: 12 }) + '</div>' +
+        '<p class="help">Die Zeiten brauchst du später für deine Kalkulation (Anleitung Übungsgutachten).</p></div>';
+    }
+    return h;
+  }
+
+  /* ---------- Eingaben ---------- */
+  function gaField(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga' || !t || !t.dataset || t.dataset.gf === undefined) return false;
+    var path = t.dataset.gf, typ = t.dataset.gt || '', v;
+    if (!/^[A-Za-z0-9_.]+$/.test(path)) return true;
+    if (typ === 'b') v = !!t.checked;
+    else {
+      v = String(t.value == null ? '' : t.value).slice(0, Number(t.getAttribute('maxlength')) || 4000);
+      if (typ === 'd' && v && !isDay(v)) v = '';
+      if (path === 'art' && !GA_ART[v]) return true;
+      if (path === 'status' && !GA_STATUS.some(function (x) { return x[0] === v; })) return true;
+    }
+    gaSet(s.id, function (d) { gaPutPath(d, path, v); });
+    return true;
+  }
+  function gaInput(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga' || !t || !t.dataset) return false;
+    if (t.dataset.glv !== undefined) {
+      var q = String(t.dataset.glv).split(':'), k = q[0], j = Number(q[1]);
+      if (!GA_LACKM[k] || !(j >= 0 && j < 5)) return true;
+      var v = String(t.value || '').slice(0, 7);
+      gaSet(s.id, function (d) {
+        d.lack = gaObj(d.lack); d.lack.teile = gaObj(d.lack.teile);
+        var x = Object.assign({ mat: 'Fe' }, gaObj(d.lack.teile[k])), p = arr(x.p).slice(0, 5);
+        while (p.length < 5) p.push('');
+        p[j] = v; x.p = p; d.lack.teile[k] = x;
+      });
+      gaLackPaint(s.id);
+      return true;
+    }
+    if (t.dataset.gck !== undefined) {
+      var key = t.dataset.gck, nv = String(t.value || '').slice(0, 500);
+      if (!GA_CKM[key]) return true;
+      gaSet(s.id, function (d) { d.check = gaObj(d.check); d.check[key] = Object.assign({}, gaObj(d.check[key]), { n: nv }); });
+      return true;
+    }
+    if (t.dataset.gf !== undefined) {
+      if (t.tagName === 'SELECT' || t.type === 'checkbox') return true;
+      gaField(t);
+      var p2 = t.dataset.gf;
+      if (/^lack\./.test(p2)) gaLackPaint(s.id);
+      var m = /^bew\.vgl\.(\d+)\.(preis|anp)$/.exec(p2);
+      if (m) {
+        var g = gaDoc(s.id), r = gaVglRows(g)[Number(m[1])], el = $('#ga-va-' + m[1]), sm = $('#ga-vgs');
+        if (el && r) { var a = gaVglAdj(r); el.textContent = a !== null ? 'angepasst ' + eur(a) : ''; }
+        if (sm) setHTML(sm, gaVglSum(g));
+      }
+      return true;
+    }
+    return false;
+  }
+  function gaChange(t) {
+    var s = S.sheet;
+    if (!t || !t.dataset) return false;
+    if (gaNewChange(t)) return true;
+    if (!s || s.type !== 'ga') return false;
+    if (t.dataset.glm !== undefined) {
+      var k = t.dataset.glm, mat = t.value === 'NFe' || t.value === 'Kunst' ? t.value : 'Fe';
+      if (!GA_LACKM[k]) return true;
+      gaSet(s.id, function (d) { d.lack = gaObj(d.lack); d.lack.teile = gaObj(d.lack.teile); d.lack.teile[k] = Object.assign({ p: ['', '', '', '', ''] }, gaObj(d.lack.teile[k]), { mat: mat }); });
+      gaRerender('#ga-lm-' + k);
+      return true;
+    }
+    if (t.dataset.gck !== undefined) return gaInput(t);
+    if (t.dataset.gf !== undefined) {
+      gaField(t);
+      if (t.dataset.gr) gaRerender(t.id ? '#' + t.id : null);
+      else if (/^lack\./.test(t.dataset.gf)) gaLackPaint(s.id);
+      return true;
+    }
+    return false;
+  }
+  function gaLackPaint(gid) {
+    var g = gaDoc(gid), sh = $('#sheet');
+    if (!g || !sh || !S.sheet || S.sheet.p !== 'lack') return;
+    var st = gaLackStats(g);
+    GA_LACK.forEach(function (p) {
+      var li = $('#ga-lp-' + p[0], sh), pa = st.parts[p[0]];
+      if (!li) return;
+      li.classList.toggle('auff', !!pa.auff);
+      var a = $('.ga-lpa', li); if (a) a.textContent = gaLackAvgTxt(pa);
+      var f = $('.ga-lpf', li); if (f) f.hidden = !pa.auff;
+    });
+    var sk = $('#ga-sk', sh); if (sk) setHTML(sk, gaSketchSvg(st));
+    var sm = $('#ga-lks', sh); if (sm) setHTML(sm, gaLackSum(g, st));
+  }
+  function gaLackGo(k) {
+    var li = $('#ga-lp-' + k);
+    if (!li) return;
+    var reduce = false;
+    try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+    li.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    var inp = $$('input[data-glv]', li).filter(function (x) { return !x.value && !x.disabled; })[0] || $('select[data-glm]', li);
+    if (inp) setTimeout(function () { try { inp.focus({ preventScroll: true }); } catch (_) {} }, reduce ? 0 : 380);
+  }
+  function gaCkSet(key, v) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga' || !canWrite() || !GA_CKM[key] || ['ok', 'mangel', 'nb'].indexOf(v) < 0) return;
+    var cur = gaCk(gaDoc(s.id), key).st;
+    gaSet(s.id, function (d) {
+      d.check = gaObj(d.check);
+      var x = Object.assign({}, gaObj(d.check[key]));
+      if (cur === v) { delete x.st; delete x.am; } else { x.st = v; x.am = dayKey(new Date()); }
+      d.check[key] = x;
+    });
+    gaRerender('#sheet [data-act="ga-ck"][data-k="' + key + '"][data-v="' + v + '"]');
+  }
+  function gaNoteSet(bg, v) {
+    var s = S.sheet;
+    v = Number(v);
+    if (!s || s.type !== 'ga' || !canWrite() || !gaNoteOk(v) || (bg !== 'gesamt' && !GA_BGM[bg])) return;
+    var g = gaDoc(s.id), cur = bg === 'gesamt' ? gaObj(g.gesamt).note : gaBg(g, bg).note;
+    gaSet(s.id, function (d) {
+      if (bg === 'gesamt') d.gesamt = Object.assign({}, gaObj(d.gesamt), { note: cur === v ? null : v });
+      else { d.bg = gaObj(d.bg); d.bg[bg] = Object.assign({}, gaObj(d.bg[bg]), { note: cur === v ? null : v }); }
+    });
+    gaRerender('#sheet [data-act="ga-note"][data-bg="' + bg + '"][data-v="' + v + '"]');
+  }
+  /* Vorschläge anhängen, was schon im Befund steht, nicht doppelt */
+  function gaIns(bg) {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    if (!g || !canWrite() || (bg !== '_all' && !GA_BGM[bg])) return;
+    var car = S.cars.get(g.fahrzeug) || null, lines = gaSug(g, car, bg), path = bg === '_all' ? 'befundText' : 'bg.' + bg + '.befund', cur = gaStr(gaGetPath(g, path));
+    var add = lines.filter(function (l) { return cur.indexOf(l) < 0; });
+    if (!add.length) { toast('Steht schon alles im Befund.'); return; }
+    var nv = (cur ? cur + '\n' : '') + add.join('\n');
+    gaSet(s.id, function (d) { gaPutPath(d, path, nv.slice(0, bg === '_all' ? 6000 : 4000)); });
+    gaRerender('#gf-' + path.replace(/[^A-Za-z0-9]/g, '-'));
+    toast(add.length === 1 ? 'Eine Zeile eingefügt. Bitte prüfen und ergänzen.' : add.length + ' Zeilen eingefügt. Bitte prüfen und ergänzen.');
+  }
+  function gaPmAdd(sugIdx) {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    if (!g || !canWrite()) return;
+    var row = { g: '', id: '', kal: '' };
+    if (sugIdx !== undefined) { var x = gaPmSuggest(s.id, g)[Number(sugIdx)]; if (!x) return; row = { g: x.g, id: x.id, kal: x.kal || '' }; }
+    var d = gaSet(s.id, function (dd) { dd.grundlagen = gaObj(dd.grundlagen); dd.grundlagen.pm = arr(dd.grundlagen.pm).concat([row]); });
+    if (!d) return;
+    gaRerender(sugIdx === undefined ? '#gf-grundlagen-pm-' + (arr(d.grundlagen.pm).length - 1) + '-g' : null);
+  }
+  function gaPmRm(i) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga') return;
+    i = Number(i);
+    gaSet(s.id, function (d) { d.grundlagen = gaObj(d.grundlagen); d.grundlagen.pm = arr(d.grundlagen.pm).filter(function (r, k) { return k !== i; }); });
+    gaRerender();
+  }
+  function gaVglAdd() {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga') return;
+    var d = gaSet(s.id, function (dd) { dd.bew = gaObj(dd.bew); dd.bew.vgl = arr(dd.bew.vgl).concat([{ id: rid(8), fz: '', quelle: '', datum: dayKey(new Date()), zustand: '', preis: '', anp: '', notiz: '', fotos: [] }]); });
+    if (!d) return;
+    gaRerender('#gf-bew-vgl-' + (gaVglRows(d).length - 1) + '-fz');
+  }
+  function gaVglRm(id, btn) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga' || !canWrite()) return;
+    if (!(S.gaArm && S.gaArm.id === id && S.gaArm.t > Date.now())) {
+      S.gaArm = { id: id, t: Date.now() + 4000 };
+      if (btn) btn.textContent = 'Wirklich entfernen?';
+      setTimeout(function () { if (S.gaArm && S.gaArm.id === id && S.gaArm.t <= Date.now()) { S.gaArm = null; if (btn && btn.isConnected) btn.textContent = 'Entfernen'; } }, 4100);
+      return;
+    }
+    S.gaArm = null;
+    gaSet(s.id, function (d) { d.bew = gaObj(d.bew); d.bew.vgl = arr(d.bew.vgl).filter(function (r) { return !r || r.id !== id; }); });
+    gaRerender();
+    toast('Vergleichsfahrzeug entfernt. Screenshots bleiben im Daten-Repository.');
+  }
+  function gaErklReset() {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    if (!g) return;
+    gaSet(s.id, function (d) { d.schluss = Object.assign({}, gaObj(d.schluss), { erklaerung: gaErklDefault(d.art) }); });
+    gaRerender('#gf-schluss-erklaerung');
+  }
+  function gaFzgSync() {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null, car = g ? S.cars.get(g.fahrzeug) : null;
+    if (!g || !car) return;
+    var ck = curKmEst(car), src = { name: car.name, baujahr: numOrNull(car.baujahr) === null ? '' : String(car.baujahr), ez: car.erstzulassung, fin: car.fin, kz: car.kennzeichen, km: ck ? String(ck.km) : '', hubraum: car.hubraum, ps: numOrNull(car.leistungPs) === null ? '' : String(car.leistungPs), kraftstoff: car.kraftstoff }, n = 0;
+    var d = gaSet(s.id, function (dd) {
+      dd.fzg = gaObj(dd.fzg);
+      Object.keys(src).forEach(function (k) { if (!gaStr(dd.fzg[k]) && gaStr(src[k])) { dd.fzg[k] = String(src[k]); n++; } });
+    });
+    if (!d) return;
+    gaRerender();
+    toast(n ? (n === 1 ? 'Ein Feld übernommen.' : n + ' Felder übernommen.') : 'Keine leeren Felder, die das Auto füllen könnte.');
+  }
+  async function saveGaConf() {
+    var err = $('#gc-err'), show = function (m) { if (err) err.textContent = m; else toast(m); };
+    if (!canWrite() || S.busy) return;
+    var data = { sv: $('#gc-sv').value.trim().slice(0, 80), quali: $('#gc-q').value.trim().slice(0, 120), vault: $('#gc-v').value.trim().slice(0, 80) };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('meta/gutachten').set(data); });
+      S.gaConf = data;
+      setBusy(false);
+      gaRerender();
+      toast('Einstellungen gespeichert.');
+    } catch (e) { setBusy(false); writeError(e, show); } finally { if (S.busy) setBusy(false); }
+  }
+
+  /* ---------- Fotos am Gutachten: ga:<id>:f:<Nr> | c:<Prüfpunkt> | v:<Vergleich> | u (Unterlagen) ---------- */
+  function gaCtxDocList(d, p) {
+    if (p[2] === 'f') return blList(gaObj(d.fotos)[p[3]]);
+    if (p[2] === 'c') return blList(gaObj(gaObj(d.check)[p[3]]).fotos);
+    if (p[2] === 'v') { var r = arr(gaObj(d.bew).vgl).filter(function (x) { return x && x.id === p[3]; })[0]; return r ? blList(r.fotos) : []; }
+    if (p[2] === 'u') return blList(gaObj(d.grundlagen).dateien);
+    return [];
+  }
+  function gaCtxPut(d, p, list) {
+    if (p[2] === 'f') { d.fotos = gaObj(d.fotos); d.fotos[p[3]] = list; }
+    else if (p[2] === 'c') { d.check = gaObj(d.check); d.check[p[3]] = Object.assign({}, gaObj(d.check[p[3]]), { fotos: list }); }
+    else if (p[2] === 'v') { d.bew = gaObj(d.bew); d.bew.vgl = arr(d.bew.vgl).map(function (x) { return x && x.id === p[3] ? Object.assign({}, x, { fotos: list }) : x; }); }
+    else if (p[2] === 'u') { d.grundlagen = Object.assign({}, gaObj(d.grundlagen), { dateien: list }); }
+  }
+  function gaCtxOk(d, p) {
+    if (!d) return false;
+    if (p[2] === 'f') { var n = Number(p[3]); return n >= 1 && n <= GA_FOTO.length && String(n) === p[3]; }
+    if (p[2] === 'c') return !!GA_CKM[p[3]];
+    if (p[2] === 'v') return gaVglRows(d).some(function (r) { return r.id === p[3]; });
+    return p[2] === 'u';
+  }
+  function gaCtxList(ctx) { var p = String(ctx).split(':'), g = gaDoc(p[1]); return g && gaCtxOk(g, p) ? gaCtxDocList(g, p) : []; }
+  /* Dateiname nach dem Schema aus der Fotodokumentation */
+  function gaRefName(d, p, idx, prep) {
+    var ext = prep && prep.ext ? prep.ext : 'jpg', nr = gaNrFile(d), suf = idx > 1 ? '-' + idx : '';
+    if (p[2] === 'f') { var n = Number(p[3]); return nr + '_' + gaPad2(n) + '_' + GA_FOTO[n - 1][1] + suf + '.' + ext; }
+    if (p[2] === 'c') return nr + '_16_' + gaSlug(GA_CKM[p[3]].t) + suf + '.' + ext;
+    if (p[2] === 'v') { var i = gaVglRows(d).map(function (r) { return r.id; }).indexOf(p[3]); return nr + '_Vergleich-' + (i + 1) + suf + '.' + ext; }
+    return nr + '_Unterlagen_' + gaSlug(String((prep && prep.name) || 'Unterlage').replace(/\.[A-Za-z0-9]+$/, '')) + suf + '.' + ext;
+  }
+  async function gaAddPhotos(ctx, prepared) {
+    var p = String(ctx).split(':'), gid = p[1], g = gaDoc(gid), refs = [];
+    if (!g || !gaCtxOk(g, p)) return;
+    if (S.busy) { toast('Bitte kurz warten, es wird noch gespeichert.'); return; }
+    setBusy(true);
+    try {
+      for (var i = 0; i < prepared.length; i++) {
+        toast(prepared.length > 1 ? 'Lade hoch: ' + (i + 1) + ' von ' + prepared.length + ' …' : 'Lade hoch …');
+        refs.push(await blUpload(g.fahrzeug, prepared[i], 'Gutachten ' + gaStr(g.nr)));
+      }
+      /* über die Warteschlange, damit gleichzeitig getippte Änderungen erhalten bleiben */
+      var d = gaSet(gid, function (dd) {
+        var list = gaCtxDocList(dd, p);
+        refs.forEach(function (r, k) { r.name = gaRefName(dd, p, list.length + k + 1, prepared[k]); });
+        gaCtxPut(dd, p, list.concat(refs));
+      });
+      if (!d) throw blErr('Das Gutachten ist hier gerade nicht änderbar.');
+      await gaFlushNow();
+      setBusy(false);
+      gaRerender(); renderAll();
+      toast(refs.length === 1 ? 'Gespeichert als ' + refs[0].name : refs.length + ' Fotos gespeichert.');
+    } catch (e) {
+      setBusy(false);
+      if (refs.length && e && e.code !== 'bl_file' && !(e.code === 'unavailable' && e.network)) writeError(e);
+      else toast(blErrText(e, refs.length));
+    } finally { if (S.busy) setBusy(false); }
+  }
+  async function gaDropPhoto(ctx, pfad) {
+    var p = String(ctx).split(':'), gid = p[1];
+    if (!gaDoc(gid) || S.busy || !gaCtxOk(gaDoc(gid), p)) return false;
+    setBusy(true);
+    try {
+      if (!gaSet(gid, function (dd) { gaCtxPut(dd, p, gaCtxDocList(dd, p).filter(function (x) { return x.pfad !== pfad; })); })) { setBusy(false); return false; }
+      await gaFlushNow();
+      setBusy(false);
+      gaRerender();
+      toast('Entfernt. Die Datei selbst bleibt im Daten-Repository.');
+      return true;
+    } catch (e) { setBusy(false); writeError(e); return false; } finally { if (S.busy) setBusy(false); }
+  }
+
+  /* ---------- Gliederung für PDF und Obsidian-Notiz ---------- */
+  function gaSections(g, pdf) {
+    var A = gaArt(g), s = [['auftrag', 'Auftrag'], ['grundlagen', 'Grundlagen'], ['fahrzeug', 'Fahrzeugbeschreibung'], ['befund', A.voll ? 'Befund' : 'Befund und Ergebnis']];
+    if (A.voll) s.push(['orig', 'Originalität'], ['noten', 'Zustandsnoten']);
+    if (A.bew === true || (A.bew === 'opt' && gaBewAny(g))) s.push(['bew', 'Bewertung']);
+    s.push(['zus', 'Zusammenfassung'], ['erkl', 'Erklärung']);
+    if (g.uebung && !pdf) s.push(['selbst', 'Selbstkritik']);
+    return s;
+  }
+  function gaFzgRows(g) {
+    var F = gaF(g);
+    return [['Marke / Modell', F.name], ['Typ / Ausführung', F.typ], ['Baujahr', F.baujahr], ['Erstzulassung', F.ez], ['FIN', F.fin], ['Kennzeichen', F.kz], ['Motornummer', F.motorNr], ['Getriebenummer', F.getriebeNr],
+      ['Leistung', gaStr(F.ps) ? gaStr(F.ps) + ' PS' : ''], ['Hubraum', F.hubraum], ['Kraftstoff', F.kraftstoff], ['Farbe (Code)', F.farbe], ['Ausstattung', F.ausstattung], ['Kilometerstand', gaStr(F.km) ? gaKmTxt(F.km) : ''], ['Vorbesitzer und Historie', F.historie]]
+      .map(function (r) { return [r[0], gaStr(r[1])]; });
+  }
+  function gaCkTxt(x) { var st = gaCkSt(x); return st === 'ok' ? 'OK' : st === 'mangel' ? 'Mangel' : st === 'nb' ? 'nicht beurteilbar' : 'offen'; }
+  function gaDauerH(v) {
+    var s = gaStr(v).toLowerCase().replace(',', '.');
+    if (!s) return null;
+    var m = /^(\d+):(\d{1,2})$/.exec(s);
+    if (m) return Number(m[1]) + Number(m[2]) / 60;
+    m = /^(\d+(?:\.\d+)?)\s*(h|std\.?|stunden?)?$/.exec(s);
+    if (m) return Number(m[1]);
+    m = /^(\d+(?:\.\d+)?)\s*(min|minuten)$/.exec(s);
+    return m ? Number(m[1]) / 60 : NaN;
+  }
+  /* Notiz im Stil von „Übungsgutachten 01“ und „Vorlage Gutachten“ */
+  function gaMd(gid) {
+    var g = gaDoc(gid);
+    if (!g) return '';
+    var car = S.cars.get(g.fahrzeug) || null, A = gaArt(g), a = gaA(g), G = gaG(g), conf = gaConf(), name = gaName(g, car), o = [];
+    var one = function (s) { return gaStr(s).replace(/\r/g, '').replace(/\s*\n\s*/g, ' '); };
+    var cell = function (s) { return one(s).replace(/\|/g, '\\|'); };
+    var yml = function (s) { s = one(s); return s === '' || /^[A-Za-z0-9ÄÖÜäöüß][A-Za-z0-9ÄÖÜäöüß .,\/()+\-]*$/.test(s) ? s : JSON.stringify(s); };
+    var block = function (s) { s = gaStr(s).replace(/\r/g, ''); return s || '–'; };
+    var ges = gaObj(g.gesamt), B = gaBw(g), mw = gaEur(B.markt), wb = gaEur(B.wbw);
+    o.push('---', 'tags: [gutachten' + (g.uebung ? ', übung' : '') + ']', 'auftragsnummer: ' + yml(g.nr), 'kunde: ' + yml(a.auftraggeber), 'fahrzeug: ' + yml(name), 'fin: ' + yml(gaF(g).fin),
+      'art: ' + yml(A.n + (g.uebung ? ' (Übung)' : '')), 'termin: ' + (isDay(G.datum) ? G.datum : ''), 'stichtag: ' + (isDay(a.stichtag) ? a.stichtag : ''), 'status: ' + yml(g.status || 'angefragt'));
+    if (A.voll && gaNoteOk(ges.note)) o.push('zustandsnote: ' + ges.note);
+    if (mw !== null) o.push('marktwert: ' + mw);
+    o.push('quelle: Werkstatt-App', 'erstellt: ' + String(g.erstellt || '').slice(0, 10), '---', '');
+    o.push('# ' + (g.uebung ? 'Übungsgutachten ' : 'Gutachten ') + gaStr(g.nr) + ' · ' + name, '');
+    if (g.uebung) o.push('> Übungsgutachten – nicht zur Vorlage bei Dritten.', '');
+    gaSections(g, false).forEach(function (sec, i) {
+      o.push('## ' + (i + 1) + '. ' + sec[1]);
+      var k = sec[0];
+      if (k === 'auftrag') {
+        o.push('- Auftraggeber: ' + one(a.auftraggeber) + (gaStr(a.anschrift) ? ', ' + one(a.anschrift) : ''), '- Zweck: ' + one(gaZweckTxt(g)), '- Stichtag: ' + (isDay(a.stichtag) ? datum(a.stichtag) : ''));
+        var gr = gaGrenzenTxt(g);
+        o.push('- Umfang und Grenzen der Untersuchung: ' + (gr.length ? gr.map(one).join('; ') : ''));
+      } else if (k === 'grundlagen') {
+        o.push('- Unterlagen: ' + one(G.unterlagen) + (blList(G.dateien).length ? ' (Dateien: ' + blList(G.dateien).map(function (r) { return r.name; }).join(', ') + ')' : ''));
+        o.push('- Besichtigung: ' + [isDay(G.datum) ? datum(G.datum) : '', one(G.ort), gaStr(G.anwesende) ? 'Anwesende: ' + one(G.anwesende) : '', gaStr(G.bedingungen) ? 'Licht und Wetter: ' + one(G.bedingungen) : ''].filter(Boolean).join(', '));
+        o.push('- Prüfmittel: ' + gaPmAll(g).map(function (r) { return [r.g, r.id, r.kal ? 'kalibriert ' + datum(r.kal) : 'Kalibrierdatum fehlt'].filter(Boolean).join(', '); }).join('; '));
+        if (A.bew) o.push('- Datenquellen Marktwert: ' + one(G.quellenMarkt));
+        o.push('- Vorbereitung:');
+        GA_VORB.forEach(function (v) { o.push('  - [' + (gaObj(g.vorb)[v[0]] === true ? 'x' : ' ') + '] ' + v[1]); });
+      } else if (k === 'fahrzeug') {
+        o.push('| Feld | Wert |', '|---|---|');
+        gaFzgRows(g).forEach(function (r) { o.push('| ' + r[0] + ' | ' + cell(r[1]) + ' |'); });
+      } else if (k === 'befund') {
+        if (!A.voll) o.push(block(g.befundText));
+        else GA_BG.forEach(function (b) {
+          o.push('### ' + b[1]);
+          var bt = gaStr(gaBg(g, b[0]).befund);
+          o.push(block(bt));
+          if (b[0] === 'lack' && gaLackStats(g).n && bt.indexOf('Messprotokoll') < 0) o.push('', 'Messwerte: Lackmessprotokoll im Anhang.');
+          o.push('');
+        });
+      } else if (k === 'orig') {
+        var O = gaO(g);
+        o.push('- Matching Numbers: ' + (O.matching || '') + (gaStr(O.matchingN) ? ' – ' + one(O.matchingN) : ''), '- Zeitgenössische Änderungen: ' + one(O.aenderungen), '- Nicht-Originalteile: ' + one(O.fremdteile));
+      } else if (k === 'noten') {
+        o.push('Bewertet nach: ' + one(g.notendef) + ' → [[Zustandsnoten]]', '', '| Baugruppe | Note | Begründung |', '|---|---|---|');
+        GA_BG.forEach(function (b) { var x = gaBg(g, b[0]); o.push('| ' + b[1] + ' | ' + (gaNoteOk(x.note) ? x.note : '') + ' | ' + cell(x.begr) + ' |'); });
+        o.push('| **Gesamt** | ' + (gaNoteOk(ges.note) ? '**' + ges.note + '**' : '') + ' | ' + cell(ges.begr) + ' |');
+      } else if (k === 'bew') {
+        o.push('| Vergleichsfahrzeug | Quelle | Datum | Zustand | Preis | Anpassung |', '|---|---|---|---|---|---|');
+        gaVglRows(g).forEach(function (r) { var p = gaEur(r.preis), an = gaEur(r.anp); o.push('| ' + cell(r.fz) + ' | ' + cell(r.quelle) + ' | ' + (isDay(r.datum) ? datum(r.datum) : '') + ' | ' + (r.zustand ? 'Note ' + cell(r.zustand) : '') + ' | ' + (p !== null ? eur(p) : '') + ' | ' + (an !== null ? (an > 0 ? '+' : '') + eur(an) : '') + (gaStr(r.notiz) ? ' (' + cell(r.notiz) + ')' : '') + ' |'); });
+        var vs = gaVglStats(g);
+        if (vs.n > 1) o.push('', 'Angepasste Preise von ' + eur(vs.min) + ' bis ' + eur(vs.max) + ', Median ' + eur(vs.med) + '.');
+        o.push('', (g.uebung ? 'Marktwert (Übung): ' : 'Marktwert: ') + (mw !== null ? eur(mw) : '') + (gaStr(B.marktDef) ? ' (Definition: ' + one(B.marktDef) + ')' : ''));
+        if (wb !== null || gaStr(B.wbwDef)) o.push('Wiederbeschaffungswert: ' + (wb !== null ? eur(wb) : '') + (gaStr(B.wbwDef) ? ' (Definition: ' + one(B.wbwDef) + ')' : ''));
+        o.push('Zu- und Abschläge: ' + one(B.zuab), 'Herleitung: ' + one(B.herleitung));
+      } else if (k === 'zus') o.push(block(gaS(g).zusammenfassung));
+      else if (k === 'erkl') { o.push(block(gaS(g).erklaerung), '', [gaStr(gaS(g).ort), datum(dayKey(new Date()))].filter(Boolean).join(', ') + ' · ' + (conf.sv || 'Sachverständiger') + (conf.quali ? ', ' + conf.quali : '')); }
+      else if (k === 'selbst') {
+        var X = gaObj(g.selbst);
+        o.push('- Was hat gefehlt? ' + one(X.fehlt), '- Was würde ich beim nächsten Mal anders machen? ' + one(X.anders), '', '| Schritt | Dauer |', '|---|---|');
+        var sum = 0, ok = true;
+        [['vorb', 'Vorbereitung'], ['bes', 'Besichtigung'], ['rech', 'Recherche'], ['schr', 'Schreiben']].forEach(function (z) { var h = gaDauerH(X[z[0]]); if (h === null || isNaN(h)) ok = false; else sum += h; o.push('| ' + z[1] + ' | ' + cell(X[z[0]]) + ' |'); });
+        o.push('| **Summe** | ' + (ok ? '**' + nfIn.format(round2(sum)) + ' h**' : '') + ' |');
+      }
+      o.push('');
+    });
+    o.push('## Anhang', '', '### ' + GA_CK[A.ck].n);
+    GA_CK[A.ck].g.forEach(function (gr) {
+      o.push('#### ' + gr.t);
+      gr.it.forEach(function (it) { var x = gaCk(g, A.ck + '.' + it[0]); o.push('- [' + (gaCkSt(x) ? 'x' : ' ') + '] ' + it[1] + ': ' + gaCkTxt(x) + (gaStr(x.n) ? ' – ' + one(x.n) : '') + (blList(x.fotos).length ? ' (Fotos: ' + blList(x.fotos).map(function (r) { return r.name; }).join(', ') + ')' : '')); });
+    });
+    if (A.voll) {
+      var L = gaL(g), st2 = gaLackStats(g);
+      o.push('', '### Lackmessprotokoll', 'Gerät: ' + (one(L.geraet) || '–') + ' · Nr.: ' + (one(L.pm) || '–') + ' · Kalibriert: ' + (isDay(L.kal) ? datum(L.kal) : '–') + ' · Referenzfolie: ' + (gaStr(L.refIst) ? 'geprüft, Soll ' + (one(L.refSoll) || '–') + ' µm, gemessen ' + one(L.refIst) + ' µm' : 'nicht dokumentiert') + ' · Datum: ' + (isDay(G.datum) ? datum(G.datum) : '–'), '',
+        '| Bauteil | Material (Fe/NFe) | P1 | P2 | P3 | P4 | P5 | Ø | Auffällig? |', '|---|---|---|---|---|---|---|---|---|');
+      GA_LACK.forEach(function (p) {
+        var x = gaObj(gaObj(L.teile)[p[0]]), pa = st2.parts[p[0]], v = arr(x.p);
+        o.push('| ' + p[1] + ' | ' + (pa.mat === 'Kunst' ? 'Kunststoff' : pa.mat) + ' | ' + [0, 1, 2, 3, 4].map(function (j) { return cell(v[j]); }).join(' | ') + ' | ' + (pa.avg !== null ? Math.round(pa.avg) : '') + ' | ' + (pa.auff ? 'ja' : '') + ' |');
+      });
+      o.push('', '**Durchschnitt Fahrzeug:** ' + (st2.avg !== null ? Math.round(st2.avg) + ' µm' : '–') + ' · **Auffällige Bauteile:** ' + (st2.auff.length ? st2.auff.map(function (x) { return GA_LACKM[x]; }).join(', ') : 'keine'),
+        'Auffällig: Mittelwert mehr als ' + gaThr(g) + ' % über dem Durchschnitt des Fahrzeugs (ab drei gemessenen Bauteilen).');
+    }
+    o.push('', '### Fotodokumentation');
+    GA_FOTO.forEach(function (f, i) { var l = gaFotos(g, i + 1); o.push('- [' + (l.length ? 'x' : ' ') + '] ' + gaPad2(i + 1) + ' ' + f[0] + (l.length ? ': ' + l.map(function (r) { return '`' + r.name + '`'; }).join(', ') : '')); });
+    o.push('', 'Die Fotos liegen in der Werkstatt-App (Daten-Repository, Ordner belege).', '');
+    return o.join('\n');
+  }
+  function gaMdCopy() {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga') return;
+    var md = gaMd(s.id);
+    gaFlush();
+    klCopy(md, 'Markdown kopiert. In Obsidian eine neue Notiz anlegen und einfügen.');
+  }
+  async function gaMdSave() {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    if (!g || !S.dl) return;
+    var md = gaMd(s.id), name = gaNoteName(g) + '.md';
+    gaFlush();
+    try { await S.dl.save({ filename: name, data: new Blob([md], { type: 'text/markdown;charset=utf-8' }) }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') toast('Speichern ging in dieser Ansicht nicht.'); }
+  }
+  function gaObsUri(g, md) {
+    return 'obsidian://new?vault=' + encodeURIComponent(gaConf().vault) + '&file=' + encodeURIComponent(gaObsPath(g)) + (md === undefined ? '&clipboard=true' : '&content=' + encodeURIComponent(md));
+  }
+  /* Notiz zuerst in die Zwischenablage, dann Obsidian öffnen (Parameter clipboard laut Obsidian-Hilfe); ohne overwrite bleibt eine bestehende Notiz unberührt */
+  function gaObs() {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    if (!g) return;
+    var md = gaMd(s.id);
+    gaFlush();
+    var go = function (u) { S.gaLastUri = u; try { window.location.href = u; } catch (_) {} };
+    var p;
+    try { p = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(md) : Promise.reject(new Error('kein Zugriff')); } catch (e) { p = Promise.reject(e); }
+    p.then(function () { go(gaObsUri(g)); toast('Notiz kopiert, Obsidian legt sie an. Geht Obsidian nicht auf: neue Notiz anlegen und einfügen.'); },
+      function () { if (md.length < 60000) { go(gaObsUri(g, md)); toast('Obsidian wird geöffnet.'); } else klCopy(md, 'Markdown kopiert. In Obsidian eine neue Notiz anlegen und einfügen.'); });
+  }
+  function gaRowCopy() {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    if (!g) return;
+    var G = gaG(g), c = function (x) { return gaStr(x).replace(/\|/g, '/').replace(/\s*\n\s*/g, ' '); };
+    klCopy('| ' + [g.nr, gaA(g).auftraggeber, gaName(g, S.cars.get(g.fahrzeug)), gaArt(g).n, isDay(G.datum) ? datum(G.datum) : '', gaStatusName(g.status)].map(c).join(' | ') + ' |', 'Zeile kopiert. In 40 Gutachten/Laufend/Laufend.md unter der Tabelle einfügen.');
+  }
+
+  /* ---------- PDF nach der Gliederung ---------- */
+  async function gaPdfPhotos(g) {
+    var out = { slots: {}, ck: [], vgl: [], u: [], failed: 0 }, jobs = [];
+    GA_FOTO.forEach(function (f, i) { gaFotos(g, i + 1).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 's', n: i + 1, r: r }); }); });
+    gaCkItems(g).forEach(function (it) { var x = gaCk(g, it.key), st = gaCkSt(x); if (st === 'mangel' || st === 'nb') blList(x.fotos).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 'c', it: it, x: x, r: r }); }); });
+    gaVglRows(g).forEach(function (row, i) { blList(row.fotos).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 'v', i: i, row: row, r: r }); }); });
+    blList(gaG(g).dateien).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 'u', r: r }); });
+    for (var j = 0; j < jobs.length; j++) {
+      var jb = jobs[j];
+      if (jobs.length > 3 && j % 4 === 0) toast('Fotos fürs PDF: ' + (j + 1) + ' von ' + jobs.length + ' …');
+      try {
+        var b = await blBlob(jb.r), dm = await blDims(b, jb.r);
+        var im = { data: await blDataUrl(b), fmt: /png/i.test(b.type) ? 'PNG' : 'JPEG', w: dm.w, h: dm.h, name: jb.r.name || '' };
+        if (jb.k === 's') (out.slots[jb.n] = out.slots[jb.n] || []).push(im);
+        else if (jb.k === 'c') { var e1 = out.ck.filter(function (x) { return x.key === jb.it.key; })[0]; if (!e1) { e1 = { key: jb.it.key, t: jb.it.t, st: gaCkSt(jb.x), n: gaStr(jb.x.n), imgs: [] }; out.ck.push(e1); } e1.imgs.push(im); }
+        else if (jb.k === 'v') { var e2 = out.vgl.filter(function (x) { return x.i === jb.i; })[0]; if (!e2) { e2 = { i: jb.i, fz: gaStr(jb.row.fz), imgs: [] }; out.vgl.push(e2); } e2.imgs.push(im); }
+        else out.u.push(im);
+      } catch (e) { out.failed++; }
+    }
+    return out;
+  }
+  function gaPdfDoc(lib, g, car, att) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, M = 18, X1 = W - M, TOP = 22, BOT = H - 20, y = M, PT = 0.3528;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243], bad: [178, 58, 42], badSoft: [245, 220, 216], blue: [31, 93, 166], blueSoft: [219, 230, 243], glass: [214, 222, 227], white: [255, 255, 255] };
+    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/→/g, '->').replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/[^\u0000-ÿ€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/g, '?'); };
+    var txt = function (s, x, yy, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), x, yy, o); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.32; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    var need = function (hh) { if (y + hh > BOT) { doc.addPage(); y = TOP; return true; } return false; };
+    doc.setLineHeightFactor(1.32);
+    var A = gaArt(g), a = gaA(g), G = gaG(g), L = gaL(g), conf = gaConf(), name = gaName(g, car), ges = gaObj(g.gesamt), B = gaBw(g), mw = gaEur(B.markt), wb = gaEur(B.wbw), today = dayKey(new Date());
+    var titel = (g.uebung ? 'Übungsgutachten ' : 'Gutachten ') + gaStr(g.nr);
+    doc.setProperties({ title: titel + ' ' + name, subject: A.n, author: conf.sv || '', creator: 'Werkstatt-Inventar' });
+    var para = function (s, sz, col) {
+      sz = sz || 10; f('normal', sz); tc(col || C.ink);
+      split(gaStr(s) || '–', X1 - M).forEach(function (ln) { need(lh(sz)); txt(ln, M, y + sz * PT * 0.95); y += lh(sz); });
+      y += 2;
+    };
+    var head = function (t) { need(20); y += 3; f('bold', 13); tc(C.ink); txt(t, M, y + 5); y += 7.5; dc(C.ink); doc.setLineWidth(0.4); doc.line(M, y, X1, y); y += 4.5; };
+    var sub = function (t) { need(14); f('bold', 10.5); tc(C.ink); txt(t, M, y + 4); y += 6.5; };
+    var kv = function (rows, lw) {
+      lw = lw || 50;
+      rows.forEach(function (r) {
+        f('normal', 8.8); var ll = split(r[0], lw - 3);
+        f('normal', 9.5); var vl = split(gaStr(r[1]) || '–', X1 - M - lw), hh = Math.max(vl.length * lh(9.5), ll.length * lh(8.8)) + 1.8;
+        need(hh);
+        f('normal', 8.8); tc(C.mut); txt(ll, M, y + 3.5);
+        f('normal', 9.5); tc(r[2] || C.ink); txt(vl, M + lw, y + 3.5); y += hh;
+      });
+      y += 2;
+    };
+    var table = function (cols, rows, o) {
+      o = o || {};
+      var pad = 1.5, hdr = function () {
+        f('bold', 8); tc(C.mut); var xx = M;
+        cols.forEach(function (cl) { txt(split(cl.t, cl.w - 2 * pad)[0], cl.r ? xx + cl.w - pad : xx + pad, y + 3.8, cl.r ? { align: 'right' } : undefined); xx += cl.w; });
+        y += 5.6; dc(C.line); doc.setLineWidth(0.3); doc.line(M, y, X1, y); y += 0.6;
+      };
+      need(14); hdr();
+      rows.forEach(function (row) {
+        var bold = row.bold, sz = o.sz || 9;
+        f(bold ? 'bold' : 'normal', sz);
+        var cells = row.map(function (cell, i) { return split(gaStr(cell), cols[i].w - 2 * pad); });
+        var hh = Math.max.apply(null, cells.map(function (l) { return Math.max(1, l.length); })) * lh(sz) + 2.2;
+        if (need(hh)) hdr();
+        if (row.shade) { fc(row.shade); doc.rect(M, y - 0.3, X1 - M, hh, 'F'); }
+        var xx = M;
+        f(bold ? 'bold' : 'normal', sz);
+        cells.forEach(function (l, i) { var cl = cols[i]; tc(row.col && row.col[i] ? row.col[i] : C.ink); txt(l, cl.r ? xx + cl.w - pad : xx + pad, y + sz * PT + 0.6, cl.r ? { align: 'right' } : undefined); xx += cl.w; });
+        y += hh; dc(C.line); doc.setLineWidth(0.15); doc.line(M, y, X1, y);
+      });
+      y += 4;
+    };
+    var fitImg = function (im, x, yy, bw, bh) {
+      var sc = Math.min(bw / im.w, bh / im.h), w = im.w * sc, h = im.h * sc;
+      fc(C.soft); doc.rect(x, yy, bw, bh, 'F');
+      doc.addImage(im.data, im.fmt, x + (bw - w) / 2, yy + (bh - h) / 2, w, h, undefined, 'FAST');
+    };
+    var grid = function (items) {
+      var gap = 6, cw = (X1 - M - gap) / 2, bh = cw * 0.75;
+      for (var i = 0; i < items.length; i += 2) {
+        var pair = items.slice(i, i + 2);
+        f('normal', 8);
+        var caps = pair.map(function (it) { return split(it.cap, cw).slice(0, 3); });
+        var ch = Math.max.apply(null, caps.map(function (c) { return c.length; })) * lh(8) + 3;
+        need(bh + ch + 3);
+        pair.forEach(function (it, k) { var x = M + k * (cw + gap); fitImg(it, x, y, cw, bh); f('normal', 8); tc(C.ink); txt(caps[k], x, y + bh + 3.6); });
+        y += bh + ch + 4;
+      }
+    };
+    /* Deckblatt */
+    f('normal', 9.5); tc(C.mut); txt(titel, M, y + 3);
+    if (conf.sv) txt(conf.sv, X1, y + 3, { align: 'right' });
+    y += 12;
+    f('bold', 24); tc(C.ink); var tl = split(A.n, X1 - M); txt(tl, M, y + 8); y += 8 + (tl.length - 1) * lh(24) + 4;
+    f('normal', 15); var nl = split(name, X1 - M); txt(nl, M, y + 5.5); y += 5.5 + (nl.length - 1) * lh(15) + 6;
+    if (g.uebung) { fc(C.badSoft); dc(C.bad); doc.setLineWidth(0.4); doc.roundedRect(M, y, X1 - M, 10, 1.5, 1.5, 'FD'); f('bold', 10.5); tc(C.bad); txt('Übungsgutachten – nicht zur Vorlage bei Dritten', M + 4, y + 6.6); y += 15; }
+    var hero = null;
+    if (att) [1, 3, 2, 8, 4].some(function (n) { var l = att.slots[n]; if (l && l.length) { hero = l[0]; return true; } return false; });
+    if (hero) { var hb = Math.min(92, (X1 - M) * hero.h / hero.w); fitImg(hero, M, y, X1 - M, hb); y += hb + 7; }
+    kv([['Fahrzeug', name], ['FIN', gaF(g).fin], ['Kennzeichen', gaF(g).kz], ['Baujahr / Erstzulassung', [gaStr(gaF(g).baujahr), gaStr(gaF(g).ez)].filter(Boolean).join(' / ')], ['Auftraggeber', a.auftraggeber], ['Zweck', gaZweckTxt(g)], ['Stichtag', isDay(a.stichtag) ? datum(a.stichtag) : ''],
+      ['Besichtigung', [isDay(G.datum) ? datum(G.datum) : '', gaStr(G.ort)].filter(Boolean).join(', ')], ['Erstellt am', datum(today)], ['Sachverständiger', [conf.sv, conf.quali].filter(Boolean).join(', ')]]
+      .concat(A.voll && gaNoteOk(ges.note) ? [['Gesamtnote', ges.note + ' (' + GA_NOTE[ges.note - 1][1] + ')']] : [])
+      .concat(mw !== null && (A.bew === true || gaBewAny(g)) ? [[g.uebung ? 'Marktwert (Übung, nicht verbindlich)' : 'Marktwert', eur(mw)]] : []), 52);
+    /* Kapitel */
+    var st = A.voll ? gaLackStats(g) : null;
+    doc.addPage(); y = TOP;
+    gaSections(g, true).forEach(function (sec, i) {
+      var k = sec[0];
+      head((i + 1) + '  ' + sec[1]);
+      if (k === 'auftrag') {
+        kv([['Auftraggeber', [gaStr(a.auftraggeber), gaStr(a.anschrift)].filter(Boolean).join('\n')], ['Zweck', gaZweckTxt(g)], ['Stichtag', isDay(a.stichtag) ? datum(a.stichtag) : '']]);
+        sub('Umfang und Grenzen der Untersuchung');
+        var gr = gaGrenzenTxt(g);
+        if (gr.length) gr.forEach(function (x) { f('normal', 9.5); var l = split(x, X1 - M - 5); need(l.length * lh(9.5) + 1); tc(C.ink); txt('•', M, y + 3.4); txt(l, M + 4, y + 3.4); y += l.length * lh(9.5) + 1; });
+        else para('Keine Angabe.', 9.5, C.mut);
+        y += 2;
+      } else if (k === 'grundlagen') {
+        kv([['Unterlagen', [gaStr(G.unterlagen), blList(G.dateien).length ? 'Dateien: ' + blList(G.dateien).map(function (r) { return r.name; }).join(', ') : ''].filter(Boolean).join('\n')],
+          ['Besichtigung', [isDay(G.datum) ? datum(G.datum) : '', gaStr(G.ort)].filter(Boolean).join(', ')], ['Anwesende', G.anwesende], ['Licht und Wetter', G.bedingungen]].concat(A.bew ? [['Datenquellen für Marktwerte', G.quellenMarkt]] : []));
+        sub('Prüfmittel');
+        var pm = gaPmAll(g);
+        if (pm.length) table([{ t: 'Gerät', w: 90 }, { t: 'Nummer', w: 40 }, { t: 'Kalibriert am', w: X1 - M - 130 }], pm.map(function (r) { return [r.g, r.id || '–', r.kal ? datum(r.kal) : 'fehlt']; }));
+        else para('Keine Prüfmittel angegeben.', 9.5, C.mut);
+      } else if (k === 'fahrzeug') {
+        kv(gaFzgRows(g).filter(function (r) { return r[1]; }));
+      } else if (k === 'befund') {
+        if (!A.voll) para(g.befundText);
+        else GA_BG.forEach(function (b) {
+          sub(b[1]);
+          var bt = gaStr(gaBg(g, b[0]).befund), lk = b[0] === 'lack' && st.n > 0;
+          if (bt) para(bt); else if (!lk) para('Keine Angaben.', 10, C.mut);
+          if (lk && bt.indexOf('Messprotokoll') < 0) para('Messwerte: Lackmessprotokoll im Anhang (' + st.n + ' Bauteile, Durchschnitt ' + nf.format(Math.round(st.avg)) + ' µm).', 9, C.mut);
+        });
+      } else if (k === 'orig') {
+        var O = gaO(g);
+        kv([['Matching Numbers', [O.matching === 'unklar' ? 'unklar, nicht belegt' : O.matching, gaStr(O.matchingN)].filter(Boolean).join('. ')], ['FIN am Fahrzeug = Dokumente', gaCkTxt(gaCk(g, 'o.i1')) + (gaStr(gaCk(g, 'o.i1').n) ? ': ' + gaStr(gaCk(g, 'o.i1').n) : '')], ['Zeitgenössische Änderungen', O.aenderungen], ['Nicht-Originalteile', O.fremdteile]]);
+      } else if (k === 'noten') {
+        table([{ t: 'Baugruppe', w: 44 }, { t: 'Note', w: 16, r: true }, { t: 'Begründung', w: X1 - M - 60 }], GA_BG.map(function (b) { var x = gaBg(g, b[0]); return [b[1], gaNoteOk(x.note) ? String(x.note) : '–', gaStr(x.begr)]; })
+          .concat([(function () { var r = ['Gesamtnote', gaNoteOk(ges.note) ? String(ges.note) : '–', gaStr(ges.begr)]; r.bold = true; r.shade = C.soft; return r; })()]));
+        para('Bewertet nach: ' + (gaStr(g.notendef) || '–'), 9, C.mut);
+        table([{ t: 'Note', w: 44 }, { t: 'Bedeutung', w: X1 - M - 44 }], GA_NOTE.map(function (n) { return [n[0] + ' ' + n[1], n[2]]; }), { sz: 8.5 });
+      } else if (k === 'bew') {
+        var rows = gaVglRows(g);
+        if (rows.length) table([{ t: 'Fahrzeug', w: 40 }, { t: 'Quelle', w: 30 }, { t: 'Datum', w: 18 }, { t: 'Zustand', w: 14 }, { t: 'Preis', w: 23, r: true }, { t: 'Anpassung', w: 23, r: true }, { t: 'Angepasst', w: X1 - M - 148, r: true }],
+          rows.map(function (r) { var p = gaEur(r.preis), an = gaEur(r.anp), adj = gaVglAdj(r); return [gaStr(r.fz) + (gaStr(r.notiz) ? '\n' + gaStr(r.notiz) : ''), r.quelle, isDay(r.datum) ? datum(r.datum) : '', r.zustand ? 'Note ' + r.zustand : '', p !== null ? eur(p) : '', an !== null ? (an > 0 ? '+' : '') + eur(an) : '', adj !== null ? eur(adj) : '']; }), { sz: 8.3 });
+        else para('Keine Vergleichsfahrzeuge.', 9.5, C.mut);
+        var vs = gaVglStats(g);
+        if (vs.n > 1) para('Angepasste Preise von ' + eur(vs.min) + ' bis ' + eur(vs.max) + ', Median ' + eur(vs.med) + '.', 9.5, C.mut);
+        kv([[g.uebung ? 'Marktwert (Übung, nicht verbindlich)' : 'Marktwert', mw !== null ? eur(mw) : '', C.ink], ['Definition Marktwert', B.marktDef]].concat(wb !== null || gaStr(B.wbwDef) ? [['Wiederbeschaffungswert', wb !== null ? eur(wb) : ''], ['Definition Wiederbeschaffungswert', B.wbwDef]] : []).concat([['Zu- und Abschläge', B.zuab], ['Herleitung', B.herleitung]]));
+      } else if (k === 'zus') para(gaS(g).zusammenfassung);
+      else if (k === 'erkl') {
+        para(gaS(g).erklaerung);
+        need(30); y += 10;
+        f('normal', 9.5); tc(C.ink); txt([gaStr(gaS(g).ort), datum(today)].filter(Boolean).join(', '), M, y + 3.5);
+        dc(C.ink); doc.setLineWidth(0.3); doc.line(M + 85, y + 5, X1, y + 5);
+        f('normal', 8.5); tc(C.mut); txt(split([conf.sv || 'Sachverständiger', conf.quali].filter(Boolean).join(', '), X1 - M - 85), M + 85, y + 9);
+        y += 16;
+      }
+    });
+    /* Anhang */
+    doc.addPage(); y = TOP;
+    head('Anhang A  ' + GA_CK[A.ck].n);
+    GA_CK[A.ck].g.forEach(function (gr) {
+      sub(gr.t);
+      table([{ t: 'Prüfpunkt', w: 78 }, { t: 'Ergebnis', w: 28 }, { t: 'Notiz', w: X1 - M - 106 }], gr.it.map(function (it) {
+        var x = gaCk(g, A.ck + '.' + it[0]), stc = gaCkSt(x), r = [it[1], gaCkTxt(x), gaStr(x.n)];
+        r.col = [null, stc === 'mangel' ? C.bad : stc === 'ok' ? C.ink : C.mut, null];
+        return r;
+      }), { sz: 8.5 });
+    });
+    if (A.voll) {
+      doc.addPage(); y = TOP;
+      head('Anhang B  Lackmessprotokoll');
+      kv([['Gerät', [gaStr(L.geraet), gaStr(L.pm)].filter(Boolean).join(', ')], ['Kalibriert am', isDay(L.kal) ? datum(L.kal) : ''], ['Referenzfolie', gaStr(L.refIst) ? 'geprüft, Soll ' + (gaStr(L.refSoll) || '–') + ' µm, gemessen ' + gaStr(L.refIst) + ' µm' : 'nicht dokumentiert'], ['Datum', isDay(G.datum) ? datum(G.datum) : '']], 38);
+      /* Skizze */
+      var sw = 52, sx = X1 - sw, sy = y, s = sw / 100;
+      need(sw * 2.12 + 6);
+      if (y !== sy) sy = y;
+      var R = function (r, fill, stroke, lw, rad) { fc(fill); dc(stroke); doc.setLineWidth(lw); doc.roundedRect(sx + r[0] * s, sy + r[1] * s, r[2] * s, r[3] * s, (rad || 2.2) * s, (rad || 2.2) * s, 'FD'); };
+      var colOf = function (pa) { return pa.auff ? [C.badSoft, C.bad, 0.5] : pa.avg !== null ? [C.blueSoft, C.blue, 0.3] : [C.white, C.line, 0.25]; };
+      R([4, 4, 92, 202], C.soft, C.line, 0.3, 16);
+      var cs = colOf(st.parts.saeulen); R(GA_GEO_S, cs[0], cs[1], cs[2], 4);
+      GA_GEO_GL.forEach(function (r) { R(r, C.glass, C.line, 0.2, 1.5); });
+      var zz = function (k, r) {
+        var pa = st.parts[k], c2 = colOf(pa); R(r, c2[0], c2[1], c2[2]);
+        if (pa.avg !== null && r[2] >= 12) { f('bold', r[2] >= 30 ? 8 : 6.5); tc(pa.auff ? C.bad : C.ink); txt(String(Math.round(pa.avg)), sx + (r[0] + r[2] / 2) * s, sy + (r[1] + r[3] / 2) * s + 1, { align: 'center' }); }
+      };
+      zz('dach', GA_GEO_D);
+      Object.keys(GA_GEO).forEach(function (k) { zz(k, GA_GEO[k]); });
+      f('normal', 7); tc(C.mut); txt('vorne', sx + 50 * s, sy - 1.2, { align: 'center' });
+      var ly = sy + 4, lx = M;
+      f('normal', 9.5); tc(C.ink);
+      [[st.avg !== null ? 'Durchschnitt Fahrzeug: ' + nf.format(Math.round(st.avg)) + ' µm' : 'Keine Messwerte'], ['Gemessene Bauteile: ' + st.n], ['Auffällige Bauteile: ' + (st.auff.length ? st.auff.map(function (x) { return GA_LACKM[x]; }).join(', ') : 'keine')]]
+        .concat(st.lr.length ? [['Links und rechts deutlich verschieden: ' + st.lr.map(function (x) { return x.t + ' ' + Math.round(x.l) + ' / ' + Math.round(x.r) + ' µm'; }).join(', ')]] : [])
+        .forEach(function (r) { var l = split(r[0], sx - M - 8); txt(l, lx, ly + 3.4); ly += l.length * lh(9.5) + 1.5; });
+      f('normal', 8); tc(C.mut);
+      var rl = split('Auffällig: Mittelwert mehr als ' + gaThr(g) + ' % über dem Durchschnitt des Fahrzeugs, ab drei gemessenen Bauteilen. Ein Hinweis auf Nachlackierung oder Spachtel, kein Beweis. Blau: gemessen, rot: auffällig.', sx - M - 8);
+      txt(rl, lx, ly + 4); ly += rl.length * lh(8) + 4;
+      y = Math.max(ly, sy + 212 * s) + 6;
+      table([{ t: 'Bauteil', w: 46 }, { t: 'Mat.', w: 18 }, { t: 'P1', w: 14, r: true }, { t: 'P2', w: 14, r: true }, { t: 'P3', w: 14, r: true }, { t: 'P4', w: 14, r: true }, { t: 'P5', w: 14, r: true }, { t: 'Ø µm', w: 18, r: true }, { t: 'Auffällig', w: X1 - M - 152 }],
+        GA_LACK.map(function (p) { var x = gaObj(gaObj(L.teile)[p[0]]), pa = st.parts[p[0]], v = arr(x.p), r = [p[1], pa.mat === 'Kunst' ? 'Kunstst.' : pa.mat].concat([0, 1, 2, 3, 4].map(function (j) { return gaStr(v[j]); })).concat([pa.avg !== null ? String(Math.round(pa.avg)) : '', pa.auff ? 'ja' : '']); if (pa.auff) { r.col = []; r.col[7] = C.bad; r.col[8] = C.bad; } return r; }), { sz: 8.5 });
+    }
+    if (att) {
+      var fotos = [];
+      GA_FOTO.forEach(function (fo, i) { arr(att.slots[i + 1]).forEach(function (im, k) { fotos.push(Object.assign({ cap: gaPad2(i + 1) + ' ' + fo[0] + (arr(att.slots[i + 1]).length > 1 ? ' (' + (k + 1) + ')' : '') + '\n' + im.name }, im)); }); });
+      att.ck.forEach(function (c) { c.imgs.forEach(function (im) { fotos.push(Object.assign({ cap: (c.st === 'mangel' ? 'Mangel: ' : 'Nicht beurteilbar: ') + c.t + (c.n ? ', ' + c.n : '') + '\n' + im.name }, im)); }); });
+      if (fotos.length) { doc.addPage(); y = TOP; head('Anhang ' + (A.voll ? 'C' : 'B') + '  Fotodokumentation'); grid(fotos); }
+      var more = [];
+      att.vgl.forEach(function (v) { v.imgs.forEach(function (im) { more.push(Object.assign({ cap: 'Vergleichsfahrzeug ' + (v.i + 1) + (v.fz ? ': ' + v.fz : '') + '\n' + im.name }, im)); }); });
+      att.u.forEach(function (im) { more.push(Object.assign({ cap: 'Unterlage\n' + im.name }, im)); });
+      if (more.length) { doc.addPage(); y = TOP; head('Anhang ' + (A.voll ? 'D' : 'C') + '  Vergleichsfahrzeuge und Unterlagen'); grid(more); }
+    }
+    /* Kopf- und Fußzeilen */
+    var n = doc.getNumberOfPages();
+    for (var pg = 1; pg <= n; pg++) {
+      doc.setPage(pg);
+      if (pg > 1) { f('normal', 8); tc(C.mut); txt(titel + ' · ' + name, M, 12); txt(A.n, X1, 12, { align: 'right' }); dc(C.line); doc.setLineWidth(0.2); doc.line(M, 14, X1, 14); }
+      f(g.uebung ? 'bold' : 'normal', 8);
+      if (g.uebung) { tc(C.bad); txt('Übungsgutachten – nicht zur Vorlage bei Dritten', M, H - 10); }
+      else if (conf.sv) { tc(C.mut); txt(conf.sv, M, H - 10); }
+      f('normal', 8); tc(C.mut); txt('Seite ' + pg + ' von ' + n, X1, H - 10, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveGaPdf() {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    var err = function (m) { var el = $('#ga-err'); if (el) el.textContent = m; else toast(m); };
+    if (!g || S.busy) return;
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    gaFlush();
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var withF = BL && !!(($('#ga-pdf-f') || {}).checked), att = null;
+    if (withF) { setBusy(true); try { att = await gaPdfPhotos(g); } finally { setBusy(false); } }
+    g = gaDoc(s.id) || g;
+    var blob;
+    try { blob = gaPdfDoc(lib, g, S.cars.get(g.fahrzeug) || null, att).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    var name = gaNoteName(g) + '.pdf';
+    try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name + (att && att.failed ? ' (' + att.failed + (att.failed === 1 ? ' Foto fehlt' : ' Fotos fehlen') + ')' : '')); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
   }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
@@ -10880,6 +12496,26 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'pv-plan': pvPlan(t.dataset.pos); break;
       case 'pv-st': pvSt(t.dataset.pos, t.dataset.v); break;
       case 'pv-fertig': pvFertig(); break;
+      case 'ga-new': openGaNew(t.dataset.id); break;
+      case 'ga-open': openGa(t.dataset.id, 'start'); break;
+      case 'ga-p': gaGo(t.dataset.p); break;
+      case 'ga-car': gaBackCar(); break;
+      case 'ga-ck': gaCkSet(t.dataset.k, t.dataset.v); break;
+      case 'ga-note': gaNoteSet(t.dataset.bg, t.dataset.v); break;
+      case 'ga-ins': gaIns(t.dataset.bg); break;
+      case 'ga-pm-add': gaPmAdd(); break;
+      case 'ga-pm-use': gaPmAdd(t.dataset.i); break;
+      case 'ga-pm-rm': gaPmRm(t.dataset.i); break;
+      case 'ga-vgl-add': gaVglAdd(); break;
+      case 'ga-vgl-rm': gaVglRm(t.dataset.id, t); break;
+      case 'ga-erkl': gaErklReset(); break;
+      case 'ga-fzg-sync': gaFzgSync(); break;
+      case 'ga-lack-go': gaLackGo(t.dataset.k); break;
+      case 'ga-pdf': saveGaPdf(); break;
+      case 'ga-md-copy': gaMdCopy(); break;
+      case 'ga-md-save': gaMdSave(); break;
+      case 'ga-obs': e.preventDefault(); gaObs(); break;
+      case 'ga-row': gaRowCopy(); break;
       case 'ub-new': openUbForm(t.dataset.id, t.dataset.typ, null, { back: t.dataset.back || null }); break;
       case 'ub-edit': openUbForm(t.dataset.id, null, t.dataset.work, { back: t.dataset.back || null }); break;
       case 'ub-zone': openUbZone(t.dataset.id, t.dataset.z); break;
@@ -10942,6 +12578,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (kvaChange(t)) return;
     if (brChange(t)) return;
     if (pvChange(t)) return;
+    if (gaChange(t)) return;
     if (t.id === 'ka-kunde') { var kn = $('#ka-neu'); if (kn) kn.hidden = t.value !== '__neu'; return; }
     if (t.id === 'ki-kunde' || t.id === 'ki-car') { kdImportChange(t); return; }
     if (t.name === 'kl-car' || t.id === 'kl-car1') { klCarsChanged(); return; }
@@ -10973,7 +12610,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     document.addEventListener('change', onChange);
     document.addEventListener('keydown', onKey);
     document.addEventListener('keydown', ubKey);
-    document.addEventListener('visibilitychange', function () { if (document.hidden) { wpFlush(); pvFlush(); } });
+    document.addEventListener('visibilitychange', function () { if (document.hidden) { wpFlush(); pvFlush(); gaFlush(); } });
     $('#lookup').addEventListener('submit', onLookup);
     $('#q').addEventListener('input', function () { renderHits(false); });
     $('#fq').addEventListener('input', function (e) { S.fq = e.target.value; renderBestand(); });
@@ -11000,6 +12637,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'wpstart') { e.preventDefault(); saveWpStart(); }
       else if (e.target.id === 'kvaform') { e.preventDefault(); saveKva(false); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
+      else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
+      else if (e.target.id === 'gaconf') { e.preventDefault(); saveGaConf(); }
       else if (e.target.id === 'wpeditform') { e.preventDefault(); saveWpEdit(); }
       else if (e.target.id === 'kmallform') { e.preventDefault(); saveKmAll(); }
       else if (e.target.id === 'kundeform') { e.preventDefault(); saveKunde(); }
@@ -11014,6 +12653,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       if (ubInput(e.target)) return;
       if (kvaInput(e.target)) return;
       if (wpTippsInput(e.target)) return;
+      if (gaInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
       if (e.target && e.target.classList && e.target.classList.contains('invq')) e.target.classList.toggle('diff', String(e.target.value).trim() !== e.target.dataset.orig);
       if (e.target && e.target.classList && e.target.classList.contains('kmq')) e.target.classList.remove('diff');
