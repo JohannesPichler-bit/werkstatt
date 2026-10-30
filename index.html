@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "37.1", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "38", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -2030,6 +2030,38 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .av-v.out { color: var(--kaufen); font-weight: 700; }
 .av-sq { font-size: 12.5px; line-height: 1.35; color: var(--muted); }
 .av-ad .rtext { margin: 0; }
+/* Stoppuhr je Auftrag */
+.sw-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.sw-box.run { border-color: var(--in-text); background: var(--in-soft); }
+.sw-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sw-main b { font-family: var(--f-display); font-size: 24px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.sw-main span { font-size: 13.5px; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
+.sw-box.run .sw-main span, .sw-box.run .sw-main b { color: var(--in-text); }
+.sw-go { flex: none; min-width: 6.5em; }
+.sw-more { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
+.sw-l { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.sw-l li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.35; }
+.sw-l li:first-child { border-top: 0; }
+.sw-l b { font-variant-numeric: tabular-nums; }
+.sw-w { display: flex; flex-direction: column; gap: 1px; min-width: 0; overflow-wrap: anywhere; }
+.sw-w small { font-size: 12.5px; color: var(--muted); }
+.sw-x { min-width: 34px; height: 34px; padding: 0 9px; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); font: inherit; font-size: 17px; line-height: 1; cursor: pointer; }
+.sw-x.armed { color: var(--kaufen); border-color: var(--kaufen); font-size: 13px; font-weight: 700; }
+.sw-x:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sw-add { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 10px; align-items: end; }
+.sw-add .sw-an { grid-column: 1 / -1; }
+.sw-add .btn { grid-column: 1 / -1; justify-self: start; }
+.sw-re { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.rchip.sw { background: var(--in-soft); color: var(--in-text); }
+.sw-bar { border-color: var(--in-text); }
+.sw-bar .rstat .sw-t { font-weight: 700; font-variant-numeric: tabular-nums; }
+.sw-bar .rbar-row + .rstat + .rbar-row { padding-top: 8px; border-top: 1px solid var(--line); }
+/* Rechnung zum Gutachten */
+.re-quick { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+/* Gutachten: Messprotokolle im Anhang */
+.ga-anx { display: flex; flex-direction: column; gap: 8px; margin: 2px 0 8px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.ga-anx > b { font-size: 15px; }
+.ga-anx .help { margin: 0; }
 </style>
 
 <div class="wrap">
@@ -4415,7 +4447,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     return '<li><button type="button" class="rep' + (open ? ' lvl-' + repLevel(r) : ' closed') + '" data-act="open-rep" data-id="' + esc(p[0]) + '">' +
       '<span class="rep-t">' + esc(r.titel) + '</span>' +
       (line ? '<span class="rep-d">' + esc(line) + '</span>' : '') +
-      (open ? '<span class="rchips">' + repChips(r) + '</span>' : '') + '</button></li>';
+      (open ? '<span class="rchips">' + swChip(r) + repChips(r) + '</span>' : '') + '</button></li>';
   }
   function renderAnstehend() {
     var box = $('#reps');
@@ -4440,7 +4472,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         }).join('') + '</ul>' : '') +
         (list.length ? '<ul class="reps">' + list.sort(repSort).map(repCard).join('') + '</ul>' : '') + '</div>';
     });
-    var html = researchBar();
+    var html = researchBar() + swBar();
     if (open.length || nSug) {
       var tt2 = totalsText(planTotals(open));
       html += '<div class="pbar"><div class="rbar-row"><span class="rbar-n">' + esc((open.length === 1 ? '1 Arbeit geplant' : open.length + ' Arbeiten geplant') + (nSug ? ' · ' + nSug + ' laut Wartungsplan fällig oder bald' : '')) + '</span>' +
@@ -4505,6 +4537,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       }
       h += '<p class="help">Recherche von Claude' + (isDay(x.stand) ? ', Stand ' + datum(x.stand) : '') + '. Preise ändern sich, vor dem Bestellen prüfen.</p>';
     }
+    h += swRepSec(id, r);
     h += kvaSec(id, r);
     h += reSec(id, r);
     var st = open && (r.anfrage || !x) ? researchStatus() : null;
@@ -9783,7 +9816,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     { titel: 'Unternehmensserviceportal: Steuersätze und Steuerbefreiungen der Umsatzsteuer', url: 'https://www.usp.gv.at/steuern-finanzen/umsatzsteuer-ueberblick/steuersaetze-und-steuerbefreiungen-der-umsatzsteuer.html' }
   ] };
   var KVA_UST = { inkl: 'Preise inklusive 20 % USt', zzgl: 'Preise netto, zuzüglich 20 % USt', klein: 'Ohne USt (Kleinunternehmen)' };
-  var KVA_EH = ['Stk', 'h', 'l', 'kg', 'Satz', 'pausch.'];
+  var KVA_EH = ['Stk', 'h', 'l', 'kg', 'km', 'Satz', 'pausch.'];
   var KVA_TXT = {
     verbindlich: 'Verbindlicher Kostenvoranschlag: Für die Richtigkeit wird ausdrücklich gewährleistet. Der Preis gilt auch, wenn die Arbeiten umfangreicher oder teurer werden als veranschlagt.',
     unverbindlich: 'Unverbindlicher Kostenvoranschlag: Für die Richtigkeit wird keine Gewähr übernommen. Zeichnet sich eine beträchtliche Überschreitung ab, werden Sie sofort informiert. Sie können dann vom Auftrag zurücktreten und zahlen eine angemessene Vergütung für die bis dahin geleistete Arbeit.'
@@ -10973,7 +11006,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     GA_FOTO.forEach(function (f, i) { n += gaFotos(g, i + 1).filter(function (r) { return r.typ !== 'pdf'; }).length; });
     gaCkItems(g).forEach(function (it) { var x = gaCk(g, it.key); if (gaCkSt(x) === 'mangel' || gaCkSt(x) === 'nb') n += blList(x.fotos).filter(function (r) { return r.typ !== 'pdf'; }).length; });
     gaVglRows(g).forEach(function (r) { n += blList(r.fotos).filter(function (x) { return x.typ !== 'pdf'; }).length; });
-    return n + blList(gaG(g).dateien).filter(function (r) { return r.typ !== 'pdf'; }).length;
+    return n + blList(gaG(g).dateien).filter(function (r) { return r.typ !== 'pdf'; }).length + gaAnxFotoN(g);
   }
   function gaSlug(s) {
     return String(s || '').replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').replace(/ß/g, 'ss')
@@ -11138,7 +11171,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       (can && !car.archiviert ? '<button type="button" class="linkbtn" data-act="ga-new" data-id="' + esc(id) + '">+ Neues Gutachten</button>' : '') + '</div><ul class="works">' +
       list.map(function (p) {
         var g = p[1], c = gaCkCount(g), G = gaG(g);
-        var sub = [gaArt(g).n, g.uebung ? 'Übung' : '', isDay(G.datum) ? 'Besichtigung ' + datum(G.datum) : '', c.n ? c.n + ' von ' + c.total + ' Prüfpunkten' : ''].filter(Boolean).join(' · ');
+        var sub = [gaArt(g).n, g.uebung ? 'Übung' : '', isDay(G.datum) ? 'Besichtigung ' + datum(G.datum) : '', c.n ? c.n + ' von ' + c.total + ' Prüfpunkten' : '', gaReSub(g)].filter(Boolean).join(' · ');
         return '<li><button type="button" class="wbtn" data-act="ga-open" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc((g.uebung ? 'Übungsgutachten ' : 'Gutachten ') + gaStr(g.nr)) + '<small>' + esc(sub) + '</small></span>' +
           '<span class="i-p"><span class="wst ' + (GA_ST_CLS[g.status] || '') + '">' + esc(gaStatusName(g.status)) + '</span></span></button></li>';
       }).join('') + '</ul></div>';
@@ -11354,6 +11387,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var a = gaA(g), P = gaPages(g), qc = gaQc(gid, g, car), conf = gaConf(), h = '';
     var facts = [gaZweckTxt(g), isDay(a.stichtag) ? 'Stichtag ' + datum(a.stichtag) : '', gaStr(a.auftraggeber) ? 'Auftraggeber ' + gaStr(a.auftraggeber) : ''].filter(Boolean).join(' · ');
     h += '<div class="ga-top">' + (facts ? '<p class="rtext">' + esc(facts) + '</p>' : '<p class="note">Zweck, Stichtag und Auftraggeber trägst du unter „Auftrag“ ein.</p>') + gaIn(g, 'status', 'Status', { sel: GA_STATUS, r: 1, cls: 'ga-stsel' }) + '</div>';
+    h += swHtml('ga', gid, g, can);
     var grp = null, n = 0, body = '';
     P.forEach(function (p) {
       n++;
@@ -11366,7 +11400,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     h += '<div class="sh-sec"><h3 class="sec">' + (qc.length ? 'Vor der Übergabe prüfen · ' + qc.length : 'Vor der Übergabe prüfen') + '</h3>' +
       (qc.length ? '<ul class="ga-qc">' + qc.map(function (x) { return '<li><button type="button" class="ga-qcb" data-act="ga-p" data-p="' + x.p + '">' + esc(x.t) + '</button></li>'; }).join('') + '</ul>' : '<p class="note">Alles Wichtige aus deiner Gliederung ist ausgefüllt.</p>') +
       '<p class="help">Geprüft wie im Gutachten-Assistenten: Zweck und Stichtag, Grenzen der Untersuchung, Prüfmittel mit Kalibrierstand, begründete Noten, auffällige Lackwerte im Befund, Vergleichsfahrzeuge mit Quelle und Datum, definierter Wertbegriff.</p></div>';
-    h += '<div class="sh-sec"><h3 class="sec">Ausgabe</h3><div class="ga-ex">' +
+    h += '<div class="sh-sec"><h3 class="sec">Ausgabe</h3>' + gaAnxHtml(g, car, can) + '<div class="ga-ex">' +
       '<button type="button" class="btn" data-act="ga-pdf">PDF speichern</button>' +
       '<a class="btn ghost" data-act="ga-obs" href="' + esc(gaObsUri(g)) + '">In Obsidian anlegen</a>' +
       '<button type="button" class="btn ghost" data-act="ga-md-copy">Markdown kopieren</button>' +
@@ -11374,6 +11408,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       (!g.uebung ? '<button type="button" class="btn ghost" data-act="ga-row">Zeile für Laufend.md</button>' : '') + '</div>' +
       (BL && gaAllFotoN(g) ? '<label class="check"><input type="checkbox" id="ga-pdf-f" checked><span>' + esc('Fotos ins PDF (' + gaAllFotoN(g) + ')') + '</span></label>' : '') +
       '<p class="help">' + esc('„In Obsidian anlegen“ kopiert die Notiz und öffnet Obsidian mit einer neuen Notiz „' + gaObsPath(g) + '“ im Vault „' + conf.vault + '“') + srcRefs(GA_Q, [4]) + '. Bestehende Notizen werden nicht überschrieben. Geht Obsidian nicht auf, eine neue Notiz anlegen und einfügen.</p></div>';
+    h += gaReSec(gid, g, can);
     h += '<details class="wp-more" data-k="ga-conf"><summary>Einstellungen für alle Gutachten</summary><form class="form" id="gaconf" novalidate>' +
       '<label class="f"><span>Sachverständiger</span><input id="gc-sv" maxlength="80" value="' + esc(conf.sv) + '" autocomplete="off"' + (can ? '' : ' disabled') + '><small>Steht auf dem Deckblatt und unter der Erklärung.</small></label>' +
       '<label class="f"><span>Qualifikation</span><input id="gc-q" maxlength="120" value="' + esc(conf.quali) + '" autocomplete="off"' + (can ? '' : ' disabled') + '><small>Laut deiner Gliederung gehört sie aufs Deckblatt.</small></label>' +
@@ -11874,7 +11909,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   async function saveGaConf() {
     var err = $('#gc-err'), show = function (m) { if (err) err.textContent = m; else toast(m); };
     if (!canWrite() || S.busy) return;
-    var data = { sv: $('#gc-sv').value.trim().slice(0, 80), quali: $('#gc-q').value.trim().slice(0, 120), vault: $('#gc-v').value.trim().slice(0, 80) };
+    var data = Object.assign({}, S.gaConf && typeof S.gaConf === 'object' ? S.gaConf : {}, { sv: $('#gc-sv').value.trim().slice(0, 80), quali: $('#gc-q').value.trim().slice(0, 120), vault: $('#gc-v').value.trim().slice(0, 80) });
     setBusy(true);
     try {
       await write(function () { return S.db.doc('meta/gutachten').set(data); });
@@ -12067,6 +12102,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       o.push('', '**Durchschnitt Fahrzeug:** ' + (st2.avg !== null ? Math.round(st2.avg) + ' µm' : '–') + ' · **Auffällige Bauteile:** ' + (st2.auff.length ? st2.auff.map(function (x) { return GA_LACKM[x]; }).join(', ') : 'keine'),
         'Auffällig: Mittelwert mehr als ' + gaThr(g) + ' % über dem Durchschnitt des Fahrzeugs (ab drei gemessenen Bauteilen).');
     }
+    gaAnxMd(g, car).forEach(function (l) { o.push(l); });
     o.push('', '### Fotodokumentation');
     GA_FOTO.forEach(function (f, i) { var l = gaFotos(g, i + 1); o.push('- [' + (l.length ? 'x' : ' ') + '] ' + gaPad2(i + 1) + ' ' + f[0] + (l.length ? ': ' + l.map(function (r) { return '`' + r.name + '`'; }).join(', ') : '')); });
     o.push('', 'Die Fotos liegen in der Werkstatt-App (Daten-Repository, Ordner belege).', '');
@@ -12111,11 +12147,12 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 
   /* ---------- PDF nach der Gliederung ---------- */
   async function gaPdfPhotos(g) {
-    var out = { slots: {}, ck: [], vgl: [], u: [], failed: 0 }, jobs = [];
+    var out = { slots: {}, ck: [], vgl: [], u: [], av: [], failed: 0 }, jobs = [], xAXp = gaAnx(g, S.cars.get(g.fahrzeug) || null);
     GA_FOTO.forEach(function (f, i) { gaFotos(g, i + 1).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 's', n: i + 1, r: r }); }); });
     gaCkItems(g).forEach(function (it) { var x = gaCk(g, it.key), st = gaCkSt(x); if (st === 'mangel' || st === 'nb') blList(x.fotos).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 'c', it: it, x: x, r: r }); }); });
     gaVglRows(g).forEach(function (row, i) { blList(row.fotos).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 'v', i: i, row: row, r: r }); }); });
     blList(gaG(g).dateien).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 'u', r: r }); });
+    if (xAXp.M) blList(xAXp.M.fotos).forEach(function (r) { if (r.typ !== 'pdf') jobs.push({ k: 'a', r: r }); });
     for (var j = 0; j < jobs.length; j++) {
       var jb = jobs[j];
       if (jobs.length > 3 && j % 4 === 0) toast('Fotos fürs PDF: ' + (j + 1) + ' von ' + jobs.length + ' …');
@@ -12125,6 +12162,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         if (jb.k === 's') (out.slots[jb.n] = out.slots[jb.n] || []).push(im);
         else if (jb.k === 'c') { var e1 = out.ck.filter(function (x) { return x.key === jb.it.key; })[0]; if (!e1) { e1 = { key: jb.it.key, t: jb.it.t, st: gaCkSt(jb.x), n: gaStr(jb.x.n), imgs: [] }; out.ck.push(e1); } e1.imgs.push(im); }
         else if (jb.k === 'v') { var e2 = out.vgl.filter(function (x) { return x.i === jb.i; })[0]; if (!e2) { e2 = { i: jb.i, fz: gaStr(jb.row.fz), imgs: [] }; out.vgl.push(e2); } e2.imgs.push(im); }
+        else if (jb.k === 'a') out.av.push(im);
         else out.u.push(im);
       } catch (e) { out.failed++; }
     }
@@ -12134,7 +12172,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
     var W = 210, H = 297, M = 18, X1 = W - M, TOP = 22, BOT = H - 20, y = M, PT = 0.3528;
     var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243], bad: [178, 58, 42], badSoft: [245, 220, 216], blue: [31, 93, 166], blueSoft: [219, 230, 243], glass: [214, 222, 227], white: [255, 255, 255] };
-    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/→/g, '->').replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/[^\u0000-ÿ€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/g, '?'); };
+    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/′/g, "'").replace(/→/g, '->').replace(/≥/g, '>=').replace(/≤/g, '<=').replace(/[^\u0000-ÿ€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ]/g, '?'); };
     var txt = function (s, x, yy, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), x, yy, o); };
     var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
     var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
@@ -12317,15 +12355,62 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       table([{ t: 'Bauteil', w: 46 }, { t: 'Mat.', w: 18 }, { t: 'P1', w: 14, r: true }, { t: 'P2', w: 14, r: true }, { t: 'P3', w: 14, r: true }, { t: 'P4', w: 14, r: true }, { t: 'P5', w: 14, r: true }, { t: 'Ø µm', w: 18, r: true }, { t: 'Auffällig', w: X1 - M - 152 }],
         GA_LACK.map(function (p) { var x = gaObj(gaObj(L.teile)[p[0]]), pa = st.parts[p[0]], v = arr(x.p), r = [p[1], pa.mat === 'Kunst' ? 'Kunstst.' : pa.mat].concat([0, 1, 2, 3, 4].map(function (j) { return gaStr(v[j]); })).concat([pa.avg !== null ? String(Math.round(pa.avg)) : '', pa.auff ? 'ja' : '']); if (pa.auff) { r.col = []; r.col[7] = C.bad; r.col[8] = C.bad; } return r; }), { sz: 8.5 });
     }
+    /* Messprotokolle im Anhang: Achsvermessung und Rad-Reifen-Rechnung (Version 38) */
+    var xAX = gaAnx(g, car), xAL = A.voll ? 2 : 1, anxL = function () { return 'ABCDEFGHIJKL'.charAt(xAL++); };
+    if (xAX.M) {
+      var xM = xAX.M, xR = avResult(xM), xImgs = att ? arr(att.av) : [], xSrc = gaAvSrc(g.fahrzeug, xM);
+      doc.addPage(); y = TOP;
+      head('Anhang ' + anxL() + '  Achsvermessung');
+      kv([['Gemessen am', datum(xM.datum)], ['Kilometerstand', numOrNull(xM.km) !== null ? nf.format(xM.km) + ' km' : ''], ['Gemessen bei', xM.wo || ''], ['Anlass', AV_ANLASSM[xM.anlass] || ''], ['Sollwerte', gaAvSq(xM, xSrc.length > 0)]].filter(function (r) { return r[1]; }), 38);
+      para(xR.t + '.', 10, xR.lv === 'bad' ? C.bad : C.ink);
+      table([{ t: 'Wert', w: 33 }, { t: 'Soll', w: 37 }, { t: 'Vorher L', w: 18, r: true }, { t: 'Vorher R', w: 18, r: true }, { t: 'Nachher L', w: 18, r: true }, { t: 'Nachher R', w: 18, r: true }, { t: 'Ergebnis', w: X1 - M - 142 }],
+        gaAvRows(xM).map(function (r) { var row = r.c.slice(); if (r.sub) row[0] = '  ' + row[0]; row.col = r.out.map(function (o, i) { return o ? C.bad : r.sub && i === 0 ? C.mut : null; }); return row; }), { sz: 8.3 });
+      gaAvNotes(xM, xImgs.length > 0).forEach(function (t) { para(t, 8.5, C.mut); });
+      if (xSrc.length) { sub('Quellen der Sollwerte'); xSrc.forEach(function (q, i) { para('[' + (i + 1) + '] ' + (q.titel || urlHost(q.url)) + ': ' + q.url, 8.5, C.mut); }); }
+      xImgs.forEach(function (im, i) {
+        doc.addPage(); y = TOP;
+        sub('Ausdruck der Werkstatt' + (xImgs.length > 1 ? ' (' + (i + 1) + ' von ' + xImgs.length + ')' : ''));
+        var bw = X1 - M, bh = BOT - y, sc = Math.min(bw / im.w, bh / im.h), w2 = im.w * sc, h2 = im.h * sc;
+        try { doc.addImage(im.data, im.fmt, M + (bw - w2) / 2, y, w2, h2, undefined, 'FAST'); } catch (_) { para('Foto konnte nicht eingefügt werden.', 9, C.mut); }
+        y = BOT;
+      });
+    }
+    if (xAX.rk && xAX.rs) {
+      var xo = rkIn(xAX.rs), xE = rkEval(xo), xSt = String(xAX.rs.geaendert || '').slice(0, 10), xQs = [];
+      doc.addPage(); y = TOP;
+      head('Anhang ' + anxL() + '  Rad-Reifen-Rechnung');
+      kv(gaRkRows(xo).concat(isDay(xSt) ? [['Gerechnet am', datum(xSt)]] : []), 44);
+      if (xE.pct !== undefined) {
+        var xMm = function (v) { return nf.format(Math.round(v)) + ' mm'; };
+        table([{ t: '', w: 40 }, { t: 'Papiere', w: 36, r: true }, { t: 'Neu', w: 36, r: true }, { t: 'Unterschied', w: X1 - M - 112, r: true }],
+          [['Durchmesser', xMm(xE.dA), xMm(xE.dN), (xE.dN - xE.dA >= 0 ? '+' : '−') + nf.format(Math.abs(Math.round(xE.dN - xE.dA))) + ' mm'], ['Abrollumfang', xMm(xE.uA), xMm(xE.uN), rkPct(xE.pct)]], { sz: 9 });
+        para('Rechnerisch aus der Größe: Felgendurchmesser in Zoll mal 25,4 plus zweimal die Flankenhöhe (Breite mal Querschnitt in Prozent); Umfang gleich Durchmesser mal Pi. [1]', 8.5, C.mut);
+        xQs.push(1);
+      }
+      RK_GRP.forEach(function (gr) {
+        var l = rkItems(xE).filter(function (x0) { return !x0.ex && x0.grp === gr[0]; });
+        if (!l.length) return;
+        sub(gr[1]);
+        l.forEach(function (x0) {
+          x0.q.forEach(function (n0) { if (xQs.indexOf(n0) < 0) xQs.push(n0); });
+          var t0 = ({ ok: 'Passt: ', warn: 'Achtung: ', bad: 'Passt nicht: ', unklar: 'Unklar: ' }[x0.lv] || '') + rkPdfT(x0.t) + (x0.q.length ? ' ' + x0.q.map(function (n0) { return '[' + n0 + ']'; }).join('') : '');
+          f('normal', 9.5); var l2 = split(t0, X1 - M - 5); need(l2.length * lh(9.5) + 1.5);
+          tc(x0.lv === 'bad' ? C.bad : C.ink); txt('•', M, y + 3.4); txt(l2, M + 4, y + 3.4); y += l2.length * lh(9.5) + 1.5;
+        });
+        y += 2;
+      });
+      if (xQs.length) { sub('Quellen'); xQs.sort(function (p0, q0) { return p0 - q0; }).forEach(function (n0) { var q1 = RK_Q.quellen[n0 - 1]; if (q1) para('[' + n0 + '] ' + q1.titel + ': ' + q1.url, 8.5, C.mut); }); }
+      para('Gerechnet aus den Größenangaben in der Werkstatt-App. Die Rechnung ersetzt keine Prüfung am Fahrzeug.', 8.5, C.mut);
+    }
     if (att) {
       var fotos = [];
       GA_FOTO.forEach(function (fo, i) { arr(att.slots[i + 1]).forEach(function (im, k) { fotos.push(Object.assign({ cap: gaPad2(i + 1) + ' ' + fo[0] + (arr(att.slots[i + 1]).length > 1 ? ' (' + (k + 1) + ')' : '') + '\n' + im.name }, im)); }); });
       att.ck.forEach(function (c) { c.imgs.forEach(function (im) { fotos.push(Object.assign({ cap: (c.st === 'mangel' ? 'Mangel: ' : 'Nicht beurteilbar: ') + c.t + (c.n ? ', ' + c.n : '') + '\n' + im.name }, im)); }); });
-      if (fotos.length) { doc.addPage(); y = TOP; head('Anhang ' + (A.voll ? 'C' : 'B') + '  Fotodokumentation'); grid(fotos); }
+      if (fotos.length) { doc.addPage(); y = TOP; head('Anhang ' + anxL() + '  Fotodokumentation'); grid(fotos); }
       var more = [];
       att.vgl.forEach(function (v) { v.imgs.forEach(function (im) { more.push(Object.assign({ cap: 'Vergleichsfahrzeug ' + (v.i + 1) + (v.fz ? ': ' + v.fz : '') + '\n' + im.name }, im)); }); });
       att.u.forEach(function (im) { more.push(Object.assign({ cap: 'Unterlage\n' + im.name }, im)); });
-      if (more.length) { doc.addPage(); y = TOP; head('Anhang ' + (A.voll ? 'D' : 'C') + '  Vergleichsfahrzeuge und Unterlagen'); grid(more); }
+      if (more.length) { doc.addPage(); y = TOP; head('Anhang ' + anxL() + '  Vergleichsfahrzeuge und Unterlagen'); grid(more); }
     }
     /* Kopf- und Fußzeilen */
     var n = doc.getNumberOfPages();
@@ -12575,11 +12660,13 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   function reNextNr() {
     var y = dayKey(new Date()).slice(0, 4), max = 0;
     S.reps.forEach(function (r) { var x = reOf(r), m = x && /^R-(\d{4})-(\d+)$/.exec(String(x.nr || '')); if (m && m[1] === y) max = Math.max(max, Number(m[2])); });
+    if (S.ga) S.ga.forEach(function (g) { var x = reOf(g), m = x && /^R-(\d{4})-(\d+)$/.exec(String(x.nr || '')); if (m && m[1] === y) max = Math.max(max, Number(m[2])); });
     return 'R-' + y + '-' + String(max + 1).padStart(3, '0');
   }
-  function reNrTaken(nr, repId) {
+  function reNrTaken(nr, repId, gaId) {
     var key = String(nr || '').trim().toLowerCase(), hit = false;
     S.reps.forEach(function (r, id) { var x = reOf(r); if (!hit && id !== repId && x && String(x.nr || '').trim().toLowerCase() === key) hit = true; });
+    if (S.ga) S.ga.forEach(function (g, id) { var x = reOf(g); if (!hit && id !== gaId && x && String(x.nr || '').trim().toLowerCase() === key) hit = true; });
     return hit;
   }
   function reDue(x) { var z = numOrNull(x && x.ziel); return x && isDay(x.datum) && z !== null && z > 0 ? addDays(x.datum, z) : null; }
@@ -12639,6 +12726,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var x = reOf(r);
       if (x || (r.status === 'erledigt' && String(r.erledigtAm || '').slice(0, 10) >= cut)) list.push([rid, r, x]);
     });
+    if (S.ga) S.ga.forEach(function (g, gid) {
+      if (!g || g.uebung || carIds.indexOf(g.fahrzeug) < 0) return;
+      var gx = reOf(g);
+      if (gx || (g.status === 'abgeschlossen' && String(g.geaendert || '').slice(0, 10) >= cut)) list.push([gid, { titel: 'Gutachten ' + gaStr(g.nr), fahrzeug: g.fahrzeug, status: 'erledigt', erledigtAm: null }, gx, true]);
+    });
     var rank = function (p) { return p[2] ? (isDay(p[2].bezahlt) ? 2 : 0) : 1; };
     var when = function (p) { return String((p[2] && p[2].datum) || p[1].erledigtAm || ''); };
     return list.sort(function (a, b) { return rank(a) - rank(b) || when(b).localeCompare(when(a)); });
@@ -12648,7 +12740,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var r = p[1], x = p[2], t = x ? kvaTotals(kvaPos(x), x.ust) : null, st = x ? reStatus(x) : null;
       var sub = x ? [x.nr, eur(t.brutto), st.t] : ['erledigt' + (r.erledigtAm ? ' am ' + datum(String(r.erledigtAm).slice(0, 10)) : ''), 'noch keine Rechnung'];
       if (showCar) sub.unshift(carName(r.fahrzeug));
-      return '<li><button type="button" class="wbtn" data-act="open-rep" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(r.titel) + '<small>' + esc(sub.join(' · ')) + '</small></span><span class="i-p">' +
+      return '<li><button type="button" class="wbtn" data-act="' + (p[3] ? 'ga-open' : 'open-rep') + '" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(r.titel) + '<small>' + esc(sub.join(' · ')) + '</small></span><span class="i-p">' +
         (x ? '<span class="wst ' + st.k + '">' + esc(st.chip) + '</span>' : '<span class="wst plan">ohne Rechnung</span>') + '</span></button></li>';
     }).join('') + '</ul>';
   }
@@ -12691,7 +12783,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
   function reUpdate() {
     var s = S.sheet;
-    if (!s || s.type !== 're') return;
+    if (!s || (s.type !== 're' && s.type !== 'gare')) return;
     var pos = reRead(), ust = ($('#re-ust') || {}).value || 'inkl', ok = function (v) { return v !== null && !isNaN(v); };
     pos.forEach(function (p, i) { var el = $('#rp-s' + i); if (el) el.textContent = ok(p.m) && ok(p.p) ? eur(round2(p.m * p.p)) : ''; });
     var good = pos.filter(function (p) { return ok(p.m) && ok(p.p); }), t = kvaTotals(good, ust), el = $('#re-sum');
@@ -12702,7 +12794,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         (pos.some(function (p) { return p.t && !ok(p.p); }) ? '<div><span>Positionen ohne Preis zählen nicht mit. Auf der Rechnung braucht jede Position einen Preis.</span></div>' : '');
     }
     var r = S.reps.get(s.id), car = r ? S.cars.get(r.fahrzeug) : null, ce = $('#re-chk');
-    if (ce) ce.innerHTML = reCheckHtml(reCheck(good, ust, car ? kundeOf(car) : null, reFormConf(), isDay(($('#re-lv') || {}).value || '')), ust);
+    if (ce) ce.innerHTML = reCheckHtml(reCheck(good, ust, s.type === 'gare' ? gaReKunde() : car ? kundeOf(car) : null, reFormConf(), isDay(($('#re-lv') || {}).value || '')), ust);
     var bz = $('#re-bezd-f'), bc = $('#re-bez');
     if (bz && bc) bz.hidden = !bc.checked;
   }
@@ -12713,8 +12805,9 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     var conf = reConf(), x = reOf(r), k = kvaOf(r), kunde = kundeOf(car), today = dayKey(new Date()), pos, help;
     if (x) { pos = kvaPos(x); help = ''; }
     else if (k) { pos = kvaPos(k).map(function (p) { return { t: p.t, m: p.m, e: p.e, p: p.p, kv: p.e === 'h' ? numOrNull(p.m) : null }; }); help = 'Übernommen aus dem Kostenvoranschlag Nr. ' + (k.nr || '–') + '. Bei den Stunden die tatsächliche Arbeitszeit eintragen.'; }
-    else { pos = kvaPrefill(r, conf); help = 'Vorschlag aus der Recherche: Teile mit dem ersten Angebot mit Preis, Arbeitszeit mit dem oberen Wert der Schätzung. Alles lässt sich ändern.'; }
+    else { pos = kvaPrefill(r, conf); help = repResearch(r) ? 'Vorschlag aus der Recherche: Teile mit dem ersten Angebot mit Preis, Arbeitszeit mit dem oberen Wert der Schätzung. Alles lässt sich ändern.' : ''; }
     if (!pos.length) pos = [{ t: '', m: 1, e: 'Stk', p: null }];
+    if (!x) help = swPrefill(r, pos, conf.stundensatz, help, ('Arbeitszeit: ' + String(r.titel || 'Arbeit')).slice(0, 120));
     var ust = x ? (KVA_UST[x.ust] ? x.ust : 'inkl') : k && KVA_UST[k.ust] ? k.ust : conf.ust;
     var done = String(r.erledigtAm || '').slice(0, 10), lv = x && isDay(x.leistungVon) ? x.leistungVon : isDay(done) ? done : today;
     var ziel = x && numOrNull(x.ziel) !== null ? num(x.ziel) : 14, bez = !!(x && isDay(x.bezahlt));
@@ -12731,6 +12824,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<h3 class="sec">Positionen</h3>' + (help ? '<p class="help">' + esc(help) + '</p>' : '') +
       '<div id="re-rows">' + pos.map(reRow).join('') + '</div>' +
       '<button type="button" class="linkbtn" data-act="re-add">+ Position</button>' +
+      swReBox(r) +
       '<label class="f kva-sh"><span>Stundensatz (€)</span><input id="re-sh" inputmode="decimal" value="' + shv + '" data-prev="' + shv + '" placeholder="z. B. 50" autocomplete="off"><small>Gilt für Positionen in Stunden ohne eigenen Preis und wird gemerkt.</small></label>' +
       '<label class="f"><span>Umsatzsteuer</span><select id="re-ust">' + Object.keys(KVA_UST).map(function (u) { return '<option value="' + u + '"' + (u === ust ? ' selected' : '') + '>' + esc(KVA_UST[u]) + '</option>'; }).join('') + '</select>' +
       '<small>Als Kleinunternehmen keine Umsatzsteuer ausweisen; wer sie trotzdem ausweist, schuldet sie dem Finanzamt.' + srcRefs(RE_Q, [3]) + '</small></label>' +
@@ -12759,6 +12853,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
   async function saveRe(andPdf) {
     var s = S.sheet;
+    if (s && s.type === 'gare') return gaReSave(andPdf);
     if (!s || s.type !== 're' || S.busy) return;
     var r = S.reps.get(s.id), err = function (m) { var el = $('#re-err'); if (el) el.textContent = m; };
     var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
@@ -12832,14 +12927,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   }
   function reInput(t) {
     var s = S.sheet;
-    if (!s || s.type !== 're' || !t || !t.id) return false;
+    if (!s || (s.type !== 're' && s.type !== 'gare') || !t || !t.id) return false;
     if (t.id === 're-sh') { reShInput(t); return true; }
-    if (/^rp-[mp]\d+$/.test(t.id) || /^re-(an|aa|uid|lv)$/.test(t.id)) { reUpdate(); return true; }
+    if (/^rp-[mp]\d+$/.test(t.id) || /^re-(an|aa|uid|lv|kn|ka)$/.test(t.id)) { reUpdate(); return true; }
     return false;
   }
   function reChange(t) {
     var s = S.sheet;
-    if (!s || s.type !== 're' || !t) return false;
+    if (!s || (s.type !== 're' && s.type !== 'gare') || !t) return false;
     if (t.id === 're-ust' || t.id === 're-bez' || t.id === 're-lv' || /^rp-e\d+$/.test(t.id || '')) { reUpdate(); return true; }
     return false;
   }
@@ -14657,6 +14752,513 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     toast(add.length === 1 ? 'Eine Zeile eingefügt. Bitte prüfen und ergänzen.' : add.length + ' Zeilen eingefügt. Bitte prüfen und ergänzen.');
   }
   function gaBackOf() { var s = S.sheet; return s && s.type === 'ga' ? { ga: s.id, p: s.p || 'check' } : s && (s.type === 'rk' || s.type === 'av' || s.type === 'avform') && s.back ? s.back : null; }
+  /* ---------- Stoppuhr je Auftrag (Version 38): Kundenautos und Gutachten ---------- */
+  var SW_LANG = 12 * 60;
+  function swOf(o) { var z = o && o.zeit; return z && typeof z === 'object' && !Array.isArray(z) ? z : {}; }
+  function swLog(z) { return arr(z && z.log).filter(function (e) { return e && typeof e === 'object' && e.id && numOrNull(e.min) !== null && num(e.min) > 0; }); }
+  function swMin(z) { return swLog(z).reduce(function (a, e) { return a + num(e.min); }, 0); }
+  function swRun(z) { var t = z && z.laeuft ? Date.parse(z.laeuft) : NaN; return isFinite(t) ? t : null; }
+  function swDur(min) { min = Math.max(0, Math.round(min)); var h = Math.floor(min / 60), m = min % 60; return h ? h + ' h' + (m ? ' ' + m + ' min' : '') : m + ' min'; }
+  /* Auf die Viertelstunde gerundet, mindestens eine Viertelstunde */
+  function swQh(min) { return min > 0 ? Math.max(0.25, Math.round(min / 15) / 4) : 0; }
+  function swClock(iso) { var d = new Date(iso); return isFinite(d.getTime()) ? pad(d.getHours()) + ':' + pad(d.getMinutes()) : ''; }
+  function swDay(iso) { var d = new Date(iso); return isFinite(d.getTime()) ? dayKey(d) : ''; }
+  function swGet(kind, id) { return kind === 'ga' ? gaDoc(id) : S.reps.get(id) || null; }
+  function swTitle(kind, id) {
+    var o = swGet(kind, id);
+    if (!o) return '';
+    return kind === 'ga' ? (o.uebung ? 'Übungsgutachten ' : 'Gutachten ') + gaStr(o.nr) : String(o.titel || 'Arbeit');
+  }
+  function swRunning() {
+    var out = [];
+    S.reps.forEach(function (r, id) { var t = swRun(swOf(r)); if (t !== null) out.push({ kind: 'rep', id: id, t: t }); });
+    if (S.ga) S.ga.forEach(function (g, id) { var t = swRun(swOf(g)); if (t !== null) out.push({ kind: 'ga', id: id, t: t }); });
+    return out.sort(function (a, b) { return a.t - b.t; });
+  }
+  function swWhen(e) { return e.nach ? datum(e.tag) + ' · nachgetragen' : datum(swDay(e.von)) + ' · ' + swClock(e.von) + ' bis ' + swClock(e.bis); }
+  function swKey(e) { return e.nach ? String(e.tag || '') + 'T23:59' : String(e.von || ''); }
+  function swHtml(kind, id, o, can) {
+    var z = swOf(o), run = swRun(z), log = swLog(z), min = swMin(z), open = kind === 'ga' || repOpen(o);
+    if (!open && run === null && !log.length) return '';
+    var oth = run === null ? swRunning().filter(function (p) { return !(p.kind === kind && p.id === id); })[0] : null;
+    var h = '<div class="sh-sec sw-sec"><h3 class="sec">Arbeitszeit</h3><div class="sw-box' + (run !== null ? ' run' : '') + '"><div class="sw-main">' +
+      (run !== null
+        ? '<b class="sw-t" data-sw-start="' + run + '">' + esc(swDur((Date.now() - run) / 60000)) + '</b><span>' + esc('Stoppuhr läuft seit ' + swClock(z.laeuft) + (swDay(z.laeuft) !== dayKey(new Date()) ? ' am ' + datum(swDay(z.laeuft)) : '') + (min ? ' · vorher ' + swDur(min) : '')) + '</span>'
+        : '<b>' + esc(swDur(min)) + '</b><span>' + esc(log.length ? 'gemessen, ' + log.length + (log.length === 1 ? ' Eintrag' : ' Einträge') : 'noch nichts gemessen') + '</span>') + '</div>' +
+      (can && (open || run !== null) ? '<button type="button" class="btn' + (run !== null ? '' : ' ghost') + ' sw-go" data-act="sw-go" data-k="' + kind + '" data-id="' + esc(id) + '">' + (run !== null ? 'Stopp' : 'Start') + '</button>' : '') + '</div>';
+    if (oth && can && open) h += '<p class="help">' + esc('Die Stoppuhr läuft gerade bei „' + swTitle(oth.kind, oth.id) + '“. Start hier stoppt sie dort.') + '</p>';
+    if (log.length || can) {
+      h += '<details class="wp-more" data-k="sw-log"><summary>' + esc(log.length ? 'Einträge · ' + log.length : 'Zeit nachtragen') + '</summary><div class="sw-more">';
+      if (log.length) h += '<ul class="sw-l">' + log.slice().sort(function (a, b) { var x = swKey(a), y = swKey(b); return x < y ? 1 : x > y ? -1 : 0; }).map(function (e) {
+        var w = swWhen(e);
+        return '<li><span class="sw-w">' + esc(w) + (e.notiz ? '<small>' + esc(e.notiz) + '</small>' : '') + '</span><b>' + esc(swDur(e.min)) + '</b>' +
+          (can ? '<button type="button" class="sw-x" data-act="sw-rm" data-k="' + kind + '" data-id="' + esc(id) + '" data-e="' + esc(e.id) + '" aria-label="' + esc('Eintrag ' + w + ' entfernen') + '">×</button>' : '') + '</li>';
+      }).join('') + '</ul>';
+      if (can) {
+        var today = dayKey(new Date());
+        h += '<div class="sw-add"><label class="f"><span>Tag</span><input type="date" id="sw-d" value="' + today + '" max="' + today + '"></label>' +
+          '<label class="f"><span>Dauer</span><input id="sw-h" inputmode="decimal" placeholder="1:30 oder 1,5" maxlength="10" autocomplete="off"></label>' +
+          '<label class="f sw-an"><span>Notiz <span class="muted">(optional)</span></span><input id="sw-n" maxlength="80" autocomplete="off"></label>' +
+          '<button type="button" class="btn ghost small" data-act="sw-add" data-k="' + kind + '" data-id="' + esc(id) + '">Nachtragen</button></div>' +
+          '<p class="err" id="sw-err" role="alert"></p>';
+      }
+      h += '</div></details>';
+    }
+    h += '<p class="help">' + esc(kind === 'ga' && o.uebung ? 'Zeigt, wie lange das Gutachten insgesamt gedauert hat.' : kind === 'ga' ? 'Die gemessene Zeit lässt sich in die Rechnung übernehmen, auf die Viertelstunde gerundet.' : 'Die gemessene Zeit kommt in die Rechnung, auf die Viertelstunde gerundet.') + '</p>';
+    return h + '</div>';
+  }
+  /* Eintrag unter „Anstehend“: nur bei Kundenautos */
+  function swRepSec(id, r) {
+    var car = S.cars.get(r.fahrzeug);
+    if (!car || !car.fremd) return '';
+    if (r.status === 'verworfen' && swRun(swOf(r)) === null) return '';
+    return swHtml('rep', id, r, canWrite());
+  }
+  function swChip(r) { return swRun(swOf(r)) !== null ? '<span class="rchip sw">Stoppuhr läuft</span>' : ''; }
+  function swBar() {
+    var l = swRunning();
+    if (!l.length) return '';
+    return '<div class="pbar sw-bar">' + l.map(function (p) {
+      var o = swGet(p.kind, p.id), z = swOf(o), d = swDay(z.laeuft);
+      return '<div class="rbar-row"><span class="rbar-n">' + esc('Stoppuhr läuft: ' + swTitle(p.kind, p.id)) + '</span><span class="rbar-b"><button type="button" class="btn ghost small" data-act="' + (p.kind === 'ga' ? 'ga-open' : 'open-rep') + '" data-id="' + esc(p.id) + '">Öffnen</button></span></div>' +
+        '<p class="rstat">' + esc((p.kind === 'rep' && o ? carName(o.fahrzeug) + ' · ' : '') + 'seit ' + swClock(z.laeuft) + (d !== dayKey(new Date()) ? ' am ' + datum(d) : '') + ' · ') + '<span class="sw-t" data-sw-start="' + p.t + '">' + esc(swDur((Date.now() - p.t) / 60000)) + '</span></p>';
+    }).join('') + '</div>';
+  }
+  function swTick() {
+    if (document.hidden) return;
+    $$('[data-sw-start]').forEach(function (el) { var t = Number(el.dataset.swStart); if (isFinite(t)) el.textContent = swDur((Date.now() - t) / 60000); });
+  }
+  setInterval(swTick, 15000);
+  async function swPut(kind, id, z) {
+    var now = new Date().toISOString();
+    if (kind === 'ga') {
+      if (!gaSet(id, function (d) { d.zeit = z; })) throw new Error('Gutachten nicht gefunden');
+      await gaFlushNow();
+      return;
+    }
+    await write(function () { return S.db.doc('reparaturen/' + id).update({ zeit: z, geaendert: now }); });
+    S.reps.set(id, Object.assign({}, S.reps.get(id) || {}, { zeit: z, geaendert: now }));
+  }
+  function swStopped(z, now) {
+    var run = swRun(z), nz = gaClone(z);
+    if (run === null) return nz;
+    var min = Math.max(1, Math.round((now.getTime() - run) / 60000));
+    nz.log = arr(nz.log).concat([{ id: rid(8), von: new Date(run).toISOString(), bis: now.toISOString(), min: min }]).slice(-500);
+    nz.laeuft = null;
+    return nz;
+  }
+  function swRefresh() {
+    if (S.sheet && S.sheet.type === 'ga') { gaRerender(); return; }
+    var sh = $('#sheet'), od = sh ? $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; }) : [];
+    refreshSheet();
+    if (sh) $$('details[data-k]', sh).forEach(function (d) { if (od.indexOf(d.dataset.k) >= 0) d.open = true; });
+  }
+  function swErr(m) { var el = $('#sw-err'); if (el) el.textContent = m; else toast(m); }
+  async function swGo(kind, id) {
+    if (!canWrite() || S.busy) return;
+    var o = swGet(kind, id);
+    if (!o) return;
+    var z = swOf(o), now = new Date(), msg = '';
+    setBusy(true);
+    try {
+      if (swRun(z) !== null) {
+        var nz = swStopped(z, now), last = nz.log[nz.log.length - 1];
+        await swPut(kind, id, nz);
+        msg = 'Gestoppt: ' + swDur(last.min) + '.' + (last.min > SW_LANG ? ' Über 12 Stunden – vergessen zu stoppen? Unter „Einträge“ entfernen und richtig nachtragen.' : '');
+      } else {
+        var oth = swRunning().filter(function (p) { return !(p.kind === kind && p.id === id); }), names = [];
+        for (var i = 0; i < oth.length; i++) {
+          var oo = swGet(oth[i].kind, oth[i].id);
+          if (!oo) continue;
+          names.push(swTitle(oth[i].kind, oth[i].id));
+          await swPut(oth[i].kind, oth[i].id, swStopped(swOf(oo), now));
+        }
+        var z2 = gaClone(z);
+        z2.laeuft = now.toISOString();
+        if (!Array.isArray(z2.log)) z2.log = [];
+        await swPut(kind, id, z2);
+        msg = 'Stoppuhr läuft.' + (names.length ? ' Bei „' + names[0] + '“ ist sie gestoppt.' : '');
+      }
+      setBusy(false);
+      swRefresh(); renderAll();
+      toast(msg);
+    } catch (e) { setBusy(false); writeError(e, swErr); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Entfernen mit Rückfrage; der Eintrag bleibt unter „entfernt“ im Datensatz */
+  async function swRm(kind, id, eid, btn) {
+    if (!canWrite() || S.busy || !btn) return;
+    if (!(btn.dataset.armed && Number(btn.dataset.armed) > Date.now())) {
+      btn.dataset.armed = String(Date.now() + 4000);
+      btn.textContent = 'Entfernen?';
+      btn.classList.add('armed');
+      setTimeout(function () { if (btn.isConnected && btn.dataset.armed && Number(btn.dataset.armed) <= Date.now()) { delete btn.dataset.armed; btn.textContent = '×'; btn.classList.remove('armed'); } }, 4100);
+      return;
+    }
+    var o = swGet(kind, id);
+    if (!o) return;
+    var z = gaClone(swOf(o)), e = arr(z.log).filter(function (x) { return x && x.id === eid; })[0];
+    if (!e) return;
+    z.log = arr(z.log).filter(function (x) { return !x || x.id !== eid; });
+    z.entfernt = arr(z.entfernt).concat([Object.assign({}, e, { entfernt: new Date().toISOString() })]).slice(-200);
+    setBusy(true);
+    try {
+      await swPut(kind, id, z);
+      setBusy(false);
+      swRefresh(); renderAll();
+      toast('Eintrag entfernt (' + swDur(e.min) + ').');
+    } catch (er) { setBusy(false); writeError(er, swErr); } finally { if (S.busy) setBusy(false); }
+  }
+  async function swAdd(kind, id) {
+    if (!canWrite() || S.busy) return;
+    var o = swGet(kind, id);
+    if (!o) return;
+    swErr('');
+    var d = (($('#sw-d') || {}).value || '').trim(), hv = (($('#sw-h') || {}).value || '').trim(), n = (($('#sw-n') || {}).value || '').trim().slice(0, 80), today = dayKey(new Date());
+    if (!isDay(d) || d > today) { swErr('Bitte den Tag eintragen, nicht in der Zukunft.'); return; }
+    var hh = gaDauerH(hv);
+    if (hh === null || isNaN(hh) || hh <= 0 || hh > 24) { swErr('Die Dauer bitte in Stunden eintragen, z. B. 1:30 oder 1,5.'); return; }
+    var min = Math.round(hh * 60), z = gaClone(swOf(o));
+    z.log = arr(z.log).concat([{ id: rid(8), tag: d, min: min, nach: true, notiz: n || null }]).slice(-500);
+    setBusy(true);
+    try {
+      await swPut(kind, id, z);
+      setBusy(false);
+      swRefresh(); renderAll();
+      toast('Nachgetragen: ' + swDur(min) + '.');
+    } catch (e) { setBusy(false); writeError(e, swErr); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Rechnung: gemessene Zeit vorschlagen und übernehmen */
+  function swReBox(o) {
+    var z = swOf(o), min = swMin(z), run = swRun(z);
+    if (!min && run === null) return '';
+    var t = (min ? 'Stoppuhr: ' + swDur(min) + ' gemessen' : 'Stoppuhr') + (run !== null ? (min ? ', ' : ': ') + 'läuft noch seit ' + swClock(z.laeuft) + '. Erst stoppen, dann zählt diese Zeit mit.' : '.');
+    return '<div class="sw-re"><span>' + esc(t) + '</span>' +
+      (min ? '<button type="button" class="linkbtn" data-act="sw-take" data-h="' + swQh(min) + '">' + esc('Als Arbeitszeit übernehmen: ' + nf.format(swQh(min)) + ' h') + '</button>' : '') + '</div>';
+  }
+  function swPrefill(o, pos, rate, help, label) {
+    var min = swMin(swOf(o));
+    if (!min) return help;
+    var h = swQh(min), row = pos.filter(function (p) { return p.e === 'h'; })[0];
+    if (row) row.m = h;
+    else {
+      if (pos.length === 1 && !String(pos[0].t || '').trim() && numOrNull(pos[0].p) === null) pos.length = 0;
+      pos.push({ t: label || 'Arbeitszeit', m: h, e: 'h', p: rate });
+    }
+    return (help ? help + ' ' : '') + 'Arbeitszeit aus der Stoppuhr: ' + nf.format(h) + ' h, gemessen ' + swDur(min) + ', auf die Viertelstunde gerundet.';
+  }
+  function swTake(hv) {
+    var s = S.sheet, h = Number(hv);
+    if (!s || (s.type !== 're' && s.type !== 'gare') || !(h > 0)) return;
+    var pos = reRead(), row = pos.filter(function (p) { return p.e === 'h'; })[0], sh = parseNum(((($('#re-sh') || {}).value) || '').trim());
+    if (row) row.m = h;
+    else {
+      if (pos.length === 1 && !pos[0].t && (pos[0].p === null || isNaN(pos[0].p))) pos = [];
+      pos.push({ t: s.type === 'gare' ? gaReHonT(gaDoc(s.id), true) : ('Arbeitszeit: ' + String((S.reps.get(s.id) || {}).titel || 'Arbeit')).slice(0, 120), m: h, e: 'h', p: sh === null || isNaN(sh) ? null : sh });
+    }
+    reRows(pos);
+    toast(nf.format(h) + ' h eingetragen. Bitte prüfen.');
+  }
+
+  /* ---------- Gutachten abrechnen (Version 38): eigene Rechnung im Gutachten, gleiche Nummernfolge ---------- */
+  var GA_KM_Q = { quellen: [
+    { titel: 'WKO: Wie hoch ist das Kilometergeld ab 2025? (aktualisiert 10.03.2026)', url: 'https://www.wko.at/sbg/news/wie-hoch-ist-das-kilometergeld-ab-2025-' }
+  ] };
+  var GA_KM_SATZ = 0.5;
+  function gaReConf() { var c = S.gaConf && typeof S.gaConf === 'object' ? S.gaConf : {}; return { stundensatz: numOrNull(c.stundensatz), km: numOrNull(c.kmSatz) }; }
+  function gaReArtNr(g) { return (g && GA_ART[g.art] && g.art !== 'sonst' ? gaArt(g).n : 'Gutachten') + ' Nr. ' + gaStr(g && g.nr); }
+  function gaReHonT(g, std) { return ('Honorar ' + gaReArtNr(g) + (std ? ', Zeitaufwand' : '')).slice(0, 120); }
+  function gaReKmRow(g) { var o = gaStr(gaG(g).ort), c = gaReConf(); return { t: ('Fahrtkosten zur Besichtigung' + (o ? ' (' + o + ')' : '') + ', hin und zurück').slice(0, 120), m: null, e: 'km', p: c.km !== null ? c.km : GA_KM_SATZ }; }
+  function gaReNkRow() { return { t: 'Nebenkosten (Fotos, Ausdrucke, Porto)', m: 1, e: 'pausch.', p: null }; }
+  function gaReKunde() {
+    var n = (($('#re-kn') || {}).value || '').trim(), a = (($('#re-ka') || {}).value || '').trim();
+    return n || a ? { name: n, adresse: a } : null;
+  }
+  function gaReSub(g) {
+    if (swRun(swOf(g)) !== null) return 'Stoppuhr läuft';
+    var x = reOf(g);
+    return x ? 'Rechnung ' + reStatus(x).chip : '';
+  }
+  function gaReSec(gid, g, can) {
+    if (g.uebung) return '';
+    var x = reOf(g);
+    if (!x) return '<div class="sh-sec re-sec"><h3 class="sec">Rechnung</h3><p class="note">Honorar, Fahrtkosten nach Kilometern und Nebenkosten, mit derselben Prüfung der Pflichtangaben wie bei Reparaturen. Die Nummer läuft mit den Reparatur-Rechnungen fort.</p>' +
+      (can ? '<div class="kva-act"><button type="button" class="btn small" data-act="gare-open" data-id="' + esc(gid) + '">Rechnung erstellen</button></div>' : '') + '</div>';
+    var t = kvaTotals(kvaPos(x), x.ust), st = reStatus(x);
+    return '<div class="sh-sec re-sec"><h3 class="sec">Rechnung</h3><div class="kva-card"><b>' + esc('Nr. ' + (x.nr || '–') + ' · ' + eur(t.brutto)) + '</b><span>' +
+      esc([isDay(x.datum) ? 'vom ' + datum(x.datum) : '', st.t].filter(Boolean).join(' · ')) + '</span></div>' +
+      '<div class="kva-act">' + (S.dl ? '<button type="button" class="btn small" data-act="gare-pdf" data-id="' + esc(gid) + '" aria-label="Rechnung als PDF">PDF</button>' : '') +
+      (can ? '<button type="button" class="btn ghost small" data-act="gare-open" data-id="' + esc(gid) + '" aria-label="Rechnung bearbeiten">Bearbeiten</button>' : '') +
+      (can && !isDay(x.bezahlt) ? '<button type="button" class="btn ghost small" data-act="gare-paid" data-id="' + esc(gid) + '">Bezahlt</button>' : '') + '</div></div>';
+  }
+  function openGaRe(gid) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var g = gaDoc(gid);
+    if (!g) { toast('Dieses Gutachten gibt es nicht mehr.'); return; }
+    if (g.uebung) { toast('Übungsgutachten werden nicht abgerechnet.'); return; }
+    var car = S.cars.get(g.fahrzeug) || null, conf = reConf(), gc = gaReConf(), x = reOf(g), a = gaA(g), G = gaG(g), today = dayKey(new Date()), pos, help = '';
+    var rate = gc.stundensatz !== null ? gc.stundensatz : conf.stundensatz, min = swMin(swOf(g));
+    if (x) pos = kvaPos(x).map(function (p) { return { t: p.t, m: p.m, e: p.e, p: p.p }; });
+    else if (min) {
+      pos = [{ t: gaReHonT(g, true), m: swQh(min), e: 'h', p: rate }];
+      help = 'Honorar nach der Stoppuhr: ' + nf.format(swQh(min)) + ' h, gemessen ' + swDur(min) + ', auf die Viertelstunde gerundet. Für eine Pauschale die Einheit auf „pausch.“ stellen.';
+    } else {
+      pos = [{ t: gaReHonT(g, false), m: 1, e: 'pausch.', p: null }];
+      help = 'Honorar als Pauschale: Preis eintragen. Nach Stunden abrechnen: Einheit h wählen.';
+    }
+    var an = x && x.an && typeof x.an === 'object' ? x.an : { name: gaStr(a.auftraggeber), adresse: gaStr(a.anschrift) };
+    var ust = x ? (KVA_UST[x.ust] ? x.ust : 'inkl') : conf.ust;
+    var lv = x && isDay(x.leistungVon) ? x.leistungVon : isDay(G.datum) ? G.datum : today;
+    var ziel = x && numOrNull(x.ziel) !== null ? num(x.ziel) : 14, bez = !!(x && isDay(x.bezahlt));
+    var shv = rate === null ? '' : nfPrice.format(rate), absOpen = !conf.name || !conf.adresse;
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Rechnung · Gutachten ' + gaStr(g.nr)) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + esc(gaArt(g).n) + '</h2>' +
+      '<p class="buy">' + esc(gaName(g, car) + (gaStr(gaF(g).kz) ? ' · ' + gaStr(gaF(g).kz) : '')) + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="reform" novalidate>' +
+      '<div class="kva-row3"><label class="f"><span>Rechnungsnummer</span><input id="re-nr" value="' + esc(x ? x.nr || '' : reNextNr()) + '" maxlength="20" autocomplete="off"><small>Fortlaufend mit den Reparatur-Rechnungen.</small></label>' +
+      '<label class="f"><span>Rechnungsdatum</span><input type="date" id="re-d" value="' + esc(x && isDay(x.datum) ? x.datum : today) + '"></label>' +
+      '<label class="f"><span>Leistungsdatum</span><input type="date" id="re-lv" value="' + esc(lv) + '"></label></div>' +
+      '<label class="f"><span>Bis <span class="muted">(nur bei mehreren Tagen)</span></span><input type="date" id="re-lb" value="' + esc(x && isDay(x.leistungBis) ? x.leistungBis : '') + '">' +
+      (!x && isDay(G.datum) ? '<small>Leistungsdatum: vorbelegt mit dem Tag der Besichtigung.</small>' : '') + '</label>' +
+      '<h3 class="sec">Rechnung an</h3>' +
+      '<label class="f"><span>Name oder Firma</span><input id="re-kn" value="' + esc(an.name || '') + '" maxlength="120" autocomplete="off"></label>' +
+      '<label class="f"><span>Anschrift</span><textarea id="re-ka" rows="2" maxlength="300">' + esc(an.adresse || '') + '</textarea>' + (x ? '' : '<small>Vom Auftraggeber im Gutachten übernommen.</small>') + '</label>' +
+      '<h3 class="sec">Positionen</h3>' + (help ? '<p class="help">' + esc(help) + '</p>' : '') +
+      '<div id="re-rows">' + pos.map(reRow).join('') + '</div>' +
+      '<div class="re-quick"><button type="button" class="linkbtn" data-act="gare-add" data-w="km">+ Fahrtkosten</button><button type="button" class="linkbtn" data-act="gare-add" data-w="nk">+ Nebenkosten</button><button type="button" class="linkbtn" data-act="re-add">+ Position</button></div>' +
+      '<p class="help">' + esc('Fahrtkosten: Kilometer hin und zurück mal Preis je km. ' + (gc.km !== null && gc.km !== GA_KM_SATZ ? 'Vorgeschlagen ist dein zuletzt verwendeter Preis, ' + nfPrice.format(gc.km) + ' € je km; das amtliche Kilometergeld für Pkw beträgt 0,50 € je km' : 'Vorgeschlagen sind 0,50 € je km, so viel beträgt das amtliche Kilometergeld für Pkw')) + srcRefs(GA_KM_Q, [1]) + esc(gc.km !== null && gc.km !== GA_KM_SATZ ? '.' : '. Ein anderer Preis wird für das nächste Mal gemerkt.') + '</p>' +
+      swReBox(g) +
+      '<label class="f kva-sh"><span>Stundensatz für Gutachten (€)</span><input id="re-sh" inputmode="decimal" value="' + shv + '" data-prev="' + shv + '" placeholder="z. B. 80" autocomplete="off"><small>Gilt für Positionen in Stunden ohne eigenen Preis und wird für Gutachten gemerkt.</small></label>' +
+      '<label class="f"><span>Umsatzsteuer</span><select id="re-ust">' + Object.keys(KVA_UST).map(function (u) { return '<option value="' + u + '"' + (u === ust ? ' selected' : '') + '>' + esc(KVA_UST[u]) + '</option>'; }).join('') + '</select>' +
+      '<small>Als Kleinunternehmen keine Umsatzsteuer ausweisen; wer sie trotzdem ausweist, schuldet sie dem Finanzamt.' + srcRefs(RE_Q, [3]) + '</small></label>' +
+      '<div class="kva-sum" id="re-sum" aria-live="polite"></div>' +
+      '<div class="re-chk" id="re-chk" aria-live="polite"></div>' +
+      '<label class="f"><span>Zahlungsziel</span><select id="re-ziel">' + RE_ZIEL.map(function (z) { return '<option value="' + z[0] + '"' + (z[0] === ziel ? ' selected' : '') + '>' + esc(z[1]) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="check"><input type="checkbox" id="re-bez"' + (bez ? ' checked' : '') + '><span>Schon bezahlt</span></label>' +
+      '<label class="f" id="re-bezd-f"' + (bez ? '' : ' hidden') + '><span>Bezahlt am</span><input type="date" id="re-bezd" value="' + esc(bez ? x.bezahlt : today) + '"></label>' +
+      '<label class="f"><span>Bemerkung</span><textarea id="re-bem" rows="2" maxlength="400" placeholder="z. B. Gutachten wurde per E-Mail übermittelt">' + esc(x ? x.bem || '' : '') + '</textarea></label>' +
+      '<details class="kva-abs"' + (absOpen ? ' open' : '') + '><summary>Absender und Bankverbindung' + (conf.name ? ': ' + esc(conf.name) : '') + '</summary><div class="kva-absb">' +
+      '<label class="f"><span>Name oder Werkstatt</span><input id="re-an" value="' + esc(conf.name) + '" maxlength="80" autocomplete="off"></label>' +
+      '<label class="f"><span>Adresse</span><textarea id="re-aa" rows="2" maxlength="200">' + esc(conf.adresse) + '</textarea></label>' +
+      '<div class="row2"><label class="f"><span>Telefon</span><input id="re-at" value="' + esc(conf.telefon) + '" maxlength="40" inputmode="tel" autocomplete="off"></label>' +
+      '<label class="f"><span>E-Mail</span><input id="re-ae" value="' + esc(conf.email) + '" maxlength="120" inputmode="email" autocomplete="off"></label></div>' +
+      '<label class="f"><span>UID-Nummer <span class="muted">(falls vorhanden)</span></span><input id="re-uid" value="' + esc(conf.uid) + '" maxlength="20" autocomplete="off" placeholder="ATU…"></label>' +
+      '<div class="row2"><label class="f"><span>IBAN</span><input id="re-iban" value="' + esc(conf.iban) + '" maxlength="42" autocomplete="off" spellcheck="false"></label>' +
+      '<label class="f"><span>BIC <span class="muted">(optional)</span></span><input id="re-bic" value="' + esc(conf.bic) + '" maxlength="15" autocomplete="off" spellcheck="false"></label></div>' +
+      '<p class="help">Gilt auch für Kostenvoranschläge und Reparatur-Rechnungen. Die IBAN steht nur auf Rechnungen mit Zahlungsziel.</p></div></details>' +
+      '<p class="help">Hinweis: Das ersetzt keine Steuerberatung.</p>' +
+      '<p class="err" id="re-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
+      (S.dl ? '<button type="button" class="btn ghost" data-act="re-save-pdf">Speichern und PDF</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="gare-back" data-id="' + esc(gid) + '">Zurück</button></div></form>';
+    openSheet('gare', { id: gid }, h);
+    reUpdate();
+  }
+  function gaReAdd(w) {
+    var s = S.sheet, g = s && s.type === 'gare' ? gaDoc(s.id) : null;
+    if (!g) return;
+    var pos = reRead();
+    if (pos.length === 1 && !pos[0].t && (pos[0].p === null || isNaN(pos[0].p))) pos = [];
+    pos.push(w === 'km' ? gaReKmRow(g) : gaReNkRow());
+    reRows(pos);
+    var el = $((w === 'km' ? '#rp-m' : '#rp-p') + (pos.length - 1));
+    if (el) { try { el.focus(); } catch (_) {} }
+  }
+  async function gaReSave(andPdf) {
+    var s = S.sheet;
+    if (!s || s.type !== 'gare' || S.busy) return;
+    var gid = s.id, g0 = gaDoc(gid), err = function (m) { var el = $('#re-err'); if (el) el.textContent = m; };
+    var gv = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    if (!g0) { err('Dieses Gutachten gibt es nicht mehr.'); return; }
+    var pos = reRead().filter(function (p) { return p.t || p.p !== null; });
+    if (!pos.length) { err('Bitte mindestens eine Position eintragen.'); return; }
+    for (var i = 0; i < pos.length; i++) {
+      var p = pos[i];
+      if (!p.t) { err('Position ' + (i + 1) + ': Bitte eine Beschreibung eintragen.'); return; }
+      if (p.m === null || isNaN(p.m) || p.m <= 0) { err('Position ' + (i + 1) + ': ' + (p.e === 'km' ? 'Bitte die Kilometer eintragen, hin und zurück.' : 'Bitte die Menge als Zahl eintragen, z. B. 1 oder 2,5.')); return; }
+      if (p.p === null || isNaN(p.p) || p.p < 0) { err('Position ' + (i + 1) + ': Auf der Rechnung braucht jede Position einen Preis, z. B. 89,90.'); return; }
+      pos[i] = { t: p.t, m: round3(p.m), e: KVA_EH.indexOf(p.e) >= 0 ? p.e : 'Stk', p: round2(p.p) };
+    }
+    var nr = gv('re-nr').slice(0, 20), d = gv('re-d'), lv = gv('re-lv'), lb = gv('re-lb'), sh = parseNum(gv('re-sh')), bez = !!(($('#re-bez') || {}).checked), bd = gv('re-bezd');
+    if (!nr) { err('Bitte eine Rechnungsnummer eintragen.'); return; }
+    if (reNrTaken(nr, null, gid)) { err('Die Nummer ' + nr + ' ist schon vergeben. Jede Rechnungsnummer darf nur einmal vorkommen.'); return; }
+    if (!isDay(d)) { err('Bitte das Rechnungsdatum eintragen.'); return; }
+    if (!isDay(lv)) { err('Bitte das Leistungsdatum eintragen, zum Beispiel den Tag der Besichtigung.'); return; }
+    if (lb && (!isDay(lb) || lb < lv)) { err('„Bis“ muss nach dem Leistungsdatum liegen.'); return; }
+    if (sh !== null && (isNaN(sh) || sh < 0)) { err('Den Stundensatz bitte als Zahl eintragen, z. B. 80.'); return; }
+    if (bez && !isDay(bd)) { err('Bitte eintragen, wann bezahlt wurde.'); return; }
+    var iban = gv('re-iban').toUpperCase().replace(/\s+/g, ''), uid = gv('re-uid').toUpperCase().replace(/\s+/g, ''), bic = gv('re-bic').toUpperCase().replace(/\s+/g, '');
+    if (iban && !/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(iban)) { err('Die IBAN sieht nicht vollständig aus, z. B. AT61 1904 3002 3457 3201.'); return; }
+    if (bic && !/^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(bic)) { err('Der BIC hat 8 oder 11 Zeichen, z. B. BKAUATWW.'); return; }
+    var zi = Number(gv('re-ziel')), ust = KVA_UST[gv('re-ust')] ? gv('re-ust') : 'inkl', now = new Date().toISOString(), old = reOf(g0);
+    var x = { nr: nr, datum: d, leistungVon: lv, leistungBis: lb && lb !== lv ? lb : null, ust: ust, pos: pos, ziel: RE_ZIEL.some(function (z) { return z[0] === zi; }) ? zi : 14,
+      bezahlt: bez ? bd : null, bem: gv('re-bem').slice(0, 400), an: { name: gv('re-kn').slice(0, 120) || null, adresse: gv('re-ka').slice(0, 300) || null },
+      erstellt: old && old.erstellt ? old.erstellt : now, geaendert: now };
+    var conf = { name: gv('re-an').slice(0, 80) || null, adresse: gv('re-aa').slice(0, 200) || null, telefon: gv('re-at').slice(0, 40) || null, email: gv('re-ae').slice(0, 120) || null,
+      uid: uid.slice(0, 20) || null, iban: iban ? reIbanFmt(iban) : null, bic: bic || null };
+    var prev = S.kvaConf || {}, same = Object.keys(conf).every(function (q) { return (prev[q] == null ? null : prev[q]) === conf[q]; });
+    var kmRow = pos.filter(function (q) { return q.e === 'km'; })[0], gc0 = S.gaConf && typeof S.gaConf === 'object' ? S.gaConf : {};
+    var gcp = { stundensatz: sh === null ? null : round2(sh), kmSatz: kmRow ? kmRow.p : numOrNull(gc0.kmSatz) };
+    var gcSame = (numOrNull(gc0.stundensatz) === gcp.stundensatz) && (numOrNull(gc0.kmSatz) === gcp.kmSatz);
+    setBusy(true);
+    try {
+      if (!gaSet(gid, function (dd) { dd.rechnung = x; })) throw new Error('Gutachten nicht gefunden');
+      await gaFlushNow();
+      if (!same) {
+        var had = !!S.kvaConf;
+        try { await write(function () { var ref = S.db.doc('meta/kva'); return had ? ref.update(conf) : ref.set(Object.assign({ ust: ust }, conf)); }); S.kvaConf = Object.assign({}, S.kvaConf || {}, conf); } catch (_) {}
+      }
+      if (!gcSame) {
+        var data = Object.assign({}, gc0, gcp);
+        try { await write(function () { return S.db.doc('meta/gutachten').set(data); }); S.gaConf = data; } catch (_) {}
+      }
+      setBusy(false);
+      openGa(gid, 'start'); renderAll();
+      toast('Rechnung ' + x.nr + ' gespeichert.');
+      if (andPdf) await saveGaRePdf(gid);
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  async function gaRePaid(gid) {
+    var g = gaDoc(gid), x = reOf(g);
+    if (!x || !canWrite() || S.busy) return;
+    var now = new Date().toISOString(), nx = Object.assign({}, x, { bezahlt: dayKey(new Date()), geaendert: now });
+    setBusy(true);
+    try {
+      if (!gaSet(gid, function (dd) { dd.rechnung = nx; })) throw new Error('Gutachten nicht gefunden');
+      await gaFlushNow();
+      setBusy(false);
+      gaRerender(); renderAll();
+      toast('Rechnung ' + x.nr + ' ist als bezahlt vermerkt.');
+    } catch (e) { setBusy(false); writeError(e, function (m) { var el = $('#ga-err'); if (el) el.textContent = m; else toast(m); }); } finally { if (S.busy) setBusy(false); }
+  }
+  async function saveGaRePdf(gid) {
+    var g = gaDoc(gid), x = reOf(g), err = function (m) { var el = $('#re-err') || $('#ga-err'); if (el) el.textContent = m; else toast(m); };
+    if (!g || !x) { err('Erst die Rechnung speichern.'); return; }
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var car = S.cars.get(g.fahrzeug) || {}, F = gaF(g), blob;
+    var pr = { titel: gaReArtNr(g) };
+    var pc = { name: gaName(g, car), kennzeichen: gaStr(F.kz) || car.kennzeichen || '', fin: gaStr(F.fin) || car.fin || '', km: gaNum(F.km) };
+    var an = x.an && typeof x.an === 'object' && (x.an.name || x.an.adresse) ? { name: x.an.name || '', adresse: x.an.adresse || '' } : null;
+    try { blob = rePdf(lib, pr, pc, an, x, reConf()).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+    var name = 'Rechnung ' + fileSafe(x.nr || '') + ' Gutachten ' + fileSafe(gaStr(g.nr) || '') + '.pdf';
+    try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
+
+  /* ---------- Messprotokolle im Gutachten-PDF (Version 38): Achsvermessung und Rad-Reifen-Rechnung ---------- */
+  function gaAnx(g, car) {
+    var art = g && g.art, ok = art === 'fahrwerk' || art === 'radreifen', an = gaObj(g && g.anhang), list = ok && car ? avList(car) : [], rs = ok && car ? rkSaved(car) : null;
+    var av = typeof an.av === 'string' ? an.av : art === 'fahrwerk' && list.length ? list[list.length - 1].id : '';
+    var M = av ? list.filter(function (m) { return m.id === av; })[0] || null : null;
+    return { ok: ok, list: list, M: M, rs: rs, rk: !!rs && (typeof an.rk === 'boolean' ? an.rk : true) };
+  }
+  function gaAnxFotoN(g) { var X = gaAnx(g, S.cars.get(g && g.fahrzeug) || null); return X.M ? blList(X.M.fotos).filter(function (r) { return r.typ !== 'pdf'; }).length : 0; }
+  function gaAnxHtml(g, car, can) {
+    var X = gaAnx(g, car);
+    if (!X.ok || !car) return '';
+    var h = '<div class="ga-anx"><b>Messprotokolle im Anhang</b>';
+    if (X.list.length) h += '<label class="f"><span>Achsvermessung</span><select id="ga-anx-av" data-anx="av"' + (can ? '' : ' disabled') + '><option value="">nicht anhängen</option>' + X.list.slice().reverse().map(function (m) {
+      var R = avResult(m);
+      return '<option value="' + esc(m.id) + '"' + (X.M && X.M.id === m.id ? ' selected' : '') + '>' + esc(datum(m.datum) + (numOrNull(m.km) !== null ? ' · ' + nf.format(m.km) + ' km' : '') + ' · ' + (R.lv === 'ok' ? 'im Soll' : R.lv === 'bad' ? 'außerhalb' : 'ohne Soll')) + '</option>';
+    }).join('') + '</select></label>';
+    else if (g.art === 'fahrwerk') h += '<p class="help">Noch keine Achsvermessung beim Auto. <button type="button" class="linkbtn inl" data-act="av-open" data-id="' + esc(g.fahrzeug) + '">Zur Achsvermessung</button></p>';
+    if (X.rs) {
+      var o = rkIn(X.rs), st = String(X.rs.geaendert || '').slice(0, 10);
+      h += '<label class="check"><input type="checkbox" id="ga-anx-rk" data-anx="rk"' + (X.rk ? ' checked' : '') + (can ? '' : ' disabled') + '><span>' + esc('Rad-Reifen-Rechnung: ' + (rkShort(o) || [o.nr, o.nf].filter(Boolean).join(' auf ')) + (isDay(st) ? ' (Stand ' + datum(st) + ')' : '')) + '</span></label>';
+    } else if (g.art === 'radreifen') h += '<p class="help">Noch keine Rad-Reifen-Rechnung beim Auto. <button type="button" class="linkbtn inl" data-act="rk-open" data-id="' + esc(g.fahrzeug) + '">Rad-Reifen-Rechner</button></p>';
+    return h + '<small class="help">Wie das Lackmessprotokoll als eigener Anhang im PDF und in der Notiz.</small></div>';
+  }
+  function gaAnxChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'ga' || !t || !t.dataset || t.dataset.anx === undefined) return false;
+    var k = t.dataset.anx === 'rk' ? 'rk' : 'av', v = k === 'rk' ? !!t.checked : String(t.value || '');
+    gaSet(s.id, function (d) { d.anhang = Object.assign({}, gaObj(d.anhang)); d.anhang[k] = v; });
+    return true;
+  }
+  /* Zeilen der Achsvermessung für PDF und Notiz: Wert, Soll, vorher L/R, nachher L/R, Ergebnis */
+  function gaAvRows(M) {
+    var u = avUnit(M), cV = avCheck(M, 'v'), cN = avCheck(M, 'n'), hasN = avPhaseHas(M, 'n'), out = [];
+    var st = function (c, k, w) { var s = c.rows[k]; return s ? s[w] === 'out' : false; };
+    var vd = function (k, keys) { var c = hasN ? cN : cV, s = c.rows[k], l = s ? keys.map(function (w) { return s[w]; }).filter(Boolean) : []; return l.length ? (l.indexOf('out') >= 0 ? 'außerhalb' : 'im Soll') : ''; };
+    AV_ROWS.forEach(function (r) {
+      var uu = r.g === 'spur' ? u : 'grad', s = avS(M, r.k), W = AV_RAD[r.ax], summ = r.g === 'spur' && avSumOk(s);
+      var v = function (ph, w) { var x = avWert(M, ph, w, r.g); return x === null ? '' : avFmt(x, uu); };
+      var c = [r.n, s && avHasRange(s) ? (r.g === 'spur' ? (s.bezug === 'einzel' ? 'je Rad ' : 'gesamt ') : '') + (s.min === s.max ? avFmt(s.min, uu) : avFmt(s.min, uu) + ' bis ' + avFmt(s.max, uu)) : '–',
+        v('v', W[0][0]), v('v', W[1][0]), v('n', W[0][0]), v('n', W[1][0]), summ ? '' : vd(r.k, ['L', 'R'])];
+      if (!c.slice(2, 6).some(Boolean) && !s) return;
+      out.push({ c: c, out: [false, false, st(cV, r.k, 'L'), st(cV, r.k, 'R'), st(cN, r.k, 'L'), st(cN, r.k, 'R'), c[6] === 'außerhalb'] });
+      if (r.g === 'spur') {
+        var sm = function (ph) { var a = avWert(M, ph, W[0][0], 'spur'), b = avWert(M, ph, W[1][0], 'spur'); return a !== null && b !== null ? avFmt(a + b, uu) : ''; };
+        if (sm('v') || sm('n')) { var c2 = ['Gesamtspur ' + (r.ax === 'va' ? 'vorne' : 'hinten'), '', sm('v'), '', sm('n'), '', summ ? vd(r.k, ['sum']) : '']; out.push({ c: c2, sub: true, out: [false, false, st(cV, r.k, 'sum'), false, st(cN, r.k, 'sum'), false, c2[6] === 'außerhalb'] }); }
+      } else if (s && numOrNull(s.diff) !== null) {
+        var df = function (ph) { var a = avWert(M, ph, W[0][0], r.g), b = avWert(M, ph, W[1][0], r.g); return a !== null && b !== null ? avFmtA(Math.abs(a - b)) : ''; };
+        var c3 = ['Unterschied L/R', 'höchstens ' + avFmtA(s.diff), df('v'), '', df('n'), '', vd(r.k, ['diff'])];
+        out.push({ c: c3, sub: true, out: [false, false, st(cV, r.k, 'diff'), false, st(cN, r.k, 'diff'), false, c3[6] === 'außerhalb'] });
+      }
+    });
+    return out;
+  }
+  function gaAvSq(M, nq) {
+    var q = M && M.sollQuelle;
+    if (!q || typeof q !== 'object') return '';
+    if (q.art === 'recherche') return 'aus einer Recherche' + (isDay(q.stand) ? ', Stand ' + datum(q.stand) : '') + (nq ? ', Quellen am Ende dieses Anhangs' : '');
+    if (q.art === 'vorige') return 'wie bei der Messung' + (isDay(q.datum) ? ' vom ' + datum(q.datum) : '');
+    return '';
+  }
+  function gaAvSrc(cid, M) {
+    var q = M && M.sollQuelle;
+    if (!q || q.art !== 'recherche') return [];
+    var d = xDoc('ad', cid);
+    return arr(d && d.quellen).filter(function (s) { return s && safeUrl(s.url); }).slice(0, 8);
+  }
+  function gaAvNotes(M, withImg) {
+    var u = avUnit(M), n = [u === 'mm' ? 'Spur in mm, Sturz und Nachlauf in Grad und Winkelminuten (1° = 60′).' : 'Werte in Grad und Winkelminuten (1° = 60′).', 'Sturz negativ: oberer Radrand nach innen geneigt.'];
+    if (M.notiz) n.push('Notiz: ' + M.notiz);
+    n.push('Eingetragen nach dem Messprotokoll' + (M.wo ? ' von ' + M.wo : '') + ' in der Werkstatt-App. Maßgeblich ist das Protokoll der Fachwerkstätte' + (blList(M.fotos).length ? (withImg ? ', es ist als Foto angehängt' : ', es liegt als Foto vor') : '') + '.');
+    return n;
+  }
+  /* Texte des Rechners ohne Bedienhinweise der App */
+  function rkPdfT(t) {
+    return String(t || '').replace(', Regel aus deiner Checkliste Rad-Reifen.', '; Prüfkriterium der Checkliste Rad-Reifen.')
+      .replace(' Trag die Höchstgeschwindigkeit laut Papieren ein, dann prüft die App das.', ' Die Höchstgeschwindigkeit laut Papieren ist nicht eingetragen.')
+      .replace(' Sind es Winterreifen, das Häkchen setzen.', '');
+  }
+  function gaRkRows(o) {
+    var E = rkEval(o), st = '';
+    return [['Laut Papieren', [o.ar, o.af].filter(Boolean).join(' auf ')], ['Neu', [o.nr, o.nf].filter(Boolean).join(' auf ') + (E.dist ? ', Distanzscheiben ' + rkMm(E.dist) + ' je Seite' : '') + (E.winter ? ' (Winterreifen)' : '')],
+      ['Höchstgeschwindigkeit', o.vmax ? o.vmax + ' km/h' : st], ['Höchste Achslast', o.al ? o.al + ' kg' : st], ['Traglast der Felge', o.tl ? o.tl + ' kg' : st],
+      ['Tacho mit GPS', o.ta && o.tg ? 'Tacho ' + o.ta + ' km/h, GPS ' + o.tg + ' km/h (bisherige Reifen)' : st],
+      ['Freigängigkeit gemessen', [o.fi ? 'innen ' + o.fi + ' mm' : '', o.fa ? 'außen ' + o.fa + ' mm' : ''].filter(Boolean).join(', ')]].filter(function (r) { return r[1]; });
+  }
+  function gaAnxMd(g, car) {
+    var X = gaAnx(g, car), o = [];
+    var cell = function (s) { return String(s == null ? '' : s).replace(/\s*\n\s*/g, ' ').replace(/\|/g, '\\|'); };
+    if (X.M) {
+      var M = X.M, R = avResult(M), src = gaAvSrc(g.fahrzeug, M);
+      o.push('', '### Achsvermessung', 'Gemessen am ' + datum(M.datum) + (numOrNull(M.km) !== null ? ' bei ' + nf.format(M.km) + ' km' : '') + (M.wo ? ', ' + cell(M.wo) : '') + (AV_ANLASSM[M.anlass] ? ' · Anlass: ' + AV_ANLASSM[M.anlass] : '') + (gaAvSq(M, false) ? ' · Sollwerte ' + gaAvSq(M, false) : ''), '',
+        '**Ergebnis:** ' + cell(R.t) + '.' + (R.lv === 'bad' ? ' Werte außerhalb des Solls sind fett.' : ''), '', '| Wert | Soll | Vorher L | Vorher R | Nachher L | Nachher R | Ergebnis |', '|---|---|---|---|---|---|---|');
+      gaAvRows(M).forEach(function (r) { o.push('| ' + r.c.map(function (x, i) { return r.out[i] && x ? '**' + cell(x) + '**' : cell(x); }).join(' | ') + ' |'); });
+      o.push('');
+      gaAvNotes(M, false).forEach(function (t) { o.push(t); });
+      if (src.length) { o.push('', 'Quellen der Sollwerte:'); src.forEach(function (s, i) { o.push('- [' + (i + 1) + '] [' + cell(s.titel || urlHost(s.url)) + '](' + s.url + ')'); }); }
+    }
+    if (X.rk) {
+      var ro = rkIn(X.rs), E = rkEval(ro), stn = String(X.rs.geaendert || '').slice(0, 10), q = [];
+      o.push('', '### Rad-Reifen-Rechnung' + (isDay(stn) ? ' (Stand ' + datum(stn) + ')' : ''));
+      gaRkRows(ro).forEach(function (r) { o.push('- ' + r[0] + ': ' + cell(r[1])); });
+      if (E.pct !== undefined) { o.push('- Umfang rechnerisch ' + nf.format(Math.round(E.uN)) + ' mm statt ' + nf.format(Math.round(E.uA)) + ' mm (' + rkPct(E.pct) + ') [1]'); q.push(1); }
+      rkItems(E).filter(function (x) { return !x.ex; }).forEach(function (x) {
+        x.q.forEach(function (n) { if (q.indexOf(n) < 0) q.push(n); });
+        o.push('- ' + ({ ok: 'Passt: ', warn: 'Achtung: ', bad: 'Passt nicht: ', unklar: 'Unklar: ' }[x.lv] || '') + cell(rkPdfT(x.t)) + (x.q.length ? ' ' + x.q.map(function (n) { return '[' + n + ']'; }).join('') : ''));
+      });
+      if (q.length) { o.push('', 'Quellen:'); q.sort(function (a, b) { return a - b; }).forEach(function (n) { var s = RK_Q.quellen[n - 1]; if (s) o.push('- [' + n + '] [' + cell(s.titel) + '](' + s.url + ')'); }); }
+    }
+    return o;
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -15037,6 +15639,15 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'av-from': avFrom(t.dataset.from); break;
       case 'av-pdf': saveAvPdf(t.dataset.id, t.dataset.m); break;
       case 'ga-ins-x': gaInsX(t.dataset.x); break;
+      case 'sw-go': swGo(t.dataset.k, t.dataset.id); break;
+      case 'sw-rm': swRm(t.dataset.k, t.dataset.id, t.dataset.e, t); break;
+      case 'sw-add': swAdd(t.dataset.k, t.dataset.id); break;
+      case 'sw-take': swTake(t.dataset.h); break;
+      case 'gare-open': openGaRe(t.dataset.id); break;
+      case 'gare-pdf': saveGaRePdf(t.dataset.id); break;
+      case 'gare-paid': gaRePaid(t.dataset.id); break;
+      case 'gare-back': openGa(t.dataset.id, 'start'); break;
+      case 'gare-add': gaReAdd(t.dataset.w); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
@@ -15141,6 +15752,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (t.id === 'fk-feld') { fbKorrSync(); return; }
     if (rkChange(t)) return;
     if (avChange(t)) return;
+    if (gaAnxChange(t)) return;
     if (brChange(t)) return;
     if (pvChange(t)) return;
     if (gaChange(t)) return;
