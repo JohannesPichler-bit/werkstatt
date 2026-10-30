@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "36", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "37", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -1955,6 +1955,81 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .fb-e.storno .fb-eh span { text-decoration: line-through; color: var(--muted); }
 .fb-e .linkbtn { align-self: flex-start; }
 .fb-sub { margin-top: -6px; }
+/* Rad-Reifen-Rechner */
+.rk-f, .av-f { margin: 0; padding: 12px 0 0; border: 0; border-top: 1px solid var(--line); min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.rk-f legend, .av-f legend { padding: 0; font-family: var(--f-display); font-weight: 800; font-size: 21px; }
+.rk-p { font-size: 12.5px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.rk-p:empty { display: none; }
+.rk-p.err { color: var(--kaufen); font-weight: 700; }
+.rk-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rk-chips:empty { display: none; }
+.rk-more { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+.rk-res { display: flex; flex-direction: column; gap: 8px; }
+.rk-res .sb-h { margin-top: 6px; }
+.rk-t th, .rk-t td { white-space: nowrap; }
+.rk-l { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rk-i { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 9px; align-items: start; font-size: 14.5px; line-height: 1.45; }
+.rk-ic { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-top: 1px; border-radius: 6px; font-size: 13px; font-weight: 800; line-height: 1; background: var(--surface-2); color: var(--muted); }
+.rk-i.lv-ok .rk-ic { background: var(--in-soft); color: var(--in-text); }
+.rk-i.lv-warn .rk-ic, .rk-i.lv-unklar .rk-ic { background: var(--ro-soft); color: var(--ro-text); }
+.rk-i.lv-bad .rk-ic { background: var(--kaufen-soft); color: var(--kaufen); }
+.rk-i.lv-ok .rk-tx > b { color: var(--in-text); }
+.rk-i.lv-warn .rk-tx > b, .rk-i.lv-unklar .rk-tx > b { color: var(--ro-text); }
+.rk-i.lv-bad .rk-tx > b { color: var(--kaufen); }
+.rk-tx { min-width: 0; overflow-wrap: anywhere; }
+.rk-ln { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-top: 6px; font-size: 13.5px; color: var(--muted); }
+/* Achsvermessung */
+.av-eh { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+.av-eh > span { font-size: 13px; font-weight: 700; color: var(--muted); }
+.av-sg { display: grid; grid-template-columns: minmax(0, 6em) minmax(0, 1fr) minmax(0, 5.2em); gap: 8px; align-items: start; }
+.av-sg > small { font-size: 12px; font-weight: 700; line-height: 1.25; color: var(--muted); align-self: end; }
+.av-sl { display: flex; flex-direction: column; gap: 5px; padding-top: 11px; min-width: 0; font-size: 14px; line-height: 1.25; }
+.av-sl select { width: 100%; min-height: 34px; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; }
+.av-sc { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.av-sc input, .av-mc input { width: 100%; min-width: 0; min-height: 44px; padding: 8px 9px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; }
+.av-sc input:focus-visible, .av-mc input:focus-visible, .av-sl select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.av-sc input[aria-invalid="true"] { border-color: var(--kaufen); }
+.av-pp { font-size: 12px; line-height: 1.3; color: var(--muted); font-variant-numeric: tabular-nums; }
+.av-pp:empty { display: none; }
+.av-pp.err { color: var(--kaufen); font-weight: 700; }
+.av-mg { display: grid; grid-template-columns: minmax(0, 6.4em) minmax(0, 1fr) minmax(0, 1fr); gap: 6px 8px; align-items: center; }
+.av-mg > b { font-size: 12.5px; color: var(--muted); }
+.av-ml2 { font-size: 14px; line-height: 1.25; }
+.av-mc { display: block; min-width: 0; }
+.av-mc input.is-ok { border-color: var(--in-text); }
+.av-mc input.is-out { border-color: var(--kaufen); background: var(--kaufen-soft); }
+.av-sum { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; line-height: 1.4; color: var(--muted); }
+.av-sum:empty { display: none; }
+.av-sum p { margin: 0; }
+.av-sum p.ok { color: var(--in-text); font-weight: 700; }
+.av-sum p.bad { color: var(--kaufen); font-weight: 700; }
+.av-last { display: flex; flex-direction: column; gap: 3px; width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.av-last:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.av-lh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.av-lh b { font-size: 15.5px; font-variant-numeric: tabular-nums; }
+.av-ls { font-size: 13.5px; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
+.av-ls:empty { display: none; }
+.av-lr { font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.av-ln { font-size: 13.5px; font-weight: 700; color: var(--wb); }
+.av-ml { list-style: none; margin: 0; padding: 0; }
+.av-it { border-top: 1px solid var(--line); }
+.av-it:first-child { border-top: 0; }
+.av-it summary { list-style: none; display: flex; flex-direction: column; gap: 2px; padding: 12px 0; cursor: pointer; }
+.av-it summary::-webkit-details-marker { display: none; }
+.av-it summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+.av-it summary .av-lh b::after { content: " ›"; color: var(--muted); }
+.av-it details[open] summary .av-lh b::after { content: " ⌄"; }
+.av-b { display: flex; flex-direction: column; gap: 8px; padding: 0 0 14px; }
+.av-rl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.av-rl li { display: flex; flex-direction: column; gap: 3px; padding: 9px 0; border-top: 1px solid var(--line); }
+.av-rh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; }
+.av-rl small { font-size: 12.5px; line-height: 1.35; color: var(--muted); font-variant-numeric: tabular-nums; }
+.av-rv { display: grid; grid-template-columns: 4.6em minmax(0, 1fr); gap: 6px; font-size: 14px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.av-rv > span:first-child { font-size: 13px; color: var(--muted); }
+.av-rv > span:last-child { display: flex; flex-wrap: wrap; gap: 2px 12px; }
+.av-v.out { color: var(--kaufen); font-weight: 700; }
+.av-sq { font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+.av-ad .rtext { margin: 0; }
 </style>
 
 <div class="wrap">
@@ -2016,7 +2091,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 
   <section class="view" id="view-autos" aria-label="Autos" hidden>
     <div class="vhead"><h2 class="sec">Autos und ihre Teile</h2><button type="button" class="linkbtn" data-act="car-new">+ Auto anlegen</button></div>
-    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="ka-open">Kosten</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button></div>
+    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="ka-open">Kosten</button><button type="button" class="btn ghost small" data-act="rk-open">Rad-Reifen-Rechner</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button></div>
     <ul class="cars" id="cars"></ul>
     <p class="hint">Jedes Auto bekommt ein eigenes Fach im Regal: auf der Karte das Fach antippen, „Fach einstellen“ und das Auto wählen. Im Auto trägst du Kaufpreis und erledigte Arbeiten ein, Einbauteile brauchen Kaufdatum und Preis. Der Wartungsplan im Auto zeigt, welche Wechsel fällig sind, und typische Probleme je km-Stand. Der Zeitplan sammelt die Termine aller Autos für die nächsten 12 Monate.</p>
   </section>
@@ -2116,7 +2191,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, gaConf: null, gaArm: null, gaLastUri: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2526,6 +2601,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.rr = m;
         renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('achsdaten').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.ad = m; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('fahrtenbuch').onSnapshot(function (snap) {
         var m = new Map();
@@ -3848,6 +3928,12 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       sh.scrollTop = top;
     }
     else if (S.sheet.type === 'kosten') { setHTML(sh, sheetKosten()); sh.scrollTop = top; }
+    else if (S.sheet.type === 'av' && S.cars.has(S.sheet.id)) {
+      var aod = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; }), acl = $$('details[data-k]', sh).filter(function (d) { return !d.open; }).map(function (d) { return d.dataset.k; });
+      setHTML(sh, sheetAv(S.sheet.id, S.sheet.back));
+      $$('details[data-k]', sh).forEach(function (d) { if (aod.indexOf(d.dataset.k) >= 0) d.open = true; else if (acl.indexOf(d.dataset.k) >= 0) d.open = false; });
+      sh.scrollTop = top;
+    }
     else if (S.sheet.type === 'fb' && S.cars.has(S.sheet.id)) { setHTML(sh, sheetFb(S.sheet.id)); sh.scrollTop = top; }
     else if (S.sheet.type === 'einkauf') { setHTML(sh, sheetEinkauf()); sh.scrollTop = top; }
     else if (S.sheet.type === 'zeitplan') { setHTML(sh, sheetZeitplan()); sh.scrollTop = top; }
@@ -4044,6 +4130,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       reCarSec(id, car) +
       carWartSec(id, car) +
       reifenSec(id, car) +
+      avSec(id, car) +
       brSec(id, car) +
       ubSec(id, car) +
       rrSec(id, car) +
@@ -7072,7 +7159,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (r.winterAbgestellt) info.push('Steht im Winter, keine Erinnerung zum Reifenwechsel.');
     else if (!r.montiert && !car.fremd && (reifenHas(reifenSet(car, 'sommer')) || reifenHas(reifenSet(car, 'winter')))) info.push('Hake beim Reifensatz „gerade montiert“ an, dann erinnert die App an den nächsten Wechsel.');
     if (info.length) h += '<p class="note">' + esc(info.join(' ')) + '</p>';
-    h += '<p class="help">Winterreifen brauchen M+S und mindestens 4 mm Profil' + srcRefs(REIFEN_Q, [1, 2]) + ', Sommerreifen mindestens 1,6 mm' + srcRefs(REIFEN_Q, [1]) + '. Continental rät, Sommerreifen schon bei 3 mm und Reifen nach 10 Jahren zu tauschen' + srcRefs(REIFEN_Q, [3]) + '.</p>';
+    h += '<p class="help">Winterreifen brauchen M+S und mindestens 4 mm Profil' + srcRefs(REIFEN_Q, [1, 2]) + ', Sommerreifen mindestens 1,6 mm' + srcRefs(REIFEN_Q, [1]) + '. Continental rät, Sommerreifen schon bei 3 mm und Reifen nach 10 Jahren zu tauschen' + srcRefs(REIFEN_Q, [3]) + '.</p>' + rkLink(id, car);
     return h + '</div>';
   }
   function openReifenForm(carId, k) {
@@ -7448,6 +7535,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (!car) return [];
     if (p[0] === 'c') return blList(car.fotos);
     if (p[0] === 'pv') return pvPhotos(car, p[2]);
+    if (p[0] === 'av') return avFotos(car, p[2]);
     if (p[0] === 'w') { var w = arr(car.arbeiten).filter(function (x) { return x && x.id === p[2]; })[0]; return w ? blList(w.belege) : []; }
     return [];
   }
@@ -7556,6 +7644,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var drop = function (l) { return blList(l).filter(function (x) { return x.pfad !== r.pfad; }); }, now = new Date().toISOString(), patch = { geaendert: now };
       if (p[0] === 'c') patch.fotos = drop(car.fotos);
       else if (p[0] === 'w') patch.arbeiten = arr(car.arbeiten).map(function (w) { return w && w.id === p[2] ? Object.assign({}, w, { belege: drop(w.belege) }) : w; });
+      else if (p[0] === 'av') patch.achsvermessung = avDropPhoto(car, p[2], r.pfad);
       else if (p[0] === 'pv') { pvFlush(); car = S.cars.get(carId) || car; patch.pickerlCheck = pvDropPhoto(car, p[2], r.pfad); }
       else return;
       setBusy(true);
@@ -11341,7 +11430,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   /* ---------- Seite: Checkliste ---------- */
   function gaHint(g, car, key) {
     var q = key.split('.'), id = q[1], t = null, warn = false, btn = '';
-    if (q[0] !== 'o') return '';
+    if (q[0] !== 'o') return gaHintX(g, car, key);
     if (id === 'i1' && car && car.fin) {
       var F = gaF(g);
       if (gaStr(F.fin) && gaStr(F.fin).replace(/\s/g, '').toUpperCase() !== String(car.fin).replace(/\s/g, '').toUpperCase()) { t = 'FIN im Gutachten (' + gaStr(F.fin) + ') weicht von der App ab (' + car.fin + ').'; warn = true; }
@@ -11507,6 +11596,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       var sa = gaSug(g, car, '_all');
       h += gaIn(g, 'befundText', 'Befund und Ergebnis', { ta: 1, rows: 9, max: 6000, ph: 'Was geprüft wurde, Messwerte, ob die Auflagen erfüllt sind' });
       if (sa.length && can) h += '<button type="button" class="linkbtn" data-act="ga-ins" data-bg="_all">' + esc('Mängel aus der Checkliste einfügen (' + sa.length + ')') + '</button>';
+      h += gaXIns(g, car, can);
       return h;
     }
     h += '<p class="rtext">Je Baugruppe der Befund und eine Note nach deiner Arbeitsdefinition. Die Gesamtnote ist gewichtet, nicht der Durchschnitt.</p>';
@@ -12265,7 +12355,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   /* ---------- Modell-Steckbrief und Marktpreise: Recherche-Aufträge für den geplanten Lauf ---------- */
   var XR_KIND = {
     sb: { col: 'steckbrief', map: 'sb', t: 'Modell-Steckbrief', req: 'Recherchieren lassen', again: 'Neu recherchieren lassen', run: 'Steckbrief-Recherche läuft …' },
-    mw: { col: 'markt', map: 'mw', t: 'Marktpreise', req: 'Angebote suchen lassen', again: 'Neu suchen lassen', run: 'Angebotssuche läuft …' }
+    mw: { col: 'markt', map: 'mw', t: 'Marktpreise', req: 'Angebote suchen lassen', again: 'Neu suchen lassen', run: 'Angebotssuche läuft …' },
+    ad: { col: 'achsdaten', map: 'ad', t: 'Sollwerte aus der Recherche', req: 'Sollwerte recherchieren lassen', again: 'Neu recherchieren lassen', run: 'Recherche der Sollwerte läuft …' }
   };
   function xDoc(kind, carId) { var m = S[XR_KIND[kind].map], d = m && m.get(carId); return d && typeof d === 'object' ? d : null; }
   function xDone(d) { return !!(d && (d.fertig || d.recherchiertAm)); }
@@ -12383,7 +12474,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       return;
     }
     S.xFiring = null;
-    toast(kind === 'sb' ? 'Auftrag abgelegt. Claude recherchiert den Steckbrief beim nächsten geplanten Lauf.' : 'Auftrag abgelegt. Claude sucht Angebote beim nächsten geplanten Lauf.');
+    toast(kind === 'sb' ? 'Auftrag abgelegt. Claude recherchiert den Steckbrief beim nächsten geplanten Lauf.' : kind === 'ad' ? 'Auftrag abgelegt. Claude sucht die Sollwerte beim nächsten geplanten Lauf.' : 'Auftrag abgelegt. Claude sucht Angebote beim nächsten geplanten Lauf.');
     refreshSheet(); renderAll();
   }
   /* Steckbrief als Notiz nach der Vorlage „Modell-Steckbrief“ */
@@ -13657,6 +13748,911 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (car.fremd || car.archiviert || !(carStats(id).done > 0)) return '';
     return '<p class="ka-link"><button type="button" class="linkbtn" data-act="ka-open" data-id="' + esc(id) + '">Kosten je Jahr und Vergleich</button></p>';
   }
+  /* ---------- Rad-Reifen-Rechner (Version 37) ---------- */
+  var RK_Q = { quellen: [
+    { titel: 'ADAC: Reifenkennzeichnung auf Flanke und Fahrzeugschein (Stand 10/2024)', url: 'https://res.cloudinary.com/adacde/image/upload/v1571665185/ADAC-eV/KOR/Text/PDF/Reifenkennzeichnung_1480KB_kkvjs0.pdf' },
+    { titel: 'Pirelli: Tragfähigkeitsindex (Lastindex-Tabelle)', url: 'https://www.pirelli.com/tyres/de-de/pkw/fahrtipps/lesen/tragfaehigkeitsindex' },
+    { titel: 'KDV 1967 § 4 Reifen und Schneeketten, Abs. 4c und 4e', url: 'https://gesetzefinden.at/bundesrecht/verordnungen/kdv-1967/para-4' },
+    { titel: 'UN-ECE-Regelung Nr. 39 (Geschwindigkeitsmesser), ABl. L 120 vom 13.5.2010, Abs. 5.3', url: 'https://eur-lex.europa.eu/eli/reg/2010/39(2)/oj/eng/pdf' },
+    { titel: 'autorevue: Wie genau ist der Tachometer meines Autos? (18.12.2022)', url: 'https://autorevue.at/ratgeber/auto-tachometer-genau' },
+    { titel: 'Land Oberösterreich: Rad/Reifenkombination', url: 'https://www.land-oberoesterreich.gv.at/18394.htm' },
+    { titel: 'Land Oberösterreich: Infoblatt PKW – Fahrzeugumbauten / Fahrzeugtuning', url: 'https://www.land-oberoesterreich.gv.at/Mediendateien/Formulare/Dokumente%20SVD%20Abt_Verk/Tuning%20Folder%202021.02.04.pdf' },
+    { titel: 'Land Oberösterreich: Genehmigungen, Änderungen nach § 33 KFG', url: 'https://www.land-oberoesterreich.gv.at/288566.htm' },
+    { titel: 'DEZENT (Alcar): Felgen- und Reifen-ABC', url: 'https://www.alcar.de/news/dezent/dezent-rader-abc' },
+    { titel: 'Land Oberösterreich: Genehmigung von Fahrwerksfedern (Vers. 09.26)', url: 'https://www.land-oberoesterreich.gv.at/Mediendateien/Formulare/Dokumente%20SVD%20Abt_Verk/Fahrwerksfedern-Infoblatt%202026.09.15.pdf' }
+  ] };
+  /* Lastindex 30–109 laut ADAC, 110–126 laut Pirelli: kg je Reifen */
+  var RK_LI = [106, 109, 112, 115, 118, 121, 125, 128, 132, 136, 140, 145, 150, 155, 160, 165, 170, 175, 180, 185,
+    190, 195, 200, 206, 212, 218, 224, 230, 236, 243, 250, 257, 265, 272, 280, 290, 300, 307, 315, 325,
+    335, 345, 355, 365, 375, 387, 400, 412, 425, 437, 450, 462, 475, 487, 500, 515, 530, 545, 560, 580,
+    600, 615, 630, 650, 670, 690, 710, 730, 750, 775, 800, 825, 850, 875, 900, 925, 950, 975, 1000, 1030,
+    1060, 1090, 1120, 1150, 1180, 1215, 1250, 1285, 1320, 1360, 1400, 1450, 1500, 1550, 1600, 1650, 1700];
+  /* Geschwindigkeitssymbole laut ADAC (Tabelle 2) */
+  var RK_SI = { F: 80, G: 90, J: 100, K: 110, L: 120, M: 130, N: 140, P: 150, Q: 160, R: 170, S: 180, T: 190, U: 200, H: 210, V: 240, W: 270, Y: 300 };
+  var nfR1 = new Intl.NumberFormat('de-AT', { maximumFractionDigits: 1 });
+  function rkKg(li) { return li >= 30 && li <= 126 && li === Math.round(li) ? RK_LI[li - 30] : null; }
+  function rkNum(s) { var v = parseNum(s); return v === null || isNaN(v) ? null : v; }
+  function rkMm(v) { return nfR1.format(Math.round(v * 10) / 10) + ' mm'; }
+  function rkPct(p) { var a = Math.round(Math.abs(p) * 10) / 10; return (a === 0 ? '±' : p > 0 ? '+' : '−') + nfR1.format(a) + ' %'; }
+  function rkKmh(v) { return nfR1.format(Math.round(v * 10) / 10) + ' km/h'; }
+  /* Reifengröße wie auf der Flanke: 205/55 R16 91V, 225/45 ZR17 94W XL, 185/70 VR14, 165 SR 14, 215/70 R15 C 106/104R */
+  function rkTire(raw) {
+    var s = String(raw == null ? '' : raw).toUpperCase().replace(/,/g, '.').replace(/\s+/g, ' ').trim();
+    if (!s) return null;
+    var m = /^(?:P|LT)?\s*(\d{3})\s*(?:\/\s*(\d{2,3}))?\s*([SHVZ])?\s*(R|D)\s*F?\s*(\d{2}(?:\.\d)?)(?![\d.])\s*(.*)$/.exec(s);
+    if (!m) return { err: 'Nicht erkannt. Bitte wie auf der Reifenflanke, z. B. 205/55 R16 91V.' };
+    var rest = m[6] || '';
+    var t = { w: Number(m[1]), q: m[2] ? Number(m[2]) : null, vor: m[3] || null, bau: m[4], d: Number(m[5]), li: null, li2: null, si: null, klam: false,
+      xl: /\bXL\b|REINF|EXTRA ?LOAD/.test(rest), ms: /M ?\+ ?S|M ?& ?S|\bMS\b|3PMSF|SCHNEEFLOCKE|ALPIN/.test(rest), sdErr: false };
+    if (t.w < 105 || t.w > 395 || t.d < 10 || t.d > 24 || (t.q !== null && (t.q < 20 || t.q > 95))) return { err: 'Die Zahlen passen nicht zu einer Reifengröße. Bitte prüfen, z. B. 205/55 R16 91V.' };
+    var sd = /(\d{2,3})(?:\s*\/\s*(\d{2,3}))?\s*\(?\s*([A-Z])/.exec(rest.replace(/M ?\+ ?S|M ?& ?S|3PMSF|\bXL\b|REINF\w*|EXTRA ?LOAD/g, ' '));
+    if (sd) {
+      var li = Number(sd[1]), si = sd[3];
+      if (rkKg(li) !== null && RK_SI[si]) { t.li = li; t.li2 = sd[2] ? Number(sd[2]) : null; t.si = si; t.klam = si === 'Y' && /\(\s*\d{0,3}\s*Y\s*\)/.test(rest); }
+      else t.sdErr = true;
+    }
+    return t;
+  }
+  function rkSpeed(t) {
+    if (!t || t.err) return null;
+    if (t.si === 'Y' && t.klam) return { v: 300, plus: true, k: '(Y)' };
+    if (t.si) return { v: RK_SI[t.si], plus: false, k: t.si };
+    if (t.vor === 'V') return { v: 210, plus: true, k: 'VR' };
+    if (t.vor === 'Z') return { v: 240, plus: true, k: 'ZR' };
+    if (t.vor && RK_SI[t.vor]) return { v: RK_SI[t.vor], plus: false, k: t.vor + 'R' };
+    return null;
+  }
+  function rkSpTxt(sp) { return sp.k + ' (' + (sp.plus ? 'über ' : 'bis ') + sp.v + ' km/h)'; }
+  /* neu gegen Papiere: ok, bad oder unklar (VR/ZR sind nach oben offen und nicht genormt) */
+  function rkSpCmp(n, a) {
+    if (!a.plus) return n.v >= a.v ? 'ok' : n.plus ? 'unklar' : 'bad';
+    if (n.plus) return n.v >= a.v ? 'ok' : 'unklar';
+    return n.v > a.v ? 'ok' : 'bad';
+  }
+  function rkTireTxt(t) {
+    if (!t) return '';
+    if (t.err) return t.err;
+    var p = [t.w + ' mm breit', t.q !== null ? 'Querschnitt ' + t.q + ' %' : 'ohne Querschnitt', nfR1.format(t.d) + ' Zoll'], sp = rkSpeed(t);
+    if (t.bau === 'D') p.push('Diagonalreifen');
+    if (t.li) p.push('Lastindex ' + t.li + ' = ' + nf.format(rkKg(t.li)) + ' kg');
+    if (sp) p.push(sp.k + ' = ' + (sp.plus ? 'über ' : 'bis ') + sp.v + ' km/h');
+    if (t.xl) p.push('XL');
+    if (t.ms) p.push('M+S');
+    var out = p.join(' · ');
+    if (t.q === null) out += '. Ohne Querschnitt rechnet die App nicht: Früher war er bei der 80er- und 82er-Serie nicht angegeben. Bitte mit Querschnitt eintragen, z. B. 165/80 R14 oder 165/82 R14.';
+    else if (t.sdErr) out += '. Last- oder Geschwindigkeitsindex nicht erkannt, z. B. 91V.';
+    return out;
+  }
+  /* Felge wie eingeschlagen: 7Jx16 H2 ET35, 7,5J x 17 ET41, 8x17 IS20 */
+  function rkRim(raw) {
+    var s = String(raw == null ? '' : raw).toUpperCase().replace(/,/g, '.').replace(/[×✕]/g, 'X').replace(/[−–]/g, '-').replace(/\s+/g, ' ').trim();
+    if (!s) return null;
+    var r = { b: null, d: null, et: null, horn: null };
+    var m = /(\d{1,2}(?:\.\d{1,2})?)\s*(JJ|JK|J|K|B|P|D|E|F|G|H)?\s*X\s*(\d{2}(?:\.\d)?)/.exec(s);
+    if (m) { r.b = Number(m[1]); r.horn = m[2] || null; r.d = Number(m[3]); }
+    var e = /(?:OFFSET|ET|IS)\s*[:=]?\s*([+-]?\s*\d{1,3}(?:\.\d)?)/.exec(s);
+    if (e) r.et = Number(e[1].replace(/\s/g, ''));
+    if (r.b === null && r.et === null) return { err: 'Nicht erkannt. Bitte wie auf der Felge, z. B. 7Jx16 H2 ET35.' };
+    if (r.b !== null && (r.b < 3 || r.b > 14 || r.d < 10 || r.d > 24)) return { err: 'Bitte Breite x Durchmesser in Zoll, z. B. 7Jx16 oder 7,5Jx17.' };
+    if (r.et !== null && Math.abs(r.et) > 120) return { err: 'Die Einpresstiefe bitte in mm, z. B. ET35.' };
+    return r;
+  }
+  function rkRimTxt(r) {
+    if (!r) return '';
+    if (r.err) return r.err;
+    var p = [];
+    if (r.b !== null) p.push(nfR1.format(r.b) + ' Zoll breit (' + rkMm(r.b * 25.4) + ')', nfR1.format(r.d) + ' Zoll');
+    p.push(r.et !== null ? 'Einpresstiefe ' + nfR1.format(r.et) + ' mm' : 'ohne Einpresstiefe (ET)');
+    return p.join(' · ');
+  }
+  function rkOk(t) { return !!t && !t.err; }
+  /* Alles ausrechnen; o = Eingaben als Text */
+  function rkEval(o) {
+    var A = rkTire(o.ar), N = rkTire(o.nr), AF = rkRim(o.af), NF = rkRim(o.nf), E = { A: A, N: N, AF: AF, NF: NF };
+    var dia = function (t) { return rkOk(t) && t.q !== null ? t.d * 25.4 + 2 * t.w * t.q / 100 : null; };
+    E.dA = dia(A); E.dN = dia(N);
+    if (E.dA !== null && E.dN !== null) { E.uA = Math.PI * E.dA; E.uN = Math.PI * E.dN; E.ratio = E.uN / E.uA; E.pct = (E.ratio - 1) * 100; }
+    var ta = rkNum(o.ta), tg = rkNum(o.tg);
+    if (E.ratio && ta > 0 && tg > 0) {
+      var vn = tg * E.ratio, dd = ta - vn, lim = 0.1 * vn + 4;
+      E.tacho = { ta: ta, tg: tg, vNew: vn, d: dd, lim: lim, lv: dd < 0 || dd > lim ? 'bad' : 'ok', dOld: ta - tg, limOld: 0.1 * tg + 4 };
+    }
+    if (rkOk(A) && rkOk(N) && A.li && N.li) E.li = { a: A.li, n: N.li, ka: rkKg(A.li), kn: rkKg(N.li), lv: N.li >= A.li ? 'ok' : 'bad' };
+    var sa = rkSpeed(A), sn = rkSpeed(N), vmax = rkNum(o.vmax), winter = !!o.nw || (rkOk(N) && N.ms);
+    if (sa && sn) {
+      var si = { a: sa, n: sn, lv: rkSpCmp(sn, sa), winter: winter, vmax: vmax };
+      if (si.lv !== 'ok' && winter) {
+        if (vmax === null) { si.lv = 'unklar'; si.why = 'vmax'; }
+        else { si.req = vmax > 160 ? 160 : vmax; si.lv = sn.v >= si.req ? 'ok' : 'bad'; si.kdv = true; }
+      }
+      if (si.lv === 'ok' && vmax !== null && sn.v < vmax) si.schild = true;
+      E.si = si;
+    }
+    E.dist = Math.max(0, rkNum(o.nd) || 0);
+    var etA = rkOk(AF) ? AF.et : null, etN = rkOk(NF) ? NF.et : null;
+    if (etA !== null && etN !== null) {
+      E.mitte = etA - (etN - E.dist);
+      if (AF.b !== null && NF.b !== null) { var hb = (NF.b - AF.b) * 25.4 / 2; E.hornA = E.mitte + hb; E.hornI = hb - E.mitte; }
+      if (rkOk(A) && rkOk(N)) { var hw = (N.w - A.w) / 2; E.rA = E.mitte + hw; E.rI = hw - E.mitte; }
+    }
+    E.mis = [];
+    if (rkOk(A) && rkOk(AF) && AF.d !== null && AF.d !== A.d) E.mis.push('Laut Papieren: Felge ' + nfR1.format(AF.d) + ' Zoll, Reifen R' + nfR1.format(A.d) + '.');
+    if (rkOk(N) && rkOk(NF) && NF.d !== null && NF.d !== N.d) E.mis.push('Neu: Felge ' + nfR1.format(NF.d) + ' Zoll, Reifen R' + nfR1.format(N.d) + '.');
+    var fi = rkNum(o.fi), fa = rkNum(o.fa), sI = E.rI !== undefined ? E.rI : E.hornI, sA = E.rA !== undefined ? E.rA : E.hornA;
+    if (fi !== null && sI !== undefined) E.fi = { alt: fi, neu: fi - sI, lv: fi - sI < 0 ? 'bad' : fi - sI <= 4 ? 'warn' : 'ok' };
+    if (fa !== null && sA !== undefined) E.fa = { alt: fa, neu: fa - sA, lv: fa - sA < 0 ? 'bad' : 'ok' };
+    var tl = rkNum(o.tl), al = rkNum(o.al);
+    if (tl > 0 && al > 0) E.tl = { tl: tl, al: al, lv: tl >= al / 2 ? 'ok' : 'bad' };
+    E.winter = winter;
+    return E;
+  }
+  /* Ergebnis als Punkte: grp, lv (ok, warn, bad, info, unklar), t (Text), q (Quellen) */
+  function rkItems(E) {
+    var it = [], add = function (grp, lv, t, q, ex) { it.push({ grp: grp, lv: lv, t: t, q: q || [], ex: !!ex }); };
+    if (E.pct !== undefined) {
+      var dir = Math.abs(E.pct) < 0.05 ? 'gleich schnell wie' : E.pct > 0 ? rkPct(E.pct).slice(1) + ' schneller als' : rkPct(E.pct).slice(1) + ' langsamer als';
+      add('tacho', 'info', 'Bei gleicher Tachoanzeige fährst du mit der neuen Größe ' + dir + ' mit der bisherigen: wo du bisher 100 km/h gefahren bist, sind es jetzt ' + rkKmh(100 * E.ratio) + '. Der Tacho ist auf eine feste Radgröße eingestellt.', [5], true);
+      if (!E.tacho) add('tacho', E.pct > 0.05 ? 'warn' : 'info', (E.pct > 0.05 ? 'Größerer Umfang: Der Tacho zeigt danach weniger an als bisher. ' : E.pct < -0.05 ? 'Kleinerer Umfang: Der Tacho zeigt danach mehr an als bisher. ' : '') + 'Er darf nie weniger als die tatsächliche Geschwindigkeit anzeigen und höchstens 10 % plus 4 km/h mehr. Ob er das mit der neuen Größe einhält, zeigt eine GPS-Messung mit den bisherigen Reifen (unten eintragen).', [4, 5], true);
+    }
+    if (E.tacho) {
+      var T = E.tacho, d = Math.round(T.d * 10) / 10;
+      add('tacho', T.lv, 'Mit den bisherigen Reifen gemessen: Tacho ' + rkKmh(T.ta) + ', GPS ' + rkKmh(T.tg) + '. Mit der neuen Größe wären es ' + rkKmh(T.vNew) + ': Der Tacho zeigt dann ' + (d >= 0 ? rkKmh(d) + ' mehr' : rkKmh(-d) + ' weniger') + ' an als tatsächlich. Erlaubt sind 0 bis ' + rkKmh(T.lim) + ' mehr' + (T.d < 0 ? ', weniger anzeigen ist nicht zulässig.' : T.d > T.lim ? ', das ist mehr als erlaubt.' : ', das passt.'), [4]);
+      if (T.dOld < 0) add('tacho', 'warn', 'Schon mit den bisherigen Reifen zeigt der Tacho weniger an als das GPS. Messung wiederholen, am besten bei gleichmäßiger Fahrt auf gerader Strecke.', []);
+    }
+    if (E.li) add('index', E.li.lv, 'Lastindex ' + E.li.n + ' (' + nf.format(E.li.kn) + ' kg je Reifen) ' + (E.li.lv === 'ok' ? 'ist mindestens so hoch wie in den Papieren' : 'ist niedriger als in den Papieren') + ' (' + E.li.a + ', ' + nf.format(E.li.ka) + ' kg).' + (E.li.lv === 'ok' ? '' : ' Er muss mindestens den Wert aus Typenschein oder Datenauszug haben.'), E.li.lv === 'ok' ? [1, 2] : [1, 2, 6]);
+    else if (rkOk(E.A) && rkOk(E.N) && (!E.A.li || !E.N.li)) add('index', 'info', 'Für den Vergleich fehlt der Lastindex' + (!E.A.li && !E.N.li ? '' : !E.A.li ? ' bei der Größe aus den Papieren' : ' bei der neuen Größe') + '. Er steht hinter der Größe, z. B. 91 in 205/55 R16 91V.', [1]);
+    if (E.si) {
+      var S2 = E.si, base = 'Geschwindigkeitsindex ' + rkSpTxt(S2.n) + ' gegen ' + rkSpTxt(S2.a) + ' in den Papieren: ';
+      if (S2.kdv) add('index', S2.lv, base + (S2.lv === 'ok' ? 'niedriger, aber als Winterreifen erlaubt.' : 'auch für Winterreifen zu niedrig.') + ' Winterreifen müssen der Bauartgeschwindigkeit entsprechen; fährt das Auto mehr als 160 km/h, reichen 160 km/h (Index Q).', [1, 3]);
+      else if (S2.lv === 'ok') add('index', 'ok', base + 'mindestens so hoch.', [1]);
+      else if (S2.lv === 'unklar' && S2.why === 'vmax') add('index', 'unklar', base + 'niedriger. Für Winterreifen erlaubt die KDV einen niedrigeren Index, wenn er zur Bauartgeschwindigkeit passt (über 160 km/h reichen 160 km/h). Trag die Höchstgeschwindigkeit laut Papieren ein, dann prüft die App das.', [3]);
+      else if (S2.lv === 'unklar') add('index', 'unklar', base + 'nicht sicher. VR heißt über 210 km/h, ZR über 240 km/h; diese Reifen sind nicht genormt, ihre zulässige Geschwindigkeit hängt vom Fahrzeug ab.', [1]);
+      else add('index', 'bad', base + 'zu niedrig. Er muss mindestens den Wert aus Typenschein oder Datenauszug haben.' + (S2.winter ? '' : ' Sind es Winterreifen, das Häkchen setzen.'), [1, 6]);
+      if (S2.schild) add('index', 'warn', 'Die Reifen sind für weniger zugelassen, als das Auto fährt (' + rkKmh(S2.vmax) + '). Dann muss die Höchstgeschwindigkeit der Reifen am Lenkerplatz gut sichtbar und dauerhaft angeschrieben sein.', [3]);
+    }
+    if (rkOk(E.N) && E.N.xl && E.li && E.li.n > E.li.a) add('index', 'info', 'XL-Reifen: Für die höhere Tragfähigkeit braucht es mehr Luftdruck, laut ADAC etwa 0,1 bar je Lastindex-Punkt.', [1], true);
+    E.mis.forEach(function (x) { add('lage', 'bad', x + ' Felge und Reifen passen nicht zusammen.', []); });
+    if (E.mitte !== undefined) {
+      var mt = Math.round(E.mitte * 10) / 10;
+      add('lage', 'info', (mt === 0 ? 'Die Radmitte bleibt, wo sie war' : 'Die Radmitte steht ' + rkMm(Math.abs(mt)) + (mt > 0 ? ' weiter außen' : ' weiter innen')) + (mt === 0 ? '' : ', die Spurweite ändert sich um ' + (mt > 0 ? '+' : '−') + rkMm(Math.abs(2 * mt)) + ' je Achse') + (E.dist ? ' (mit ' + rkMm(E.dist) + ' Distanzscheibe je Seite)' : '') + '.', []);
+      if (E.hornA !== undefined) add('lage', 'info', 'Felgenhorn außen ' + rkSide(E.hornA, 'weiter außen', 'weiter innen') + ', innen ' + rkSide(E.hornI, 'näher am Federbein', 'weiter weg vom Federbein') + '.', []);
+      if (E.rA !== undefined) add('lage', 'info', 'Reifen nach Nennbreite außen ' + rkSide(E.rA, 'weiter außen', 'weiter innen') + ', innen ' + rkSide(E.rI, 'näher am Federbein', 'weiter weg vom Federbein') + '. Die echte Breite hängt auch von der Felgenbreite ab.', [1]);
+    } else if (rkOk(E.AF) && rkOk(E.NF) && (E.AF.et === null || E.NF.et === null)) add('lage', 'info', 'Für die Lage des Rads fehlt die Einpresstiefe (ET) bei ' + (E.AF.et === null && E.NF.et === null ? 'beiden Felgen' : E.AF.et === null ? 'der Felge aus den Papieren' : 'der neuen Felge') + '.', [9]);
+    if (E.mitte !== undefined) add('lage', 'info', 'Die Einpresstiefe (ET) ist der Abstand von der Anlagefläche des Rads zur Mitte der Felge und bestimmt die Lage des Rads.', [9], true);
+    if (E.fi) add('lage', E.fi.lv, 'Innen bisher ' + rkMm(E.fi.alt) + ' Abstand, rechnerisch ' + (E.fi.neu < 0 ? 'streift der Reifen (' + rkMm(E.fi.neu) + ')' : 'noch ' + rkMm(E.fi.neu)) + '. Zum Vergleich: Bei Fahrwerksfedern verlangt das Land OÖ mehr als 4 mm zu Fahrwerksteilen, mehr als 6 mm zur Karosserie und mehr als 2 mm zu Bremsteilen.', [10]);
+    if (E.fa) add('lage', E.fa.lv, 'Außen bisher ' + rkMm(E.fa.alt) + ' innerhalb der Radlaufkante, rechnerisch ' + (E.fa.neu < 0 ? rkMm(-E.fa.neu) + ' darüber hinaus: Die Radabdeckung fehlt dann.' : 'noch ' + rkMm(E.fa.neu) + ' innerhalb.') + ' Reifen und Felge müssen über die ganze Breite von 30° vor bis 50° hinter der Radmitte abgedeckt sein.', [6]);
+    if (E.fi || E.fa) add('lage', 'info', 'Die Rechnung gilt für den gemessenen Zustand. Frei laufen müssen die Räder bei allen Belastungszuständen; auch den vollen Lenkeinschlag prüfen.', [6], true);
+    if (E.dist) add('lage', 'warn', 'Distanzscheiben werden in Oberösterreich eingetragen, aber nur zusammen mit dem Original-Serienfahrwerk; ihre Kennzeichnung muss ablesbar sein.', [7]);
+    if (E.tl) add('lage', E.tl.lv, 'Felgen-Traglast ' + nf.format(E.tl.tl) + ' kg ' + (E.tl.lv === 'ok' ? 'reicht' : 'reicht nicht') + ' für die halbe Achslast (' + nf.format(Math.round(E.tl.al / 2)) + ' kg), Regel aus deiner Checkliste Rad-Reifen.', []);
+    return it;
+  }
+  function rkSide(v, plus, minus) { var r = Math.round(v * 10) / 10; return r === 0 ? 'unverändert' : rkMm(Math.abs(r)) + ' ' + (r > 0 ? plus : minus); }
+  var RK_GRP = [['tacho', 'Abrollumfang und Tacho'], ['index', 'Last- und Geschwindigkeitsindex'], ['lage', 'Felge und Lage des Rads']];
+  function rkLi(x) {
+    var ic = { ok: '✓', warn: '!', bad: '✕', unklar: '?', info: '·' }[x.lv] || '·', lab = { ok: 'Passt', warn: 'Achtung', bad: 'Passt nicht', unklar: 'Unklar', info: '' }[x.lv] || '';
+    return '<li class="rk-i lv-' + x.lv + '"><span class="rk-ic" aria-hidden="true">' + ic + '</span><span class="rk-tx">' + (lab ? '<b>' + lab + ':</b> ' : '') + esc(x.t) + srcRefs(RK_Q, x.q) + '</span></li>';
+  }
+  function rkHtml(E) {
+    var h = '', it = rkItems(E);
+    if (E.dA !== null || E.dN !== null) {
+      var row = function (lab, a, n, diff) { return '<tr><th scope="row">' + lab + '</th><td>' + a + '</td><td>' + n + '</td><td>' + diff + '</td></tr>'; };
+      var mm0 = function (v) { return v === null || v === undefined ? '–' : nf.format(Math.round(v)) + ' mm'; };
+      h += '<table class="ka-t rk-t"><thead><tr><th scope="col"></th><th scope="col">Papiere</th><th scope="col">Neu</th><th scope="col">Unterschied</th></tr></thead><tbody>' +
+        row('Durchmesser', mm0(E.dA), mm0(E.dN), E.pct !== undefined ? (E.dN - E.dA >= 0 ? '+' : '−') + nf.format(Math.abs(Math.round(E.dN - E.dA))) + ' mm' : '–') +
+        row('Umfang', mm0(E.uA), mm0(E.uN), E.pct !== undefined ? rkPct(E.pct) : '–') + '</tbody></table>' +
+        '<p class="help">' + esc('Rechnerisch aus der Größe: Felgendurchmesser in Zoll mal 25,4 plus zweimal die Flankenhöhe (Breite mal Querschnitt in Prozent); Umfang = Durchmesser mal π.') + srcRefs(RK_Q, [1]) + '</p>';
+    }
+    RK_GRP.forEach(function (g) {
+      var l = it.filter(function (x) { return x.grp === g[0]; });
+      if (l.length) h += '<h4 class="sb-h">' + esc(g[1]) + '</h4><ul class="rk-l">' + l.map(rkLi).join('') + '</ul>';
+    });
+    if (!h) h = '<p class="note">Trag oben die Größe aus den Papieren und die neue Größe ein, dann rechnet die App.</p>';
+    return h;
+  }
+  function rkEintragHtml() {
+    return '<details class="wp-more" data-k="rk-eintr"><summary>Eintragung: was es braucht</summary><ul class="sb-l">' +
+      '<li>' + esc('Steht die neue Kombination nicht in Typenschein oder Datenauszug, muss die Änderung nach § 33 KFG unverzüglich beim Land angezeigt und das Auto dem Sachverständigen der Landesprüfstelle vorgeführt werden.') + srcRefs(RK_Q, [8]) + '</li>' +
+      '<li>' + esc('Mitbringen: Typenschein, Datenauszug oder Einzelgenehmigung und ein TÜV-Gutachten, eine ABE oder eine Freigabe des Fahrzeugherstellers für dieses Auto. Bei Originalfelgen des Herstellers reicht eine Unbedenklichkeitsbescheinigung; nur eine Traglastbescheinigung reicht nicht.') + srcRefs(RK_Q, [6, 7]) + '</li>' +
+      '<li>' + esc('Fehlt in diesen Unterlagen die Anbauprüfung für den Fahrzeugtyp, braucht es ein Gutachten eines Ziviltechnikers oder technischen Büros.') + srcRefs(RK_Q, [6]) + '</li>' +
+      '<li>' + esc('Die Auflagen aus den Unterlagen gelten, zum Beispiel Änderungen an den Radkästen, eine Prüfung des Tachos, ein Lenkeinschlagbegrenzer oder die Art des Ventils.') + srcRefs(RK_Q, [6]) + '</li>' +
+      '<li>' + esc('Ohne Gutachten geht es nur, wenn genau diese Kombination für genau diesen Typ (gleiche Ausführung und Leistung) schon genehmigt wurde und der Nachweis im Auto liegt. Räder nach ECE-Regelung 124 nur in der Originaldimension laut Genehmigungsdokument.') + srcRefs(RK_Q, [7]) + '</li></ul></details>';
+  }
+  /* Gespeicherte Rechnung am Auto */
+  function rkSaved(car) { var r = car && car.radRechner; return r && typeof r === 'object' && r.alt && r.neu ? r : null; }
+  function rkIn(r) {
+    r = r || {};
+    var a = gaObj(r.alt), n = gaObj(r.neu), t = gaObj(r.tacho), f = gaObj(r.frei);
+    var s = function (v) { return v === null || v === undefined ? '' : typeof v === 'number' ? nfIn.format(v).replace('.', ',') : String(v); };
+    return { ar: s(a.reifen), af: s(a.felge), nr: s(n.reifen), nf: s(n.felge), nd: s(n.distanz), nw: n.winter === true, vmax: s(r.vmax), al: s(r.achslast), tl: s(r.traglast), ta: s(t.anzeige), tg: s(t.gps), fi: s(f.innen), fa: s(f.aussen) };
+  }
+  var RK_F = ['ar', 'af', 'nr', 'nf', 'nd', 'vmax', 'al', 'tl', 'ta', 'tg', 'fi', 'fa'];
+  function rkRead() {
+    var o = {};
+    RK_F.forEach(function (k) { var el = $('#rk-' + k); o[k] = el ? el.value.trim() : ''; });
+    o.nw = !!(($('#rk-nw') || {}).checked);
+    return o;
+  }
+  function rkShort(o) { var A = rkTire(o.ar), N = rkTire(o.nr); return rkOk(A) && rkOk(N) ? o.nr + ' statt ' + o.ar : ''; }
+  function rkLink(id, car) {
+    var r = rkSaved(car), o = r ? rkIn(r) : null, E = o ? rkEval(o) : null;
+    var line = o && rkShort(o) ? 'Gerechnet: ' + rkShort(o) + (E.pct !== undefined ? ', Umfang ' + rkPct(E.pct) : '') : '';
+    return '<div class="rk-ln">' + (line ? '<span>' + esc(line) + '</span>' : '') + '<button type="button" class="linkbtn" data-act="rk-open" data-id="' + esc(id) + '">' + (line ? 'Rad-Reifen-Rechner' : 'Andere Größe prüfen: Rad-Reifen-Rechner') + '</button></div>';
+  }
+  function rkInp(k, label, val, o) {
+    o = o || {};
+    return '<label class="f"><span>' + esc(label) + (o.opt ? ' <span class="muted">(optional)</span>' : '') + '</span><input id="rk-' + k + '" value="' + esc(val || '') + '"' + (o.im ? ' inputmode="' + o.im + '"' : '') + ' autocomplete="off" spellcheck="false"' + (o.cap ? ' autocapitalize="characters"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' maxlength="' + (o.max || 40) + '">' +
+      (o.p ? '<small class="rk-p" id="rk-' + k + '-p" aria-live="polite"></small>' : '') + (o.help ? '<small>' + esc(o.help) + '</small>' : '') + '</label>';
+  }
+  function openRk(carId, back, pre) {
+    var car = carId ? S.cars.get(carId) : null;
+    if (carId && !car) return;
+    var o = pre || rkIn(car ? rkSaved(car) : null), can = canWrite(), cars = activeCars();
+    var sets = car ? ['sommer', 'winter'].filter(function (k) { var x = reifenSet(car, k); return x && x.groesse; }) : [];
+    var chips = function (to) { return sets.length ? '<div class="rk-chips">' + sets.map(function (k) { return '<button type="button" class="btn ghost small" data-act="rk-fill" data-to="' + to + '" data-set="' + k + '">' + esc(RSET[k].n + ' übernehmen') + '</button>'; }).join('') + '</div>' : ''; };
+    var backBtn = back && back.ga ? '<button type="button" class="btn ghost" data-act="rk-back">Zurück zum Gutachten</button>' : car ? '<button type="button" class="btn ghost" data-act="rk-back">Zum Auto</button>' : '<button type="button" class="btn ghost" data-act="close">Schließen</button>';
+    openSheet('rk', { id: carId || null, back: back || null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc(car ? 'Rad und Reifen · ' + (car.name || 'Auto') : 'Rad und Reifen') + '</p><h2 class="sh-title" id="sheet-title">Rad-Reifen-Rechner</h2>' +
+      '<p class="buy">Die Größe aus den Papieren gegen die neue: Abrollumfang und Tacho, Last- und Geschwindigkeitsindex, Lage des Rads.</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="rkform" novalidate>' +
+      (cars.length ? '<label class="f"><span>Auto</span><select id="rk-car"><option value="">Ohne Auto rechnen</option>' + cars.map(function (p) { return '<option value="' + esc(p[0]) + '"' + (p[0] === carId ? ' selected' : '') + '>' + esc(p[1].name || 'Auto') + '</option>'; }).join('') + '</select>' + (car ? '' : '<small>Mit Auto lässt sich die Rechnung speichern und im Gutachten Rad-Reifen einfügen.</small>') + '</label>' : '') +
+      '<fieldset class="rk-f"><legend>Laut Papieren</legend>' +
+      rkInp('ar', 'Reifen', o.ar, { ph: 'z. B. 205/55 R16 91V', cap: 1, p: 1, help: 'Aus Typenschein oder Datenauszug.' }) +
+      rkInp('af', 'Felge', o.af, { ph: 'z. B. 7Jx16 H2 ET47', cap: 1, p: 1 }) + chips('a') + '</fieldset>' +
+      '<fieldset class="rk-f"><legend>Neu</legend>' +
+      rkInp('nr', 'Reifen', o.nr, { ph: 'z. B. 225/45 R17 94W XL', cap: 1, p: 1 }) +
+      rkInp('nf', 'Felge', o.nf, { ph: 'z. B. 8Jx17 H2 ET40', cap: 1, p: 1 }) +
+      '<label class="check"><input type="checkbox" id="rk-nw"' + (o.nw ? ' checked' : '') + '><span>Winterreifen (M+S oder Schneeflocke)</span></label>' +
+      rkInp('nd', 'Distanzscheibe je Seite in mm', o.nd, { im: 'decimal', opt: 1, max: 6 }) + chips('n') + '</fieldset>' +
+      '<details class="wp-more" data-k="rk-mehr"' + (o.vmax || o.al || o.tl ? ' open' : '') + '><summary>Mehr aus den Papieren</summary><div class="rk-more">' +
+      '<div class="row2">' + rkInp('vmax', 'Höchstgeschwindigkeit (km/h)', o.vmax, { im: 'numeric', max: 4, help: 'Für Winterreifen mit kleinerem Index.' }) +
+      rkInp('al', 'Höchste Achslast (kg)', o.al, { im: 'numeric', max: 5 }) + '</div>' +
+      rkInp('tl', 'Traglast der neuen Felge (kg)', o.tl, { im: 'numeric', max: 5, help: 'Steht auf der Felge oder im Gutachten.' }) + '</div></details>' +
+      '<details class="wp-more" data-k="rk-gps"' + (o.ta || o.tg ? ' open' : '') + '><summary>Tacho mit GPS prüfen</summary><div class="rk-more">' +
+      '<p class="help">Mit den bisherigen Reifen bei gleichmäßiger Fahrt ablesen, z. B. mit einer GPS-App am Handy.</p>' +
+      '<div class="row2">' + rkInp('ta', 'Tacho zeigt (km/h)', o.ta, { im: 'decimal', max: 5 }) + rkInp('tg', 'GPS misst (km/h)', o.tg, { im: 'decimal', max: 5 }) + '</div></div></details>' +
+      '<details class="wp-more" data-k="rk-frei"' + (o.fi || o.fa ? ' open' : '') + '><summary>Freigängigkeit abschätzen</summary><div class="rk-more">' +
+      '<p class="help">Mit den bisherigen Rädern an der engsten Stelle messen, in mm. Außen heißt: wie weit die Reifenflanke innerhalb der Radlaufkante liegt.</p>' +
+      '<div class="row2">' + rkInp('fi', 'Innen bis Federbein', o.fi, { im: 'decimal', max: 5 }) + rkInp('fa', 'Außen bis Radlaufkante', o.fa, { im: 'decimal', max: 5 }) + '</div></div></details>' +
+      '<div class="sh-sec rk-res" id="rk-res" aria-live="polite"></div>' + rkEintragHtml() +
+      '<p class="err" id="rk-err" role="alert"></p><div class="sh-foot">' + (car && can ? '<button type="submit" class="btn">Für dieses Auto speichern</button>' : '') + backBtn + '</div></form>');
+    rkUpdate();
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function rkUpdate() {
+    if (!S.sheet || S.sheet.type !== 'rk') return;
+    var o = rkRead(), set = function (k, txt, bad) { var el = $('#rk-' + k + '-p'); if (el) { el.textContent = txt; el.classList.toggle('err', !!bad); } };
+    var A = rkTire(o.ar), N = rkTire(o.nr), AF = rkRim(o.af), NF = rkRim(o.nf);
+    set('ar', rkTireTxt(A), A && (A.err || A.q === null)); set('nr', rkTireTxt(N), N && (N.err || N.q === null));
+    set('af', rkRimTxt(AF), AF && AF.err); set('nf', rkRimTxt(NF), NF && NF.err);
+    var el = $('#rk-res');
+    if (el) setHTML(el, rkHtml(rkEval(o)));
+  }
+  function rkInput(t) { if (!t || !t.id || String(t.id).indexOf('rk-') !== 0 || !S.sheet || S.sheet.type !== 'rk') return false; rkUpdate(); return true; }
+  function rkChange(t) {
+    if (!t || !S.sheet || S.sheet.type !== 'rk') return false;
+    if (t.id === 'rk-car') { var o = rkRead(), nid = t.value || null, nc = nid ? S.cars.get(nid) : null; openRk(nid, S.sheet.back && S.sheet.back.ga ? S.sheet.back : null, nc && rkSaved(nc) ? null : o); return true; }
+    if (t.id === 'rk-nw') { rkUpdate(); return true; }
+    return false;
+  }
+  function rkFill(to, k) {
+    var s = S.sheet, car = s && s.type === 'rk' && s.id ? S.cars.get(s.id) : null, x = car ? reifenSet(car, k) : null;
+    if (!x) return;
+    var r = $('#rk-' + to + 'r'), f = $('#rk-' + to + 'f');
+    if (r) r.value = x.groesse || '';
+    if (f && x.felge) { var m = /(\d{1,2}(?:[.,]\d{1,2})?\s*J{0,2}\s*[xX×]\s*\d{2}.*)$/.exec(String(x.felge)); if (m) f.value = m[1]; }
+    if (to === 'n') { var w = $('#rk-nw'); if (w) w.checked = k === 'winter'; }
+    rkUpdate();
+    toast(RSET[k].n + ' übernommen' + (to === 'a' ? '. Bitte mit Typenschein oder Datenauszug vergleichen.' : '.'));
+  }
+  function rkBack() {
+    var s = S.sheet;
+    if (!s || s.type !== 'rk') return;
+    if (s.back && s.back.ga && gaDoc(s.back.ga)) openGa(s.back.ga, s.back.p || 'check');
+    else if (s.id && S.cars.has(s.id)) openCar(s.id);
+    else closeSheet();
+  }
+  async function saveRk() {
+    var s = S.sheet;
+    if (!s || s.type !== 'rk' || S.busy) return;
+    var car = s.id ? S.cars.get(s.id) : null, err = function (m) { var el = $('#rk-err'); if (el) el.textContent = m; };
+    err('');
+    if (!car) { err('Ohne Auto wird nichts gespeichert. Oben ein Auto wählen.'); return; }
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var o = rkRead(), A = rkTire(o.ar), N = rkTire(o.nr), AF = rkRim(o.af), NF = rkRim(o.nf);
+    if (!o.ar || !o.nr) { err('Bitte beide Reifengrößen eintragen: laut Papieren und neu.'); return; }
+    var bad = [[A, 'Reifen laut Papieren'], [N, 'Reifen neu'], [AF, 'Felge laut Papieren'], [NF, 'Felge neu']].filter(function (p) { return p[0] && p[0].err; });
+    if (bad.length) { err(bad[0][1] + ': ' + bad[0][0].err); return; }
+    var nums = { nd: [0, 60], vmax: [10, 500], al: [50, 20000], tl: [50, 20000], ta: [1, 400], tg: [1, 400], fi: [-200, 500], fa: [-200, 500] }, val = {}, lab = { nd: 'Distanzscheibe', vmax: 'Höchstgeschwindigkeit', al: 'Achslast', tl: 'Traglast', ta: 'Tacho', tg: 'GPS', fi: 'Abstand innen', fa: 'Abstand außen' };
+    for (var k in nums) {
+      if (!o[k]) { val[k] = null; continue; }
+      var v = parseNum(o[k]);
+      if (v === null || isNaN(v) || v < nums[k][0] || v > nums[k][1]) { err(lab[k] + ': bitte als Zahl eintragen.'); return; }
+      val[k] = round2(v);
+    }
+    var now = new Date().toISOString();
+    var rr = { alt: { reifen: o.ar.slice(0, 40), felge: o.af.slice(0, 40) || null }, neu: { reifen: o.nr.slice(0, 40), felge: o.nf.slice(0, 40) || null, distanz: val.nd, winter: o.nw }, vmax: val.vmax, achslast: val.al, traglast: val.tl,
+      tacho: { anzeige: val.ta, gps: val.tg }, frei: { innen: val.fi, aussen: val.fa }, geaendert: now };
+    var patch = { radRechner: rr, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
+      S.cars.set(s.id, Object.assign({}, car, patch));
+      setBusy(false);
+      renderAll();
+      toast('Für ' + (car.name || 'das Auto') + ' gespeichert.');
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Text für Gutachten und Hinweise */
+  function rkGaLines(car) {
+    var r = rkSaved(car);
+    if (!r) return [];
+    var o = rkIn(r), E = rkEval(o), st = String(r.geaendert || '').slice(0, 10), L = [];
+    L.push('Rad-Reifen-Rechner' + (isDay(st) ? ' (Stand ' + datum(st) + ')' : '') + ': laut Papieren ' + [o.ar, o.af].filter(Boolean).join(' auf ') + ', neu ' + [o.nr, o.nf].filter(Boolean).join(' auf ') + (E.dist ? ' mit Distanzscheiben ' + rkMm(E.dist) + ' je Seite' : '') + (E.winter ? ' (Winterreifen)' : '') + '.');
+    if (E.pct !== undefined) L.push('Umfang rechnerisch ' + nf.format(Math.round(E.uN)) + ' mm statt ' + nf.format(Math.round(E.uA)) + ' mm (' + rkPct(E.pct) + ').');
+    rkItems(E).forEach(function (x) { if (!x.ex && (x.lv !== 'info' || x.grp === 'lage')) L.push(({ ok: '', warn: 'Achtung: ', bad: 'Passt nicht: ', unklar: 'Unklar: ', info: '' }[x.lv] || '') + x.t); });
+    return L;
+  }
+  /* ---------- Achsvermessung (Version 37) ---------- */
+  var AV_Q = { quellen: [
+    { titel: 'Kfz-Meisterbetrieb Dietrich: Spur, Sturz, Nachlauf – die drei Größen der Achsvermessung (12.04.2026, aktualisiert 30.07.2026)', url: 'https://kfz-dietrich.com/blog/achsvermessung-spur-sturz-nachlauf-werkstatt/' },
+    { titel: 'Land Oberösterreich: Genehmigung von Fahrwerksfedern (Vers. 09.26)', url: 'https://www.land-oberoesterreich.gv.at/Mediendateien/Formulare/Dokumente%20SVD%20Abt_Verk/Fahrwerksfedern-Infoblatt%202026.09.15.pdf' }
+  ] };
+  var AV_ROWS = [
+    { k: 'va-spur', ax: 'va', g: 'spur', n: 'Spur vorne' },
+    { k: 'va-sturz', ax: 'va', g: 'sturz', n: 'Sturz vorne' },
+    { k: 'va-nachlauf', ax: 'va', g: 'nachlauf', n: 'Nachlauf vorne' },
+    { k: 'ha-spur', ax: 'ha', g: 'spur', n: 'Spur hinten' },
+    { k: 'ha-sturz', ax: 'ha', g: 'sturz', n: 'Sturz hinten' }
+  ];
+  var AV_RAD = { va: [['vl', 'links'], ['vr', 'rechts']], ha: [['hl', 'links'], ['hr', 'rechts']] };
+  var AV_ANLASS = [['kontrolle', 'Kontrolle'], ['reparatur', 'Nach Arbeiten an Lenkung oder Fahrwerk'], ['fahrwerk', 'Nach Fahrwerksänderung'], ['reifen', 'Neue Reifen oder Räder'], ['zieht', 'Auto zieht zur Seite'], ['lenkrad', 'Lenkrad steht schief'], ['verschleiss', 'Reifen ungleich abgefahren'], ['sonst', 'Anderer Anlass']];
+  var AV_ANLASSM = {};
+  AV_ANLASS.forEach(function (a) { AV_ANLASSM[a[0]] = a[1]; });
+  function avDoc(car) { var a = car && car.achsvermessung; return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; }
+  function avSort(a, b) { var x = (a.datum || '') + (a.erstellt || ''), y = (b.datum || '') + (b.erstellt || ''); return x < y ? -1 : x > y ? 1 : 0; }
+  function avList(car) { return arr(avDoc(car).messungen).filter(function (m) { return m && typeof m === 'object' && m.id && isDay(m.datum); }).sort(avSort); }
+  function avFotos(car, mid) { var m = avList(car).filter(function (x) { return x.id === mid; })[0]; return m ? blList(m.fotos) : []; }
+  function avDropPhoto(car, mid, pfad) {
+    var d = Object.assign({}, avDoc(car));
+    d.messungen = arr(d.messungen).map(function (m) { return m && m.id === mid ? Object.assign({}, m, { fotos: blList(m.fotos).filter(function (r) { return r.pfad !== pfad; }) }) : m; });
+    return d;
+  }
+  /* Winkel: −0°45′, −0 45, −45′ oder dezimal −0,75; Spur wahlweise in mm */
+  function avNorm(s) { return String(s == null ? '' : s).trim().replace(/[−–—]/g, '-').replace(/[′’´`‘]/g, "'").replace(/[″"]/g, '').replace(/º/g, '°').replace(/,/g, '.').replace(/\s+/g, ' '); }
+  function avAng(s) {
+    var t = avNorm(s).replace(/\s*°\s*/g, '°').replace(/\s*'/g, "'");
+    if (!t) return null;
+    var sg = 1, m;
+    if (/^[+-]/.test(t)) { if (t.charAt(0) === '-') sg = -1; t = t.slice(1).trim(); }
+    if ((m = /^(\d{1,2})°(?:(\d{1,2}(?:\.\d+)?)'?)?$/.exec(t))) { var mi = m[2] ? Number(m[2]) : 0; return mi >= 60 ? NaN : sg * (Number(m[1]) + mi / 60); }
+    if ((m = /^(\d{1,3}(?:\.\d+)?)'$/.exec(t))) return sg * Number(m[1]) / 60;
+    if ((m = /^(\d{1,2}) (\d{1,2})$/.exec(t))) return Number(m[2]) >= 60 ? NaN : sg * (Number(m[1]) + Number(m[2]) / 60);
+    if ((m = /^(\d{1,2}(?:\.\d+)?)$/.exec(t))) return sg * Number(m[1]);
+    return NaN;
+  }
+  function avMm(s) {
+    var t = avNorm(s).replace(/\s*mm$/i, '');
+    if (!t) return null;
+    var m = /^([+-])?\s*(\d{1,2}(?:\.\d+)?)$/.exec(t);
+    return m ? (m[1] === '-' ? -1 : 1) * Number(m[2]) : NaN;
+  }
+  function avVal(s, u) { var v = u === 'mm' ? avMm(s) : avAng(s); return v === null ? null : isFinite(v) && Math.abs(v) <= (u === 'mm' ? 30 : 20) ? v : NaN; }
+  function avSoll(s, u) {
+    var t = avNorm(s);
+    if (!t) return null;
+    var p = t.split(/\s*(?:±|\+\/-|\+-)\s*/), a, b;
+    if (p.length === 2) {
+      a = avVal(p[0], u); b = avVal(p[1], u);
+      if (a === null || b === null || !isFinite(a) || !isFinite(b) || b < 0) return { err: true };
+      return { min: a - b, max: a + b };
+    }
+    p = t.split(/\s+bis\s+|\s*(?:\.\.\.|…)\s*|\s+-\s+/i);
+    if (p.length === 2) {
+      a = avVal(p[0], u); b = avVal(p[1], u);
+      if (a === null || b === null || !isFinite(a) || !isFinite(b)) return { err: true };
+      return { min: Math.min(a, b), max: Math.max(a, b) };
+    }
+    a = avVal(t, u);
+    return a === null || !isFinite(a) ? { err: true } : { min: a, max: a };
+  }
+  function avR(v, u) { return u === 'mm' ? Math.round(v * 100) / 100 : Math.round(v * 10000) / 10000; }
+  function avFmtA(v, sign) {
+    if (v === null || v === undefined || !isFinite(v)) return '–';
+    var tm = Math.round(Math.abs(v) * 60), neg = v < 0 && tm > 0;
+    return (neg ? '−' : sign && tm ? '+' : '') + Math.floor(tm / 60) + '°' + pad(tm % 60) + '′';
+  }
+  function avFmt(v, u, sign) {
+    if (u !== 'mm') return avFmtA(v, sign);
+    if (v === null || v === undefined || !isFinite(v)) return '–';
+    var r = Math.round(v * 100) / 100;
+    return (r < 0 ? '−' : sign && r > 0 ? '+' : '') + nf.format(Math.abs(r)) + ' mm';
+  }
+  function avFmtIn(v, u) { return u === 'mm' ? (v < 0 ? '-' : '') + nfIn.format(Math.abs(v)).replace('.', ',') : avFmtA(v); }
+  function avUnit(M) { return M && M.eh === 'mm' ? 'mm' : 'grad'; }
+  function avWert(M, ph, w, g) { var x = M && M.werte && M.werte[ph] && M.werte[ph][w]; return x ? numOrNull(x[g]) : null; }
+  function avS(M, k) { var s = M && M.soll && M.soll[k]; return s && typeof s === 'object' ? s : null; }
+  function avHasRange(s) { return !!s && numOrNull(s.min) !== null && numOrNull(s.max) !== null; }
+  function avIn(v, s, u) { var q = u === 'mm' ? 100 : 60, r = function (x) { return Math.round(x * q); }; return r(v) >= r(s.min) && r(v) <= r(s.max); }
+  function avPhaseHas(M, ph) { return ['vl', 'vr', 'hl', 'hr'].some(function (w) { return ['spur', 'sturz', 'nachlauf'].some(function (g) { return avWert(M, ph, w, g) !== null; }); }); }
+  function avSumOk(s) { return avHasRange(s) && s.bezug !== 'einzel'; }
+  /* Prüfen einer Phase (v = vorher, n = nachher) gegen die Sollwerte */
+  function avCheck(M, ph) {
+    var unit = avUnit(M), out = [], n = 0, rows = {};
+    AV_ROWS.forEach(function (r) {
+      var s = avS(M, r.k), W = AV_RAD[r.ax], u = r.g === 'spur' ? unit : 'grad', L = avWert(M, ph, W[0][0], r.g), R = avWert(M, ph, W[1][0], r.g), ax = r.ax === 'va' ? 'vorne' : 'hinten';
+      var st = { L: '', R: '', sum: '', diff: '' };
+      if (r.g === 'spur' && avSumOk(s)) {
+        if (L !== null && R !== null) { n++; st.sum = avIn(L + R, s, u) ? 'ok' : 'out'; if (st.sum === 'out') out.push({ k: r.k, t: 'Gesamtspur ' + ax, v: L + R, s: s, u: u }); }
+      } else if (avHasRange(s)) {
+        [['L', L, W[0][1]], ['R', R, W[1][1]]].forEach(function (p) {
+          if (p[1] === null) return;
+          n++; st[p[0]] = avIn(p[1], s, u) ? 'ok' : 'out';
+          if (st[p[0]] === 'out') out.push({ k: r.k, t: r.n + ' ' + p[2], v: p[1], s: s, u: u });
+        });
+      }
+      if (r.g !== 'spur' && s && numOrNull(s.diff) !== null && L !== null && R !== null) {
+        n++; var dd = Math.abs(L - R);
+        st.diff = Math.round(dd * 60) <= Math.round(s.diff * 60) ? 'ok' : 'out';
+        if (st.diff === 'out') out.push({ k: r.k, t: r.n + ': Unterschied links/rechts', v: dd, s: { min: 0, max: s.diff }, u: 'grad' });
+      }
+      rows[r.k] = st;
+    });
+    return { n: n, out: out, rows: rows };
+  }
+  function avResult(M) {
+    var ph = avPhaseHas(M, 'n') ? 'n' : avPhaseHas(M, 'v') ? 'v' : null;
+    if (!ph) return { ph: null, lv: 'info', t: 'Keine Messwerte' };
+    var c = avCheck(M, ph), lbl = ph === 'n' ? 'Nachher' : 'Gemessen:';
+    if (!c.n) return { ph: ph, lv: 'info', t: (ph === 'n' ? 'Nachher' : 'Gemessen') + ' ohne Sollwerte zum Vergleich', c: c };
+    if (!c.out.length) return { ph: ph, lv: 'ok', t: lbl + ' alle Werte im Soll', c: c };
+    return { ph: ph, lv: 'bad', t: lbl + ' ' + c.out.length + (c.out.length === 1 ? ' Wert' : ' Werte') + ' außerhalb (' + c.out.map(function (x) { return x.t; }).join(', ') + ')', c: c };
+  }
+  function avSollTxt(s, u, bezug) {
+    if (!s) return '';
+    var r = avHasRange(s) ? (s.min === s.max ? avFmt(s.min, u) : avFmt(s.min, u) + ' bis ' + avFmt(s.max, u)) : '';
+    return [r ? (bezug ? (s.bezug === 'einzel' ? 'je Rad ' : 'gesamt ') : '') + r : '', numOrNull(s.diff) !== null ? 'links/rechts höchstens ' + avFmtA(s.diff) + ' Unterschied' : ''].filter(Boolean).join(', ');
+  }
+  /* ---------- Auto-Blatt ---------- */
+  function avSec(id, car) {
+    if (car.archiviert) return '';
+    var can = canWrite(), list = avList(car), M = list[list.length - 1];
+    var h = '<div class="sh-sec av-sec"><div class="vhead"><h3 class="sec">Achsvermessung</h3>' + (can ? '<button type="button" class="linkbtn" data-act="av-new" data-id="' + esc(id) + '">Messung eintragen</button>' : '') + '</div>';
+    if (!M) return h + '<p class="note">Noch keine Messung. Trag die Werte vom Ausdruck der Werkstatt ein: Spur, Sturz und Nachlauf vorher und nachher, dazu die Sollwerte. Die App zeigt, was außerhalb liegt, und macht ein Protokoll als PDF.</p>' +
+      '<button type="button" class="linkbtn" data-act="av-open" data-id="' + esc(id) + '">Sollwerte und Erklärung</button></div>';
+    var R = avResult(M);
+    return h + '<button type="button" class="av-last" data-act="av-open" data-id="' + esc(id) + '"><span class="av-lh"><b>' + esc(datum(M.datum) + (numOrNull(M.km) !== null ? ' · ' + nf.format(M.km) + ' km' : '')) + '</b>' +
+      '<span class="wst ' + (R.lv === 'ok' ? 'ok' : R.lv === 'bad' ? 'faellig' : '') + '">' + esc(R.lv === 'ok' ? 'im Soll' : R.lv === 'bad' ? 'außerhalb' : 'ohne Soll') + '</span></span>' +
+      '<span class="av-ls">' + esc([AV_ANLASSM[M.anlass], M.wo].filter(Boolean).join(' · ')) + '</span><span class="av-lr">' + esc(R.t + '.') + '</span>' +
+      '<span class="av-ln">' + esc(list.length > 1 ? 'Alle ' + list.length + ' Messungen und Protokoll' : 'Protokoll ansehen') + '</span></button></div>';
+  }
+  /* ---------- Übersicht ---------- */
+  function avValTxt(M, ph, r, st) {
+    var u = r.g === 'spur' ? avUnit(M) : 'grad', W = AV_RAD[r.ax], L = avWert(M, ph, W[0][0], r.g), R = avWert(M, ph, W[1][0], r.g);
+    if (L === null && R === null) return '';
+    var one = function (v, s, lab) { return v === null ? '' : '<span class="av-v' + (s === 'out' ? ' out' : '') + '">' + esc(lab + ' ' + avFmt(v, u) + (s === 'out' ? ' außerhalb' : '')) + '</span>'; };
+    var parts = [one(L, st && st.L, 'L'), one(R, st && st.R, 'R')];
+    if (r.g === 'spur' && L !== null && R !== null) parts.push('<span class="av-v' + (st && st.sum === 'out' ? ' out' : '') + '">' + esc('gesamt ' + avFmt(L + R, u) + (st && st.sum === 'out' ? ' außerhalb' : '')) + '</span>');
+    if (r.g !== 'spur' && L !== null && R !== null && st && st.diff) parts.push('<span class="av-v' + (st.diff === 'out' ? ' out' : '') + '">' + esc('Unterschied ' + avFmtA(Math.abs(L - R)) + (st.diff === 'out' ? ' zu viel' : '')) + '</span>');
+    return parts.filter(Boolean).join('');
+  }
+  function avRowsHtml(M) {
+    var cV = avCheck(M, 'v'), cN = avCheck(M, 'n'), hasV = avPhaseHas(M, 'v'), hasN = avPhaseHas(M, 'n'), main = hasN ? cN : cV;
+    return '<ul class="av-rl">' + AV_ROWS.map(function (r) {
+      var u = r.g === 'spur' ? avUnit(M) : 'grad', s = avS(M, r.k), v = hasV ? avValTxt(M, 'v', r, cV.rows[r.k]) : '', n = hasN ? avValTxt(M, 'n', r, cN.rows[r.k]) : '';
+      if (!v && !n && !s) return '';
+      var st = main.rows[r.k], any = st && [st.L, st.R, st.sum, st.diff].filter(Boolean), lv = any && any.length ? (any.indexOf('out') >= 0 ? 'out' : 'ok') : '';
+      return '<li><div class="av-rh"><b>' + esc(r.n) + '</b>' + (lv ? '<span class="wst ' + (lv === 'ok' ? 'ok' : 'faellig') + '">' + (lv === 'ok' ? 'im Soll' : 'außerhalb') + '</span>' : '') + '</div>' +
+        (s && (avHasRange(s) || numOrNull(s.diff) !== null) ? '<small>' + esc('Soll ' + avSollTxt(s, u, r.g === 'spur')) + '</small>' : '') +
+        (v ? '<div class="av-rv"><span>vorher</span><span>' + v + '</span></div>' : '') + (n ? '<div class="av-rv"><span>nachher</span><span>' + n + '</span></div>' : '') + '</li>';
+    }).join('') + '</ul>';
+  }
+  function avSqTxt(M) {
+    var q = M && M.sollQuelle;
+    if (!q || typeof q !== 'object') return '';
+    if (q.art === 'recherche') return 'Sollwerte aus der Recherche' + (isDay(q.stand) ? ' (Stand ' + datum(q.stand) + ')' : '') + ', mit dem Ausdruck abgleichen';
+    if (q.art === 'vorige') return 'Sollwerte wie bei der Messung' + (isDay(q.datum) ? ' vom ' + datum(q.datum) : '');
+    return '';
+  }
+  function avItem(carId, M, open, can) {
+    var R = avResult(M), fotos = blList(M.fotos);
+    return '<li class="av-it"><details data-k="av-' + esc(M.id) + '"' + (open ? ' open' : '') + '><summary><span class="av-lh"><b>' + esc(datum(M.datum) + (numOrNull(M.km) !== null ? ' · ' + nf.format(M.km) + ' km' : '')) + '</b>' +
+      '<span class="wst ' + (R.lv === 'ok' ? 'ok' : R.lv === 'bad' ? 'faellig' : '') + '">' + esc(R.lv === 'ok' ? 'im Soll' : R.lv === 'bad' ? 'außerhalb' : 'ohne Soll') + '</span></span>' +
+      '<span class="av-ls">' + esc([AV_ANLASSM[M.anlass], M.wo].filter(Boolean).join(' · ')) + '</span></summary><div class="av-b">' +
+      '<p class="rtext">' + esc(R.t + '.') + '</p>' + avRowsHtml(M) +
+      (avSqTxt(M) ? '<small class="av-sq">' + esc(avSqTxt(M) + '.') + '</small>' : '') +
+      (M.notiz ? '<p class="rtext">' + esc(M.notiz) + '</p>' : '') +
+      (BL && fotos.length ? '<div class="bl-s">' + fotos.map(function (r, i) { return blTile(r, 'av:' + carId + ':' + M.id, i, false); }).join('') + '</div>' : '') +
+      '<div class="sb-ex">' + (S.dl ? '<button type="button" class="btn ghost small" data-act="av-pdf" data-id="' + esc(carId) + '" data-m="' + esc(M.id) + '">Als PDF speichern</button>' : '') +
+      (can ? '<button type="button" class="btn ghost small" data-act="av-edit" data-id="' + esc(carId) + '" data-m="' + esc(M.id) + '">Bearbeiten</button>' : '') + '</div></div></details></li>';
+  }
+  function avAdVals(d) {
+    return xList(d, 'werte').filter(function (w) { return (w.achse === 'va' || w.achse === 'ha') && (w.groesse === 'spur' || w.groesse === 'sturz' || w.groesse === 'nachlauf'); });
+  }
+  function avAdBody(carId, d) {
+    if (!xDone(d)) return xPending(d) ? '' : '<p class="note">Claude sucht die Hersteller-Sollwerte für Spur, Sturz und Nachlauf dieses Modells, jeweils mit Quelle. Beim Eintragen lassen sie sich dann übernehmen.</p>';
+    var W = avAdVals(d), stand = xStand(d), B = gaObj(d.bedingung), h = '';
+    if (d.kurz) h += '<p class="rtext">' + esc(d.kurz) + '</p>';
+    if (W.length) h += '<ul class="sb-l">' + W.map(function (w) { return '<li>' + esc((w.achse === 'va' ? 'Vorne: ' : 'Hinten: ') + (w.text || w.groesse)) + srcRefs(d, w.quelle) + '</li>'; }).join('') + '</ul>';
+    else h += '<p class="note">Keine belegten Sollwerte gefunden.</p>';
+    if (B.text) h += '<p class="help">' + esc('Messbedingungen: ' + B.text) + srcRefs(d, B.quelle) + '</p>';
+    var hi = xList(d, 'hinweise');
+    if (hi.length) h += '<ul class="sb-l">' + hi.map(function (x) { return xLi(d, x); }).join('') + '</ul>';
+    h += xQuellen(d) + '<p class="help">' + esc('Die Werkstatt vergleicht mit den im Messgerät hinterlegten Hersteller-Sollwerten; die recherchierten Werte sind zum Gegenprüfen.') + srcRefs(AV_Q, [1]) + (stand ? ' ' + esc('Stand ' + datum(stand) + '.') : '') + '</p>';
+    return h;
+  }
+  function avHelp() {
+    return '<details class="wp-more" data-k="av-help"><summary>Was die Werte bedeuten</summary><ul class="sb-l">' +
+      '<li>' + esc('Spur: von oben gesehen. Zeigen die Vorderkanten der Räder zueinander, ist es Vorspur, zeigen sie voneinander weg, Nachspur.') + srcRefs(AV_Q, [1]) + '</li>' +
+      '<li>' + esc('Die Gesamtspur fasst beide Räder einer Achse zusammen. Sie kann im Soll liegen, obwohl die Einzelspur links und rechts gegenläufig abweicht.') + srcRefs(AV_Q, [1]) + '</li>' +
+      '<li>' + esc('Sturz: von vorne gesehen. Negativ heißt, der obere Radrand neigt sich nach innen.') + srcRefs(AV_Q, [1]) + '</li>' +
+      '<li>' + esc('Nachlauf: Neigung der Lenkachse zur Senkrechten, von der Seite gesehen.') + srcRefs(AV_Q, [1]) + '</li>' +
+      '<li>' + esc('Unterschiedlicher Sturz oder Nachlauf links und rechts lässt das Auto zur Seite ziehen.') + srcRefs(AV_Q, [1]) + '</li>' +
+      '<li>' + esc('Anlässe für eine Messung: ungleichmäßig oder sägezahnartig abgefahrene Reifen, Ziehen zur Seite, schief stehendes Lenkrad bei Geradeausfahrt, nervöser Geradeauslauf.') + srcRefs(AV_Q, [1]) + '</li>' +
+      '<li>' + esc('Für die Genehmigung von Fahrwerksfedern verlangt das Land OÖ das Vermessungsprotokoll einer Fachwerkstätte. Den Ausdruck beim Eintragen als Foto anhängen.') + srcRefs(AV_Q, [2]) + '</li></ul></details>';
+  }
+  function sheetAv(carId, back) {
+    var car = S.cars.get(carId) || {}, can = canWrite(), list = avList(car).slice().reverse(), d = xDoc('ad', carId);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Achsvermessung</p><h2 class="sh-title" id="sheet-title">' + esc(car.name || 'Auto') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    if (can) h += '<div class="sh-btns"><button type="button" class="btn" data-act="av-new" data-id="' + esc(carId) + '">Messung eintragen</button></div>';
+    h += '<div class="sh-sec"><h3 class="sec">' + esc('Messungen · ' + list.length) + '</h3>' + (list.length ? '<ul class="av-ml">' + list.map(function (M, i) { return avItem(carId, M, i === 0, can); }).join('') + '</ul>' : '<p class="note">Noch keine Messung eingetragen.</p>') + '</div>';
+    h += '<div class="sh-sec av-ad">' + xHead('ad', carId, d, can) + avAdBody(carId, d) + '</div>';
+    h += avHelp();
+    h += '<p class="err" id="av-err" role="alert"></p><div class="sh-foot"><button type="button" class="btn ghost" data-act="av-back">' + (back && back.ga ? 'Zurück zum Gutachten' : 'Zum Auto') + '</button></div>';
+    return h;
+  }
+  function openAv(carId, back) {
+    if (!S.cars.has(carId)) return;
+    var b = back !== undefined ? back : (S.sheet && S.sheet.id === carId && (S.sheet.type === 'av' || S.sheet.type === 'avform') ? S.sheet.back : null);
+    openSheet('av', { id: carId, back: b || null }, sheetAv(carId, b || null));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  function avBack() {
+    var s = S.sheet;
+    if (!s) return;
+    if (s.back && s.back.ga && gaDoc(s.back.ga)) openGa(s.back.ga, s.back.p || 'check');
+    else if (s.id && S.cars.has(s.id)) openCar(s.id);
+    else closeSheet();
+  }
+  /* ---------- Eintragen ---------- */
+  function openAvForm(carId, mid, back) {
+    var car = S.cars.get(carId);
+    if (!car) return;
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var list = avList(car), M = mid ? list.filter(function (x) { return x.id === mid; })[0] : null;
+    if (mid && !M) return;
+    var prev = !M && list.length ? list[list.length - 1] : null, src = M || prev, unit = avUnit(src), today = dayKey(new Date()), ck = curKmEst(car), d = xDoc('ad', carId);
+    var b = back !== undefined ? back : (S.sheet && S.sheet.id === carId && (S.sheet.type === 'av' || S.sheet.type === 'avform') ? S.sheet.back : null);
+    var sollRow = function (r) {
+      var s = avS(src, r.k) || {}, spur = r.g === 'spur';
+      return '<div class="av-sl"><b>' + esc(r.n) + '</b>' + (spur ? '<select id="av-b-' + r.ax + '" aria-label="' + esc(r.n + ': Sollwert gilt') + '"><option value="gesamt"' + (s.bezug === 'einzel' ? '' : ' selected') + '>gesamt</option><option value="einzel"' + (s.bezug === 'einzel' ? ' selected' : '') + '>je Rad</option></select>' : '') + '</div>' +
+        '<label class="av-sc"><span class="vh">' + esc(r.n + ': Sollwert') + '</span><input id="av-s-' + r.k + '" value="' + esc(s.t || '') + '" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="' + (spur ? 'z. B. 0°18′ ± 10′' : r.g === 'sturz' ? 'z. B. −0°30′ ± 30′' : 'z. B. 7°30′ ± 30′') + '"><small class="av-pp" id="av-sp-' + r.k + '" aria-live="polite"></small></label>' +
+        (spur ? '<span></span>' : '<label class="av-sc"><span class="vh">' + esc(r.n + ': höchster Unterschied links und rechts') + '</span><input id="av-x-' + r.k + '" value="' + esc(s.dt || '') + '" maxlength="20" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="z. B. 30′"></label>');
+    };
+    var mGrid = function (ph) {
+      return '<div class="av-mg"><span></span><b>links</b><b>rechts</b>' + AV_ROWS.map(function (r) {
+        var u = r.g === 'spur' ? unit : 'grad';
+        return '<span class="av-ml2">' + esc(r.n) + '</span>' + AV_RAD[r.ax].map(function (w) {
+          var v = M ? avWert(M, ph, w[0], r.g) : null;
+          return '<label class="av-mc"><span class="vh">' + esc((ph === 'v' ? 'Vorher ' : 'Nachher ') + r.n + ' ' + w[1]) + '</span><input id="av-' + ph + '-' + w[0] + '-' + r.g + '" value="' + esc(v === null ? '' : avFmtIn(v, u)) + '" maxlength="14" autocomplete="off" spellcheck="false" autocapitalize="off"></label>';
+        }).join('');
+      }).join('') + '</div><div class="av-sum" id="av-sum-' + ph + '" aria-live="polite"></div>';
+    };
+    var adOk = xDone(d) && avAdVals(d).length, sq = M ? M.sollQuelle || null : prev && prev.soll ? { art: 'vorige', datum: prev.datum } : null;
+    openSheet('avform', { id: carId, mid: M ? M.id : null, back: b || null, sq: sq, bl: BL ? { keep: M ? blList(M.fotos) : [], pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Achsvermessung · ' + (car.name || 'Auto')) + '</p><h2 class="sh-title" id="sheet-title">' + (M ? 'Messung bearbeiten' : 'Messung eintragen') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="avform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Gemessen am</span><input type="date" id="av-d" value="' + esc(M ? M.datum : today) + '" max="' + today + '"></label>' +
+      '<label class="f"><span>Kilometerstand</span><input id="av-km" inputmode="numeric" value="' + (M && numOrNull(M.km) !== null ? M.km : '') + '" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'optional') + '" autocomplete="off"></label></div>' +
+      '<div class="row2"><label class="f"><span>Gemessen bei <span class="muted">(optional)</span></span><input id="av-wo" value="' + esc(M && M.wo || '') + '" maxlength="80" autocomplete="off" placeholder="z. B. Reifen Huber"></label>' +
+      '<label class="f"><span>Anlass</span><select id="av-an">' + AV_ANLASS.map(function (a) { return '<option value="' + a[0] + '"' + ((M ? M.anlass : 'kontrolle') === a[0] ? ' selected' : '') + '>' + esc(a[1]) + '</option>'; }).join('') + '</select></label></div>' +
+      '<fieldset class="av-f"><legend>Sollwerte</legend>' +
+      '<div class="av-eh" role="radiogroup" aria-label="Einheit der Spur"><span>Spur in</span><label class="check"><input type="radio" name="av-eh" value="grad"' + (unit === 'grad' ? ' checked' : '') + '><span>Grad und Minuten</span></label><label class="check"><input type="radio" name="av-eh" value="mm"' + (unit === 'mm' ? ' checked' : '') + '><span>mm</span></label></div>' +
+      (sq && sq.art === 'vorige' && !M ? '<p class="note" id="av-sqn">' + esc('Sollwerte von der Messung am ' + datum(sq.datum) + ' übernommen.') + '</p>' : '<p class="note" id="av-sqn" hidden></p>') +
+      '<div class="av-sg"><span></span><small>Soll (± oder bis)</small><small>Unterschied L/R höchstens</small>' + AV_ROWS.map(sollRow).join('') + '</div>' +
+      '<div class="rk-chips">' + (adOk ? '<button type="button" class="btn ghost small" data-act="av-from" data-from="ad">Aus der Recherche übernehmen</button>' : '') +
+      (!M && prev && prev.soll ? '' : list.length ? '<button type="button" class="btn ghost small" data-act="av-from" data-from="last">Von der letzten Messung</button>' : '') + '</div>' +
+      '<p class="help">Schreibweise wie auf dem Ausdruck: 0°18′ ± 0°10′, −1°20′ bis −0°20′ oder dezimal −0,5 ± 0,5. Statt ° und ′ geht ein Leerzeichen: −1 20 heißt −1°20′. Die Werkstatt vergleicht mit den Hersteller-Sollwerten im Messgerät, sie stehen meist auf dem Ausdruck.' + srcRefs(AV_Q, [1]) + '</p></fieldset>' +
+      '<fieldset class="av-f"><legend>Vorher</legend>' + mGrid('v') + '</fieldset>' +
+      '<fieldset class="av-f"><legend>Nachher</legend>' + mGrid('n') + '<p class="help">Nur gemessen und nichts eingestellt? Dann nur „Vorher“ ausfüllen.</p></fieldset>' +
+      blField(M ? M.fotos : [], 'z. B. der Ausdruck der Werkstatt.') +
+      '<label class="f"><span>Notiz</span><textarea id="av-no" rows="2" maxlength="600" placeholder="z. B. Spurstangen eingestellt, Lenkrad gerade">' + esc(M && M.notiz || '') + '</textarea></label>' +
+      '<p class="err" id="av-ferr" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="av-cancel">Zurück</button></div></form>');
+    avLive();
+  }
+  function avRead() {
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    var unit = (($('input[name="av-eh"]:checked') || {}).value === 'mm') ? 'mm' : 'grad', errs = [], soll = {}, werte = { v: {}, n: {} };
+    AV_ROWS.forEach(function (r) {
+      var u = r.g === 'spur' ? unit : 'grad', t = g('av-s-' + r.k), p = avSoll(t, u), o = null;
+      if (p && p.err) errs.push({ id: 'av-s-' + r.k, t: r.n + ': Sollwert nicht lesbar' });
+      else if (p) o = { t: t.slice(0, 40), min: avR(p.min, u), max: avR(p.max, u) };
+      if (r.g === 'spur') { if (o) o.bezug = g('av-b-' + r.ax) === 'einzel' ? 'einzel' : 'gesamt'; }
+      else {
+        var dt = g('av-x-' + r.k), dv = dt ? avVal(dt, 'grad') : null;
+        if (dt && (dv === null || !isFinite(dv) || dv < 0)) errs.push({ id: 'av-x-' + r.k, t: r.n + ': Unterschied nicht lesbar' });
+        else if (dv !== null) { o = o || { t: '', min: null, max: null }; o.diff = avR(dv, 'grad'); o.dt = dt.slice(0, 20); }
+      }
+      if (o) soll[r.k] = o;
+      ['v', 'n'].forEach(function (ph) {
+        AV_RAD[r.ax].forEach(function (w) {
+          var id = 'av-' + ph + '-' + w[0] + '-' + r.g, t2 = g(id);
+          if (!t2) return;
+          var v = avVal(t2, u);
+          if (v === null || !isFinite(v)) { errs.push({ id: id, t: (ph === 'v' ? 'Vorher ' : 'Nachher ') + r.n + ' ' + w[1] + ': nicht lesbar' }); return; }
+          werte[ph][w[0]] = werte[ph][w[0]] || {};
+          werte[ph][w[0]][r.g] = avR(v, u);
+        });
+      });
+    });
+    return { unit: unit, soll: soll, werte: werte, errs: errs };
+  }
+  function avSumHtml(M, ph) {
+    if (!avPhaseHas(M, ph)) return '';
+    var u = avUnit(M), c = avCheck(M, ph), L = [];
+    ['va', 'ha'].forEach(function (ax) {
+      var W = AV_RAD[ax], a = avWert(M, ph, W[0][0], 'spur'), b = avWert(M, ph, W[1][0], 'spur'), st = c.rows[ax + '-spur'];
+      if (a !== null && b !== null) L.push('Gesamtspur ' + (ax === 'va' ? 'vorne ' : 'hinten ') + avFmt(a + b, u) + (st.sum ? (st.sum === 'ok' ? ', im Soll' : ', außerhalb') : ''));
+    });
+    var head = c.n ? (c.out.length ? c.out.length + (c.out.length === 1 ? ' Wert' : ' Werte') + ' außerhalb: ' + c.out.map(function (x) { return x.t; }).join(', ') : 'Alle Werte mit Sollwert im Soll') : 'Ohne Sollwert nichts zu vergleichen';
+    return '<p class="' + (c.out.length ? 'bad' : c.n ? 'ok' : '') + '">' + esc(head + '.') + '</p>' + (L.length ? '<p>' + esc(L.join(' · ') + '.') + '</p>' : '');
+  }
+  function avLive() {
+    if (!S.sheet || S.sheet.type !== 'avform') return;
+    var x = avRead(), M = { eh: x.unit, soll: x.soll, werte: x.werte }, cs = { v: avCheck(M, 'v'), n: avCheck(M, 'n') };
+    var bad = function (id) { return x.errs.some(function (q) { return q.id === id; }); };
+    AV_ROWS.forEach(function (r) {
+      var u = r.g === 'spur' ? x.unit : 'grad', s = x.soll[r.k], pp = $('#av-sp-' + r.k), inp = $('#av-s-' + r.k), e = bad('av-s-' + r.k);
+      if (pp) { pp.textContent = e ? 'Nicht lesbar' : s && avHasRange(s) ? (s.min === s.max ? avFmt(s.min, u) + ', ohne Toleranz' : avFmt(s.min, u) + ' bis ' + avFmt(s.max, u)) : ''; pp.classList.toggle('err', e); }
+      if (inp) inp.setAttribute('aria-invalid', e ? 'true' : 'false');
+      var xi = $('#av-x-' + r.k); if (xi) xi.setAttribute('aria-invalid', bad('av-x-' + r.k) ? 'true' : 'false');
+      ['v', 'n'].forEach(function (ph) {
+        AV_RAD[r.ax].forEach(function (w, i) {
+          var id = 'av-' + ph + '-' + w[0] + '-' + r.g, el = $('#' + id);
+          if (!el) return;
+          var b = bad(id), st = cs[ph].rows[r.k][i ? 'R' : 'L'];
+          el.classList.toggle('is-ok', !b && st === 'ok');
+          el.classList.toggle('is-out', b || st === 'out');
+          el.setAttribute('aria-invalid', b || st === 'out' ? 'true' : 'false');
+        });
+      });
+    });
+    ['v', 'n'].forEach(function (ph) { var el = $('#av-sum-' + ph); if (el) setHTML(el, avSumHtml(M, ph)); });
+  }
+  function avInput(t) { if (!t || !S.sheet || S.sheet.type !== 'avform' || !t.id || String(t.id).indexOf('av-') !== 0) return false; avLive(); return true; }
+  function avChange(t) {
+    if (!t || !S.sheet || S.sheet.type !== 'avform') return false;
+    if (t.name === 'av-eh' || /^av-b-/.test(t.id || '')) { avLive(); return true; }
+    return false;
+  }
+  /* Sollwerte übernehmen: aus der Recherche oder von der letzten Messung */
+  function avFrom(from) {
+    var s = S.sheet;
+    if (!s || s.type !== 'avform') return;
+    var car = S.cars.get(s.id), set = function (id, v) { var el = $('#' + id); if (el) el.value = v; }, n = 0;
+    if (from === 'ad') {
+      var d = xDoc('ad', s.id), W = avAdVals(d);
+      if (!W.length) return;
+      var spurMm = W.filter(function (w) { return w.groesse === 'spur'; }).every(function (w) { return w.einheit === 'mm'; }) && W.some(function (w) { return w.groesse === 'spur'; });
+      var u = spurMm ? 'mm' : 'grad', rad = $('input[name="av-eh"][value="' + u + '"]');
+      if (rad) rad.checked = true;
+      W.forEach(function (w) {
+        var k = w.achse + '-' + w.groesse, uu = w.groesse === 'spur' ? u : 'grad';
+        if (!AV_ROWS.some(function (r) { return r.k === k; }) || (w.groesse === 'spur' && (w.einheit === 'mm') !== (u === 'mm'))) return;
+        var so = numOrNull(w.soll), tol = numOrNull(w.tol), mi = numOrNull(w.min), ma = numOrNull(w.max), t = '';
+        if (so !== null && tol !== null) t = avFmt(so, uu) + ' ± ' + avFmt(tol, uu);
+        else if (mi !== null && ma !== null) t = avFmt(mi, uu) + ' bis ' + avFmt(ma, uu);
+        if (t) { set('av-s-' + k, t.replace(/ mm/g, '')); n++; }
+        if (w.groesse === 'spur') set('av-b-' + w.achse, w.bezug === 'einzel' ? 'einzel' : 'gesamt');
+        else if (numOrNull(w.diff) !== null) set('av-x-' + k, avFmtA(w.diff));
+      });
+      s.sq = { art: 'recherche', stand: xStand(d) || null };
+    } else {
+      var list = avList(car).filter(function (m) { return m.id !== s.mid && m.soll; }), P = list[list.length - 1];
+      if (!P) return;
+      var r2 = $('input[name="av-eh"][value="' + avUnit(P) + '"]');
+      if (r2) r2.checked = true;
+      AV_ROWS.forEach(function (r) {
+        var x = avS(P, r.k) || {};
+        set('av-s-' + r.k, x.t || '');
+        if (r.g === 'spur') set('av-b-' + r.ax, x.bezug === 'einzel' ? 'einzel' : 'gesamt'); else set('av-x-' + r.k, x.dt || '');
+        if (x.t) n++;
+      });
+      s.sq = { art: 'vorige', datum: P.datum };
+    }
+    var nn = $('#av-sqn');
+    if (nn) { nn.hidden = false; nn.textContent = from === 'ad' ? 'Sollwerte aus der Recherche übernommen. Bitte mit dem Ausdruck der Werkstatt abgleichen.' : 'Sollwerte von der Messung am ' + datum(s.sq.datum) + ' übernommen.'; }
+    avLive();
+    toast(n ? n + (n === 1 ? ' Sollwert übernommen.' : ' Sollwerte übernommen.') : 'Nichts zum Übernehmen gefunden.');
+  }
+  async function saveAv() {
+    var s = S.sheet;
+    if (!s || s.type !== 'avform' || S.busy) return;
+    var car = S.cars.get(s.id), err = function (m) { var el = $('#av-ferr'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!car) { err('Dieses Auto gibt es nicht mehr.'); return; }
+    var d = g('av-d'), km = parseNum(g('av-km')), today = dayKey(new Date());
+    if (!isDay(d) || d > today) { err('Bitte das Datum der Messung eintragen, nicht in der Zukunft.'); return; }
+    if (km !== null && (isNaN(km) || km < 0 || km > 3000000)) { err('Den Kilometerstand bitte als Zahl eintragen.'); return; }
+    var x = avRead();
+    if (x.errs.length) { err(x.errs[0].t + '. Schreibweise z. B. −0°45′, −0 45 oder −0,75.'); var f = $('#' + x.errs[0].id); if (f) { try { f.focus(); } catch (_) {} } return; }
+    if (!avPhaseHas({ werte: x.werte }, 'v') && !avPhaseHas({ werte: x.werte }, 'n')) { err('Bitte mindestens einen Messwert eintragen.'); return; }
+    var old = s.mid ? avList(car).filter(function (m) { return m.id === s.mid; })[0] : null, now = new Date().toISOString(), an = g('av-an');
+    var M = Object.assign({}, old || { id: rid(10), erstellt: now }, { datum: d, km: km === null ? null : Math.round(km), wo: g('av-wo').slice(0, 80) || null, anlass: AV_ANLASSM[an] ? an : 'kontrolle',
+      eh: x.unit, soll: x.soll, werte: x.werte, sollQuelle: s.sq || null, notiz: g('av-no').slice(0, 600) || null, geaendert: now });
+    setBusy(true);
+    try {
+      var fotos = BL && s.bl ? await blCommitForm(s.id, 'Achsvermessung') : null;
+      if (fotos) M.fotos = fotos;
+      car = S.cars.get(s.id) || car;
+      var list = avList(car).filter(function (m) { return m.id !== M.id; }).concat([M]).sort(avSort).slice(-40);
+      var patch = { achsvermessung: Object.assign({}, avDoc(car), { messungen: list }), geaendert: now };
+      if (M.km !== null && (numOrNull(car.km) === null || M.km >= num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) { patch.km = M.km; patch.kmDatum = d; patch.kmLog = kmLogWith(car, d, M.km); }
+      await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
+      S.cars.set(s.id, Object.assign({}, car, patch));
+      setBusy(false);
+      var R = avResult(M);
+      openAv(s.id, s.back);
+      renderAll();
+      toast(R.lv === 'bad' ? 'Gespeichert. ' + R.t + '.' : 'Messung gespeichert.');
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  function avCancel() {
+    var s = S.sheet;
+    if (!s || s.type !== 'avform') return;
+    if (avList(S.cars.get(s.id)).length || (s.back && s.back.ga)) openAv(s.id, s.back); else openCar(s.id);
+  }
+  /* ---------- Protokoll als PDF ---------- */
+  function avPdf(lib, carId, car, M, imgs) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, MG = 16, X1 = W - MG, BOT = H - 18, yy = MG, PT = 0.3528;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243], bad: [178, 58, 42], ok: [36, 110, 62] };
+    var T = function (s) { return String(s == null ? '' : s).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/′/g, "'").replace(/→/g, '->').replace(/[^\u0000-ÿ€„“”‘’–—…•]/g, '?'); };
+    var txt = function (s, x, z, o) { doc.text(Array.isArray(s) ? s.map(T) : T(s), x, z, o); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.3; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    doc.setLineHeightFactor(1.3);
+    doc.setProperties({ title: 'Achsvermessung ' + (car.name || '') + ' ' + datum(M.datum), creator: 'Werkstatt-Inventar' });
+    var R = avResult(M), u = avUnit(M);
+    f('bold', 9); tc(C.mut); txt('ACHSVERMESSUNG · PROTOKOLL', MG, yy + 3);
+    f('bold', 20); tc(C.ink); txt(split(car.name || 'Auto', X1 - MG)[0], MG, yy + 11); yy += 15;
+    var facts = [['Gemessen am', datum(M.datum)], ['Kilometerstand', numOrNull(M.km) !== null ? nf.format(M.km) + ' km' : '–'], ['Gemessen bei', M.wo || '–'], ['Anlass', AV_ANLASSM[M.anlass] || '–'], ['Fahrgestellnummer', car.fin || '–'], ['Kennzeichen', car.kennzeichen || '–']];
+    fc(C.soft); doc.roundedRect(MG, yy, X1 - MG, 8 + Math.ceil(facts.length / 2) * 9, 2, 2, 'F');
+    facts.forEach(function (p, i) { var cx = MG + 4 + (i % 2) * ((X1 - MG) / 2), cy = yy + 6 + Math.floor(i / 2) * 9; f('normal', 7.5); tc(C.mut); txt(p[0], cx, cy); f('bold', 9.5); tc(C.ink); txt(split(p[1], (X1 - MG) / 2 - 8)[0], cx, cy + 4.2); });
+    yy += 8 + Math.ceil(facts.length / 2) * 9 + 6;
+    f('bold', 11); tc(R.lv === 'bad' ? C.bad : R.lv === 'ok' ? C.ok : C.ink);
+    var rl = split(R.t + '.', X1 - MG); txt(rl, MG, yy + 4); yy += rl.length * lh(11) + 4;
+    var cV = avCheck(M, 'v'), cN = avCheck(M, 'n');
+    var cols = [{ t: 'Wert', w: 30 }, { t: 'Soll', w: 44 }, { t: 'Vorher L', w: 19, r: true }, { t: 'Vorher R', w: 19, r: true }, { t: 'Nachher L', w: 19, r: true }, { t: 'Nachher R', w: 19, r: true }, { t: 'Ergebnis', w: X1 - MG - 150 }], pd = 1.4;
+    var hdr = function () { f('bold', 8); tc(C.mut); var x = MG; cols.forEach(function (c) { txt(c.t, c.r ? x + c.w - pd : x + pd, yy + 4, c.r ? { align: 'right' } : undefined); x += c.w; }); yy += 6; dc(C.ink); doc.setLineWidth(0.4); doc.line(MG, yy, X1, yy); yy += 0.6; };
+    hdr();
+    var line = function (cells, outs, sub) {
+      f(sub ? 'normal' : 'normal', 8.5);
+      var lines = cells.map(function (c, i) { return split(c, cols[i].w - 2 * pd); }), rh = Math.max.apply(null, lines.map(function (l) { return l.length; })) * lh(8.5) + 2 * pd;
+      if (yy + rh > BOT) { doc.addPage(); yy = MG; hdr(); }
+      var x = MG;
+      lines.forEach(function (l, i) { var o = outs && outs[i]; f(o || i === 0 && !sub ? 'bold' : 'normal', 8.5); tc(o ? C.bad : sub && i === 0 ? C.mut : C.ink); txt(l, cols[i].r ? x + cols[i].w - pd : x + pd, yy + pd + lh(8.5) * 0.74, cols[i].r ? { align: 'right' } : undefined); x += cols[i].w; });
+      yy += rh; dc(C.line); doc.setLineWidth(0.2); doc.line(MG, yy, X1, yy);
+    };
+    var st = function (c, k, w) { var s = c.rows[k]; return s ? s[w] : ''; };
+    var verdict = function (k, keys) { var c = avPhaseHas(M, 'n') ? cN : cV, s = c.rows[k], l = s ? keys.map(function (w) { return s[w]; }).filter(Boolean) : []; return l.length ? (l.indexOf('out') >= 0 ? 'außerhalb' : 'im Soll') : ''; };
+    AV_ROWS.forEach(function (r) {
+      var uu = r.g === 'spur' ? u : 'grad', s = avS(M, r.k), W2 = AV_RAD[r.ax], v = function (ph, w) { var x = avWert(M, ph, w, r.g); return x === null ? '' : avFmt(x, uu); };
+      var summ = r.g === 'spur' && avSumOk(s);
+      line([r.n, s && avHasRange(s) ? (r.g === 'spur' ? (s.bezug === 'einzel' ? 'je Rad ' : 'gesamt ') : '') + (s.min === s.max ? avFmt(s.min, uu) : avFmt(s.min, uu) + ' bis ' + avFmt(s.max, uu)) : '–',
+        v('v', W2[0][0]), v('v', W2[1][0]), v('n', W2[0][0]), v('n', W2[1][0]), summ ? '' : verdict(r.k, ['L', 'R'])],
+        [false, false, st(cV, r.k, 'L') === 'out', st(cV, r.k, 'R') === 'out', st(cN, r.k, 'L') === 'out', st(cN, r.k, 'R') === 'out', !summ && verdict(r.k, ['L', 'R']) === 'außerhalb']);
+      if (r.g === 'spur') {
+        var sm = function (ph) { var a = avWert(M, ph, W2[0][0], 'spur'), b = avWert(M, ph, W2[1][0], 'spur'); return a !== null && b !== null ? avFmt(a + b, uu) : ''; };
+        if (sm('v') || sm('n')) line(['Gesamtspur ' + (r.ax === 'va' ? 'vorne' : 'hinten'), '', sm('v'), '', sm('n'), '', summ ? verdict(r.k, ['sum']) : ''], [false, false, st(cV, r.k, 'sum') === 'out', false, st(cN, r.k, 'sum') === 'out', false, summ && verdict(r.k, ['sum']) === 'außerhalb'], true);
+      } else if (s && numOrNull(s.diff) !== null) {
+        var df = function (ph) { var a = avWert(M, ph, W2[0][0], r.g), b = avWert(M, ph, W2[1][0], r.g); return a !== null && b !== null ? avFmtA(Math.abs(a - b)) : ''; };
+        line(['Unterschied L/R', 'höchstens ' + avFmtA(s.diff), df('v'), '', df('n'), '', verdict(r.k, ['diff'])], [false, false, st(cV, r.k, 'diff') === 'out', false, st(cN, r.k, 'diff') === 'out', false, verdict(r.k, ['diff']) === 'außerhalb'], true);
+      }
+    });
+    yy += 5;
+    var notes = [u === 'mm' ? 'Spur in mm, Sturz und Nachlauf in Grad und Winkelminuten (1° = 60\').' : 'Werte in Grad und Winkelminuten (1° = 60\').', 'Sturz negativ: oberer Radrand nach innen geneigt.'];
+    if (avSqTxt(M)) notes.push(avSqTxt(M) + '.');
+    if (M.notiz) notes.push('Notiz: ' + M.notiz);
+    notes.push('Eingetragen nach dem Messprotokoll' + (M.wo ? ' von ' + M.wo : '') + ' in der Werkstatt-App. Maßgeblich ist das Protokoll der Fachwerkstätte' + (blList(M.fotos).length ? ', es ist als Foto angehängt' : '') + '.');
+    f('normal', 8.5); tc(C.mut);
+    notes.forEach(function (n) { var l = split(n, X1 - MG); if (yy + l.length * lh(8.5) > BOT) { doc.addPage(); yy = MG; } txt(l, MG, yy + 3); yy += l.length * lh(8.5) + 1.5; });
+    (imgs || []).forEach(function (im, i) {
+      doc.addPage(); yy = MG;
+      f('bold', 9); tc(C.mut); txt('AUSDRUCK DER WERKSTATT' + (imgs.length > 1 ? ' · ' + (i + 1) + ' VON ' + imgs.length : ''), MG, yy + 3); yy += 7;
+      var mw = X1 - MG, mh = BOT - yy, sc = Math.min(mw / im.w, mh / im.h), w = im.w * sc, h = im.h * sc;
+      try { doc.addImage(im.data, im.fmt, MG + (mw - w) / 2, yy, w, h); } catch (_) { f('normal', 9); txt('Foto konnte nicht eingefügt werden.', MG, yy + 5); }
+    });
+    var n = doc.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(MG, H - 12, X1, H - 12);
+      txt('Achsvermessung ' + (car.name || '') + (car.fin ? ' · FIN ' + car.fin : '') + ' · ' + datum(M.datum), MG, H - 8);
+      txt('Seite ' + i + ' von ' + n, X1, H - 8, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveAvPdf(carId, mid) {
+    var car = S.cars.get(carId), M = car ? avList(car).filter(function (x) { return x.id === mid; })[0] : null, err = function (m) { var el = $('#av-err'); if (el) el.textContent = m; else toast(m); };
+    if (!M) return;
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    if (S.busy) return;
+    var lib, imgs = [], failed = 0;
+    setBusy(true);
+    try {
+      try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+      var fl = blList(M.fotos).filter(function (r) { return r.typ !== 'pdf'; });
+      for (var i = 0; i < fl.length; i++) { try { imgs.push(await vmImg(fl[i])); } catch (e) { failed++; } }
+      var blob;
+      try { blob = avPdf(lib, carId, car, M, imgs).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+      var name = 'Achsvermessung ' + fileSafe(car.name || 'Auto') + ' ' + M.datum + '.pdf';
+      setBusy(false);
+      try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name + (failed ? '. ' + failed + (failed === 1 ? ' Foto fehlt' : ' Fotos fehlen') + ', sie ließen sich nicht laden.' : '')); }
+      catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+    } finally { if (S.busy) setBusy(false); }
+  }
+  function avGaLines(car) {
+    var list = avList(car), M = list[list.length - 1];
+    if (!M) return [];
+    var R = avResult(M), L = ['Achsvermessung vom ' + datum(M.datum) + (numOrNull(M.km) !== null ? ' bei ' + nf.format(M.km) + ' km' : '') + (M.wo ? ', ' + M.wo : '') + (AV_ANLASSM[M.anlass] ? ' (' + AV_ANLASSM[M.anlass] + ')' : '') + ': ' + R.t + '.'];
+    if (R.c) R.c.out.forEach(function (x) { L.push(x.t + ': ' + avFmt(x.v, x.u) + ', Soll ' + (x.s.min === 0 && x.t.indexOf('Unterschied') >= 0 ? 'höchstens ' + avFmt(x.s.max, x.u) : avFmt(x.s.min, x.u) + ' bis ' + avFmt(x.s.max, x.u)) + '.'); });
+    if (blList(M.fotos).length) L.push('Messprotokoll der Werkstatt liegt als Foto vor.');
+    return L;
+  }
+  /* ---------- Gutachten: Hinweise in den Checklisten Rad-Reifen und Fahrwerk, Einfügen in den Befund ---------- */
+  function gaHintX(g, car, key) {
+    if (!car) return '';
+    var q = key.split('.'), ck = q[0], id = q[1], t = null, warn = false, btn = '', r = rkSaved(car);
+    var rkBtn = '<button type="button" class="linkbtn inl" data-act="rk-open" data-id="' + esc(g.fahrzeug || '') + '">Rad-Reifen-Rechner</button>';
+    var E = r ? rkEval(rkIn(r)) : null, it = E ? rkItems(E).filter(function (x) { return !x.ex; }) : [];
+    var pick = function (grp, pred) { return it.filter(function (x) { return x.grp === grp && (!pred || pred(x)); }); };
+    var joinIt = function (l) { warn = l.some(function (x) { return x.lv === 'bad' || x.lv === 'warn' || x.lv === 'unklar'; }); return l.map(function (x) { return ({ bad: 'Passt nicht: ', warn: 'Achtung: ', unklar: 'Unklar: ' }[x.lv] || '') + x.t; }).join(' '); };
+    if (ck === 'rr') {
+      if (id === 'a1' && r) t = 'Laut Papieren im Rechner: ' + [r.alt.reifen, r.alt.felge].filter(Boolean).join(' auf ') + '.';
+      else if (id === 'c1') { if (E && (E.li || E.si)) t = joinIt(pick('index')); else if (!r) t = 'Noch nicht im Rad-Reifen-Rechner gerechnet.'; btn = rkBtn; }
+      else if (id === 'c3') { if (E && E.pct !== undefined) { t = 'Umfang ' + rkPct(E.pct) + ' gegenüber den Papieren.' + (E.tacho ? ' ' + joinIt(pick('tacho')) : E.pct > 0.05 ? ' Ob der Tacho dann noch passt, zeigt eine GPS-Messung mit den bisherigen Reifen.' : ''); if (!E.tacho && E.pct > 0.05) warn = true; } else if (!r) t = 'Noch nicht im Rad-Reifen-Rechner gerechnet.'; btn = rkBtn; }
+      else if (id === 'b1' && E && E.mitte !== undefined) { t = 'Neu ' + [r.neu.reifen, r.neu.felge].filter(Boolean).join(' auf ') + ': ' + pick('lage')[0].t; btn = rkBtn; }
+      else if (id === 'b2' && E && E.tl) t = joinIt(pick('lage', function (x) { return x.t.indexOf('Traglast') === 0; }));
+      else if (id === 'b5' && E && E.dist) t = joinIt(pick('lage', function (x) { return x.t.indexOf('Distanzscheiben') === 0; }));
+      else if (id === 'e2' && E && E.fi) t = joinIt(pick('lage', function (x) { return x.t.indexOf('Innen bisher') === 0; }));
+      else if (id === 'e3' && E && E.fa) t = joinIt(pick('lage', function (x) { return x.t.indexOf('Außen bisher') === 0; }));
+    } else if (ck === 'fw') {
+      var list = avList(car), M = list[list.length - 1];
+      if (id === 'b8') {
+        if (M) { var R = avResult(M); t = 'Achsvermessung vom ' + datum(M.datum) + ': ' + R.t + '.'; warn = R.lv === 'bad'; }
+        else t = 'Noch keine Achsvermessung in der App.';
+        btn = '<button type="button" class="linkbtn inl" data-act="av-open" data-id="' + esc(g.fahrzeug || '') + '">Zur Achsvermessung</button>';
+      } else if (id === 'a2' && r) t = 'Im Rad-Reifen-Rechner: laut Papieren ' + [r.alt.reifen, r.alt.felge].filter(Boolean).join(' auf ') + ', neu ' + [r.neu.reifen, r.neu.felge].filter(Boolean).join(' auf ') + '.';
+      else if (id === 'b5' && E && (E.fi || E.fa)) t = joinIt(pick('lage', function (x) { return x.t.indexOf('Innen bisher') === 0 || x.t.indexOf('Außen bisher') === 0; }));
+    }
+    if (!t && !btn) return '';
+    return '<small class="pvi-x ga-x' + (warn ? ' warn' : '') + '">' + esc(t || '') + (btn ? ' ' + btn : '') + '</small>';
+  }
+  function gaXIns(g, car, can) {
+    if (!can || !car) return '';
+    var h = '';
+    if ((g.art === 'radreifen' || g.art === 'fahrwerk') && rkSaved(car)) h += '<button type="button" class="linkbtn" data-act="ga-ins-x" data-x="rk">Ergebnis aus dem Rad-Reifen-Rechner einfügen</button>';
+    if (g.art === 'fahrwerk' && avList(car).length) h += '<button type="button" class="linkbtn" data-act="ga-ins-x" data-x="av">Letzte Achsvermessung einfügen</button>';
+    return h;
+  }
+  function gaInsX(x) {
+    var s = S.sheet, g = s && s.type === 'ga' ? gaDoc(s.id) : null;
+    if (!g || !canWrite()) return;
+    var car = S.cars.get(g.fahrzeug) || null, lines = car ? (x === 'av' ? avGaLines(car) : rkGaLines(car)) : [], cur = gaStr(gaGetPath(g, 'befundText'));
+    var add = lines.filter(function (l) { return cur.indexOf(l) < 0; });
+    if (!add.length) { toast('Steht schon alles im Befund.'); return; }
+    var nv = (cur ? cur + '\n' : '') + add.join('\n');
+    gaSet(s.id, function (d) { gaPutPath(d, 'befundText', nv.slice(0, 6000)); });
+    gaRerender('#gf-befundText');
+    toast(add.length === 1 ? 'Eine Zeile eingefügt. Bitte prüfen und ergänzen.' : add.length + ' Zeilen eingefügt. Bitte prüfen und ergänzen.');
+  }
+  function gaBackOf() { var s = S.sheet; return s && s.type === 'ga' ? { ga: s.id, p: s.p || 'check' } : s && (s.type === 'rk' || s.type === 'av' || s.type === 'avform') && s.back ? s.back : null; }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -14026,6 +15022,17 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'fb-year': fbYear(t.dataset.y); break;
       case 'fb-pdf': saveFbPdf(t.dataset.id); break;
       case 'vm-open': openVm(t.dataset.id); break;
+      case 'rk-open': openRk(t.dataset.id || null, gaBackOf()); break;
+      case 'rk-fill': rkFill(t.dataset.to, t.dataset.set); break;
+      case 'rk-back': rkBack(); break;
+      case 'av-open': openAv(t.dataset.id, gaBackOf()); break;
+      case 'av-new': openAvForm(t.dataset.id, null, gaBackOf()); break;
+      case 'av-edit': openAvForm(t.dataset.id, t.dataset.m, gaBackOf()); break;
+      case 'av-cancel': avCancel(); break;
+      case 'av-back': avBack(); break;
+      case 'av-from': avFrom(t.dataset.from); break;
+      case 'av-pdf': saveAvPdf(t.dataset.id, t.dataset.m); break;
+      case 'ga-ins-x': gaInsX(t.dataset.x); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
@@ -14128,6 +15135,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (reChange(t)) return;
     if (t.id === 'fb-zaehlt') { var fo = $('#fb-ohne-f'); if (fo) fo.hidden = t.checked; return; }
     if (t.id === 'fk-feld') { fbKorrSync(); return; }
+    if (rkChange(t)) return;
+    if (avChange(t)) return;
     if (brChange(t)) return;
     if (pvChange(t)) return;
     if (gaChange(t)) return;
@@ -14194,6 +15203,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'fbend') { e.preventDefault(); saveFbEnd(); }
       else if (e.target.id === 'fbkorr') { e.preventDefault(); saveFbKorr(); }
       else if (e.target.id === 'vmform') { e.preventDefault(); saveVmPdf(); }
+      else if (e.target.id === 'rkform') { e.preventDefault(); saveRk(); }
+      else if (e.target.id === 'avform') { e.preventDefault(); saveAv(); }
       else if (e.target.id === 'keein') { e.preventDefault(); saveKeEin(); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
@@ -14212,6 +15223,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       if (ubInput(e.target)) return;
       if (kvaInput(e.target)) return;
       if (reInput(e.target)) return;
+      if (rkInput(e.target)) return;
+      if (avInput(e.target)) return;
       if (wpTippsInput(e.target)) return;
       if (gaInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
