@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "37", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "37.1", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -5663,32 +5663,36 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   /* ---------- Pickerl (§57a), Unterhaltskosten, Werkzeug-Abgleich, erweiterte Einkaufsliste ---------- */
   var PICKERL_Q = { quellen: [
     { titel: 'oesterreich.gv.at: Begutachtung (Pickerl)', url: 'https://www.oesterreich.gv.at/en/themen/mobilitaet/kfz/Seite.060500' },
-    { titel: 'ÖAMTC: Neue §57a-Pickerl-Regelung ab 19.05.2027', url: 'https://www.oeamtc.at/thema/pickerl/neue-57a-pickerl-regelung-in-oesterreich-jetzt-intervall-fristen-berechnen-89430229' }
+    { titel: 'ÖAMTC: Neue §57a-Pickerl-Regelung ab 19.05.2027', url: 'https://www.oeamtc.at/thema/pickerl/neue-57a-pickerl-regelung-in-oesterreich-jetzt-intervall-fristen-berechnen-89430229' },
+    { titel: 'WKO: § 57a-Begutachtung, Termine ab 2027 (Stand 07/2026)', url: 'https://www.wko.at/paragraph-57a/begutachtungstermine' }
   ] };
   function isYm(s) { return typeof s === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(s); }
   function ymAdd(ym, n) { var p = ym.split('-').map(Number), d = new Date(Date.UTC(p[0], p[1] - 1 + n, 1)); return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1); }
   function ymTxt(ym) { var p = String(ym).split('-'); return p[1] + '/' + p[0]; }
   function pickerlInfo(car) {
     if (!car || !isYm(car.pickerl)) return null;
-    var due = car.pickerl, now = dayKey(new Date()).slice(0, 7), neu = due >= '2027-05';
+    /* Ab 19.05.2027 bis zu vier Monate vorher und keine Nachfrist. Fälligkeiten 01–10/2027 behalten die alte Frist (einen Monat vorher, vier danach), längstens bis Ende 11/2027 (WKO). */
+    var due = car.pickerl, now = dayKey(new Date()).slice(0, 7), neu = due >= '2027-11', ueb = !neu && due >= '2027-01';
     var from = neu ? ymAdd(due, -4) : ymAdd(due, -1), to = neu ? due : ymAdd(due, 4);
+    if (ueb && to > '2027-11') to = '2027-11';
     var st = now > to ? 'ueber' : now >= due ? 'faellig' : now >= ymAdd(due, -2) ? 'bald' : 'ok';
-    return { due: due, from: from, to: to, neu: neu, status: st };
+    return { due: due, from: from, to: to, neu: neu, ueb: ueb, status: st };
   }
   function pkChip(pk) {
     var m = { ueber: ['faellig', 'Überfällig'], faellig: ['faellig', 'Fällig'], bald: ['bald', 'Bald'], ok: ['ok', 'OK'] }[pk.status];
     return '<span class="wst ' + m[0] + '">' + m[1] + '</span>';
   }
   function pkWindow(pk) {
-    return pk.neu ? 'Begutachtung möglich ab ' + ymTxt(pk.from) + ', danach keine Nachfrist mehr (neue Regel ab 19.05.2027 laut ÖAMTC; für die Übergangsfristen bis 11/2027 den ÖAMTC-Pickerlrechner nutzen)'
-      : 'Begutachtung möglich von ' + ymTxt(pk.from) + ' bis ' + ymTxt(pk.to) + ' (einen Monat vorher bis vier Monate danach)';
+    if (pk.neu) return 'Begutachtung möglich von ' + ymTxt(pk.from) + ' bis ' + ymTxt(pk.to) + ': bis zu vier Monate vorher, danach keine Nachfrist (neue Regel ab 19.05.2027)';
+    if (pk.ueb) return 'Begutachtung möglich von ' + ymTxt(pk.from) + ' bis ' + ymTxt(pk.to) + '. Übergang: Für Fälligkeiten von Jänner bis Oktober 2027 gilt noch die alte Frist, einen Monat vorher bis vier Monate danach, längstens bis Ende November 2027';
+    return 'Begutachtung möglich von ' + ymTxt(pk.from) + ' bis ' + ymTxt(pk.to) + ' (einen Monat vorher bis vier Monate danach)';
   }
   function pickerlHtml(carId, car) {
     var pk = pickerlInfo(car), can = canWrite();
     var cls = pk ? (pk.status === 'faellig' || pk.status === 'ueber' ? ' s-faellig' : pk.status === 'bald' ? ' s-bald' : '') : '';
     var h = '<div class="sh-sec"><h3 class="sec">Pickerl (§57a)</h3><ul class="wlist"><li class="wp wp-pk' + cls + '">' + pkSvg(pk) + '<div class="wp-pkt">';
     if (!pk) h += '<div class="wp-h"><span class="wp-n">Monat noch nicht eingetragen</span></div><p class="wp-l">Er steht gelocht auf der Plakette.</p>';
-    else h += '<div class="wp-h"><span class="wp-n">Fällig ' + esc(ymTxt(pk.due)) + '</span>' + pkChip(pk) + '</div><p class="wp-l">' + esc(pkWindow(pk)) + srcRefs(PICKERL_Q, pk.neu ? [2] : [1]) + '</p>';
+    else h += '<div class="wp-h"><span class="wp-n">Fällig ' + esc(ymTxt(pk.due)) + '</span>' + pkChip(pk) + '</div><p class="wp-l">' + esc(pkWindow(pk)) + srcRefs(PICKERL_Q, pk.neu ? [2, 3] : pk.ueb ? [3] : [1]) + '</p>';
     if (can) h += '<div class="wp-a"><button type="button" class="linkbtn" data-act="pickerl-edit" data-id="' + esc(carId) + '">' + (pk ? 'Monat ändern' : 'Monat eintragen') + '</button><button type="button" class="linkbtn" data-act="pv-open" data-id="' + esc(carId) + '">Vorcheck</button></div>';
     return h + '</div></li></ul></div>';
   }
