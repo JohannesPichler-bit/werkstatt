@@ -14354,7 +14354,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       '<div class="av-sg"><span></span><small>Soll (± oder bis)</small><small>Unterschied L/R höchstens</small>' + AV_ROWS.map(sollRow).join('') + '</div>' +
       '<div class="rk-chips">' + (adOk ? '<button type="button" class="btn ghost small" data-act="av-from" data-from="ad">Aus der Recherche übernehmen</button>' : '') +
       (!M && prev && prev.soll ? '' : list.length ? '<button type="button" class="btn ghost small" data-act="av-from" data-from="last">Von der letzten Messung</button>' : '') + '</div>' +
-      '<p class="help">Schreibweise wie auf dem Ausdruck: 0°18′ ± 0°10′, −1°20′ bis −0°20′ oder dezimal −0,5 ± 0,5. Statt ° und ′ geht ein Leerzeichen: −1 20 heißt −1°20′. Die Werkstatt vergleicht mit den Hersteller-Sollwerten im Messgerät, sie stehen meist auf dem Ausdruck.' + srcRefs(AV_Q, [1]) + '</p></fieldset>' +
+      '<p class="help">Schreibweise wie auf dem Ausdruck: 0°18′ ± 0°10′, −1°20′ bis −0°20′ oder dezimal −0,5 ± 0,5. Statt ° und ′ geht ein Leerzeichen: −1 20 heißt −1°20′. Die Werkstatt vergleicht mit den Hersteller-Sollwerten im Messgerät; stehen sie auf dem Ausdruck, von dort übernehmen.' + srcRefs(AV_Q, [1]) + '</p></fieldset>' +
       '<fieldset class="av-f"><legend>Vorher</legend>' + mGrid('v') + '</fieldset>' +
       '<fieldset class="av-f"><legend>Nachher</legend>' + mGrid('n') + '<p class="help">Nur gemessen und nichts eingestellt? Dann nur „Vorher“ ausfüllen.</p></fieldset>' +
       blField(M ? M.fotos : [], 'z. B. der Ausdruck der Werkstatt.') +
