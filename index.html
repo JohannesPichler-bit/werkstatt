@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "38", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "39", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -2062,6 +2062,31 @@ button.pkb { cursor: pointer; border-radius: 28px; }
 .ga-anx { display: flex; flex-direction: column; gap: 8px; margin: 2px 0 8px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
 .ga-anx > b { font-size: 15px; }
 .ga-anx .help { margin: 0; }
+/* Fehlerspeicher */
+.fs-mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+input.fs-mono { text-transform: uppercase; }
+.fs-wie { color: var(--kaufen); font-weight: 700; }
+.fs-cl { list-style: none; margin: 0; padding: 0; }
+.fs-ci { border-top: 1px solid var(--line); }
+.fs-ci:first-child { border-top: 0; }
+.fs-ci summary { list-style: none; display: flex; flex-direction: column; gap: 3px; padding: 12px 0; cursor: pointer; }
+.fs-ci summary::-webkit-details-marker { display: none; }
+.fs-ci summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+.fs-ch { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.fs-ch b { font-size: 17px; }
+.fs-ch b::after { content: " ›"; font-family: var(--f-body); color: var(--muted); }
+.fs-ci details[open] .fs-ch b::after { content: " ⌄"; }
+.fs-cs { font-size: 14px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.fs-cb { display: flex; flex-direction: column; gap: 8px; padding: 0 0 14px; }
+.fs-cb .sb-h { margin-top: 4px; }
+.fs-f { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.fs-al { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.fs-al li { display: grid; grid-template-columns: 5.6em minmax(0, 1fr); gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.4; }
+.fs-al li:first-child { border-top: 0; }
+.fs-al li span { color: var(--muted); overflow-wrap: anywhere; }
+.fs-rg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; }
+.fs-kind { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.fs-kind.err { color: var(--kaufen); }
 </style>
 
 <div class="wrap">
@@ -2223,7 +2248,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), gaConf: null, gaArm: null, gaLastUri: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2633,6 +2658,11 @@ button.pkb { cursor: pointer; border-radius: 28px; }
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.rr = m;
         renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('fehlercodes').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.fc = m; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('achsdaten').onSnapshot(function (snap) {
         var m = new Map();
@@ -3960,6 +3990,12 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       sh.scrollTop = top;
     }
     else if (S.sheet.type === 'kosten') { setHTML(sh, sheetKosten()); sh.scrollTop = top; }
+    else if (S.sheet.type === 'fs' && S.cars.has(S.sheet.id)) {
+      var fod = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; }), fcl = $$('details[data-k]', sh).filter(function (d) { return !d.open; }).map(function (d) { return d.dataset.k; });
+      setHTML(sh, sheetFs(S.sheet.id));
+      $$('details[data-k]', sh).forEach(function (d) { if (fod.indexOf(d.dataset.k) >= 0) d.open = true; else if (fcl.indexOf(d.dataset.k) >= 0) d.open = false; });
+      sh.scrollTop = top;
+    }
     else if (S.sheet.type === 'av' && S.cars.has(S.sheet.id)) {
       var aod = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; }), acl = $$('details[data-k]', sh).filter(function (d) { return !d.open; }).map(function (d) { return d.dataset.k; });
       setHTML(sh, sheetAv(S.sheet.id, S.sheet.back));
@@ -4163,6 +4199,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       carWartSec(id, car) +
       reifenSec(id, car) +
       avSec(id, car) +
+      fsSec(id, car) +
       brSec(id, car) +
       ubSec(id, car) +
       rrSec(id, car) +
@@ -7573,6 +7610,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     if (p[0] === 'c') return blList(car.fotos);
     if (p[0] === 'pv') return pvPhotos(car, p[2]);
     if (p[0] === 'av') return avFotos(car, p[2]);
+    if (p[0] === 'fs') return fsFotos(car, p[2]);
     if (p[0] === 'w') { var w = arr(car.arbeiten).filter(function (x) { return x && x.id === p[2]; })[0]; return w ? blList(w.belege) : []; }
     return [];
   }
@@ -7682,6 +7720,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       if (p[0] === 'c') patch.fotos = drop(car.fotos);
       else if (p[0] === 'w') patch.arbeiten = arr(car.arbeiten).map(function (w) { return w && w.id === p[2] ? Object.assign({}, w, { belege: drop(w.belege) }) : w; });
       else if (p[0] === 'av') patch.achsvermessung = avDropPhoto(car, p[2], r.pfad);
+      else if (p[0] === 'fs') patch.fehlerspeicher = fsDropPhoto(car, p[2], r.pfad);
       else if (p[0] === 'pv') { pvFlush(); car = S.cars.get(carId) || car; patch.pickerlCheck = pvDropPhoto(car, p[2], r.pfad); }
       else return;
       setBusy(true);
@@ -12445,7 +12484,8 @@ button.pkb { cursor: pointer; border-radius: 28px; }
   var XR_KIND = {
     sb: { col: 'steckbrief', map: 'sb', t: 'Modell-Steckbrief', req: 'Recherchieren lassen', again: 'Neu recherchieren lassen', run: 'Steckbrief-Recherche läuft …' },
     mw: { col: 'markt', map: 'mw', t: 'Marktpreise', req: 'Angebote suchen lassen', again: 'Neu suchen lassen', run: 'Angebotssuche läuft …' },
-    ad: { col: 'achsdaten', map: 'ad', t: 'Sollwerte aus der Recherche', req: 'Sollwerte recherchieren lassen', again: 'Neu recherchieren lassen', run: 'Recherche der Sollwerte läuft …' }
+    ad: { col: 'achsdaten', map: 'ad', t: 'Sollwerte aus der Recherche', req: 'Sollwerte recherchieren lassen', again: 'Neu recherchieren lassen', run: 'Recherche der Sollwerte läuft …' },
+    fc: { col: 'fehlercodes', map: 'fc', t: 'Bedeutung der Codes', req: 'Bedeutung recherchieren lassen', again: 'Neu recherchieren lassen', run: 'Recherche der Codes läuft …' }
   };
   function xDoc(kind, carId) { var m = S[XR_KIND[kind].map], d = m && m.get(carId); return d && typeof d === 'object' ? d : null; }
   function xDone(d) { return !!(d && (d.fertig || d.recherchiertAm)); }
@@ -15259,6 +15299,289 @@ button.pkb { cursor: pointer; border-radius: 28px; }
     }
     return o;
   }
+  /* ---------- Fehlerspeicher-Protokoll (Version 39) ---------- */
+  var FS_Q = { quellen: [
+    { titel: 'Kfz-Meisterbetrieb Dietrich: OBD2-Fehlercodes, Liste und Bedeutung aller Code-Gruppen (15.05.2026, aktualisiert 16.10.2026)', url: 'https://kfz-dietrich.com/blog/obd2-fehlercodes-bedeutung-uebersicht-werkstatt/' }
+  ] };
+  var FS_ST = [['', '–'], ['aktiv', 'aktiv'], ['sporadisch', 'sporadisch'], ['passiv', 'passiv, gespeichert']];
+  var FS_STM = { aktiv: 'aktiv', sporadisch: 'sporadisch', passiv: 'passiv' };
+  function fsDoc(car) { var a = car && car.fehlerspeicher; return a && typeof a === 'object' && !Array.isArray(a) ? a : {}; }
+  function fsList(car) { return arr(fsDoc(car).auslesungen).filter(function (a) { return a && typeof a === 'object' && a.id && isDay(a.datum); }).sort(avSort); }
+  function fsNorm(c) { return String(c == null ? '' : c).toUpperCase().replace(/[^A-Z0-9\-]/g, '').slice(0, 12); }
+  function fsCodesOf(a) { return arr(a && a.codes).filter(function (x) { return x && typeof x === 'object' && fsNorm(x.c).length >= 2; }); }
+  function fsFotos(car, aid) { var a = fsList(car).filter(function (x) { return x.id === aid; })[0]; return a ? blList(a.fotos) : []; }
+  function fsDropPhoto(car, aid, pfad) {
+    var d = Object.assign({}, fsDoc(car));
+    d.auslesungen = arr(d.auslesungen).map(function (a) { return a && a.id === aid ? Object.assign({}, a, { fotos: blList(a.fotos).filter(function (r) { return r.pfad !== pfad; }) }) : a; });
+    return d;
+  }
+  /* Aufbau laut Kfz-Meisterbetrieb Dietrich: Buchstabe = System, erste Ziffer = wer den Code festgelegt hat */
+  function fsKind(c) {
+    var m = /^([PCBU])([0-3])([0-9A-F]{3})$/.exec(c);
+    if (!m) return null;
+    var d = m[2], gen = d === '0' ? true : d === '1' ? false : d === '2' ? m[1] === 'P' : m[1] === 'P' ? parseInt(m[3], 16) >= 0x400 : null;
+    return { sys: { P: 'Antrieb', C: 'Fahrwerk', B: 'Karosserie', U: 'Kommunikation' }[m[1]], gen: gen };
+  }
+  function fsKindTxt(c) {
+    var k = fsKind(c);
+    if (!k) return 'kein genormter OBD-Aufbau';
+    return k.sys + (k.gen === true ? ', genormter Code' : k.gen === false ? ', Code des Herstellers' : '');
+  }
+  /* Alle Codes eines Autos über alle Auslesungen: wie oft, seit wann, nach dem Löschen wieder da */
+  function fsAgg(car) {
+    var list = fsList(car), m = new Map(), last = list[list.length - 1];
+    list.forEach(function (a) {
+      var seen = {};
+      fsCodesOf(a).forEach(function (x) {
+        var c = fsNorm(x.c), e = m.get(c);
+        if (seen[c]) return;
+        seen[c] = true;
+        if (!e) { e = { c: c, t: '', n: 0, first: a.datum, last: a.datum, st: '', zurueck: false, cleared: false, ids: [] }; m.set(c, e); }
+        if (e.n && e.cleared) e.zurueck = true;
+        e.n++; e.last = a.datum; e.ids.push(a.id);
+        if (String(x.t || '').trim()) e.t = String(x.t).trim();
+        e.st = FS_STM[x.st] ? x.st : '';
+        e.cleared = a.geloescht === true;
+      });
+    });
+    var out = [];
+    m.forEach(function (e) { e.akt = !!last && e.ids.indexOf(last.id) >= 0; out.push(e); });
+    return out.sort(function (a, b) { return (b.akt - a.akt) || (b.n - a.n) || (a.c < b.c ? -1 : a.c > b.c ? 1 : 0); });
+  }
+  function fsRes(carId, c) { var d = xDoc('fc', carId), r = d && d.ergebnisse && typeof d.ergebnisse === 'object' ? d.ergebnisse[c] : null; return r && typeof r === 'object' ? r : null; }
+  function fsMean(r) { var b = r && r.bedeutung; return b && typeof b === 'object' && b.text ? b : null; }
+  /* ---------- Auto-Blatt ---------- */
+  function fsSec(id, car) {
+    if (car.archiviert) return '';
+    var can = canWrite(), list = fsList(car), last = list[list.length - 1], agg = fsAgg(car), wie = agg.filter(function (e) { return e.n > 1; });
+    var h = '<div class="sh-sec fs-sec"><div class="vhead"><h3 class="sec">Fehlerspeicher</h3>' + (can ? '<button type="button" class="linkbtn" data-act="fs-new" data-id="' + esc(id) + '">Auslesung eintragen</button>' : '') + '</div>';
+    if (!last) return h + '<p class="note">Noch keine Auslesung. Trag die Codes vom Diagnosegerät ein: Die App merkt sich, welche wiederkommen, und Claude sucht Bedeutung und übliche Ursachen bei diesem Modell, jeweils mit Quelle.</p></div>';
+    var codes = fsCodesOf(last).map(function (x) { return fsNorm(x.c); });
+    return h + '<button type="button" class="av-last" data-act="fs-open" data-id="' + esc(id) + '"><span class="av-lh"><b>' + esc(datum(last.datum) + (numOrNull(last.km) !== null ? ' · ' + nf.format(last.km) + ' km' : '')) + '</b>' +
+      '<span class="wst ' + (codes.length ? 'faellig' : 'ok') + '">' + esc(codes.length ? codes.length + (codes.length === 1 ? ' Code' : ' Codes') : 'kein Fehler') + '</span></span>' +
+      (codes.length ? '<span class="av-lr fs-mono">' + esc(codes.join(', ')) + '</span>' : '') +
+      (wie.length ? '<span class="av-ls fs-wie">' + esc('Wiederkehrend: ' + wie.slice(0, 3).map(function (e) { return e.c + ' (' + e.n + '-mal)'; }).join(', ') + (wie.length > 3 ? ' …' : '')) + '</span>' : '') +
+      '<span class="av-ln">' + esc(list.length > 1 ? 'Alle ' + list.length + ' Auslesungen und Bedeutung' : 'Codes und Bedeutung ansehen') + '</span></button></div>';
+  }
+  /* ---------- Übersicht ---------- */
+  function fsHead(carId, d, can, agg) {
+    var firing = S.xFiring && S.xFiring.kind === 'fc' && S.xFiring.car === carId, pending = xPending(d), neu = agg.filter(function (e) { return !fsRes(carId, e.c); }).length;
+    var lbl = !neu ? 'Neu recherchieren lassen' : neu === agg.length ? 'Bedeutung recherchieren lassen' : (neu === 1 ? '1 neuen Code' : neu + ' neue Codes') + ' recherchieren lassen';
+    var h = '<div class="vhead"><h3 class="sec">' + esc('Codes · ' + agg.length) + '</h3>' + (can && agg.length && !pending && !firing ? '<button type="button" class="linkbtn" data-act="fs-req" data-id="' + esc(carId) + '">' + esc(lbl) + '</button>' : '') + '</div>';
+    if (firing) h += '<p class="rstat run" role="status">Auftrag wird abgelegt …</p>';
+    else if (pending) {
+      var inq = arr(d.codes).filter(function (x) { return x && x.c; }), add = d.laeuft ? 0 : agg.filter(function (e) { return !fsRes(carId, e.c) && !inq.some(function (x) { return x.c === e.c; }); }).length;
+      h += '<p class="rstat run" role="status">' + esc(d.laeuft ? 'Recherche der Codes läuft …' : 'Auftrag abgelegt ' + fmtWhen(d.anfrage) + (inq.length ? ' (' + inq.map(function (x) { return x.c; }).join(', ') + ')' : '') + '. Claude recherchiert beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr).') + '</p>';
+      if (add && can && !firing) h += '<button type="button" class="linkbtn" data-act="fs-req" data-id="' + esc(carId) + '">' + esc((add === 1 ? 'Den neuen Code' : 'Die ' + add + ' neuen Codes') + ' dazunehmen') + '</button>';
+    }
+    else if (d && (d.anfrage || d.laeuft) && rrStale(d)) h += '<p class="note">' + esc(d.anfrage ? 'Der Auftrag von ' + fmtWhen(d.anfrage) + ' ist noch offen. Du kannst ihn neu anfordern.' : 'Die letzte Recherche ist nicht fertig geworden. Du kannst sie neu anfordern.') + '</p>';
+    else if (d && /^Fehler/.test(String(d.meldung || ''))) h += '<p class="note">' + esc('Letzte Recherche: ' + d.meldung) + '</p>';
+    if (S.xMsg && S.xMsg.kind === 'fc' && S.xMsg.car === carId) h += '<p class="rstat warn" role="status">' + esc(S.xMsg.text) + '</p>';
+    return h;
+  }
+  function fsXList(r, k) { return arr(r && r[k]).filter(function (x) { return x && (typeof x === 'string' || x.text); }); }
+  function fsCodeItem(carId, e, can) {
+    var r = fsRes(carId, e.c), B = fsMean(r), k = fsKind(e.c);
+    var chips = (e.n > 1 ? '<span class="wst faellig">' + esc(e.n + '-mal') + '</span>' : '') + (e.zurueck ? '<span class="wst faellig">nach dem Löschen wieder da</span>' : '') + (!e.akt ? '<span class="wst">' + esc('zuletzt ' + datum(e.last)) + '</span>' : '');
+    var h = '<li class="fs-ci"><details data-k="fsc-' + esc(e.c) + '"><summary><span class="fs-ch"><b class="fs-mono">' + esc(e.c) + '</b>' + chips + '</span>' +
+      '<span class="fs-cs">' + esc(B ? B.text : e.t || fsKindTxt(e.c)) + '</span></summary><div class="fs-cb">';
+    var facts = [e.t ? 'Am Gerät: ' + e.t : '', e.st ? 'Status zuletzt: ' + FS_STM[e.st] : '', e.n > 1 ? 'In ' + e.n + ' Auslesungen, zuerst am ' + datum(e.first) + ', zuletzt am ' + datum(e.last) + '.' : 'Ausgelesen am ' + datum(e.first) + '.'];
+    h += '<ul class="fs-f">' + facts.filter(Boolean).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') +
+      '<li>' + esc(k ? 'Aufbau: ' + fsKindTxt(e.c) + '.' : 'Kein genormter OBD-Aufbau (Buchstabe und vier Zeichen).') + (k ? srcRefs(FS_Q, [1]) : '') + '</li>' +
+      (e.zurueck ? '<li>' + esc('Der Code wurde gelöscht und ist danach wiedergekommen.') + '</li>' : '') + '</ul>';
+    if (r) {
+      if (B) h += '<h4 class="sb-h">Bedeutung</h4><p class="rtext">' + esc(B.text) + srcRefs(r, B.quelle) + '</p>';
+      [['ursachen', 'Übliche Ursachen bei diesem Modell'], ['pruefen', 'Prüfen'], ['hinweise', 'Hinweise']].forEach(function (p) {
+        var l = fsXList(r, p[0]);
+        if (l.length) h += '<h4 class="sb-h">' + esc(p[1]) + '</h4><ul class="sb-l">' + l.map(function (x) { return xLi(r, x); }).join('') + '</ul>';
+      });
+      if (!B && !fsXList(r, 'ursachen').length) h += '<p class="note">Für diesen Code wurde nichts Belegtes gefunden.</p>';
+      h += xQuellen(r) + (isDay(r.stand) ? '<p class="help">' + esc('Recherche von Claude, Stand ' + datum(r.stand) + '.') + '</p>' : '');
+    } else h += '<p class="note">Noch nicht recherchiert.</p>';
+    if (can) h += '<div class="sb-ex"><button type="button" class="btn ghost small" data-act="fs-plan" data-id="' + esc(carId) + '" data-c="' + esc(e.c) + '">Als Arbeit einplanen</button></div>';
+    return h + '</div></details></li>';
+  }
+  function fsItem(carId, a, open, can) {
+    var codes = fsCodesOf(a), fotos = blList(a.fotos);
+    return '<li class="av-it"><details data-k="fsa-' + esc(a.id) + '"' + (open ? ' open' : '') + '><summary><span class="av-lh"><b>' + esc(datum(a.datum) + (numOrNull(a.km) !== null ? ' · ' + nf.format(a.km) + ' km' : '')) + '</b>' +
+      '<span class="wst ' + (codes.length ? 'faellig' : 'ok') + '">' + esc(codes.length ? codes.length + (codes.length === 1 ? ' Code' : ' Codes') : 'kein Fehler') + '</span></span>' +
+      '<span class="av-ls">' + esc([a.geraet, a.geloescht ? 'danach gelöscht' : ''].filter(Boolean).join(' · ')) + '</span></summary><div class="av-b">' +
+      (codes.length ? '<ul class="fs-al">' + codes.map(function (x) { return '<li><b class="fs-mono">' + esc(fsNorm(x.c)) + '</b><span>' + esc([x.t, FS_STM[x.st] || ''].filter(Boolean).join(' · ')) + '</span></li>'; }).join('') + '</ul>' : '<p class="rtext">Kein Fehler gespeichert.</p>') +
+      (a.notiz ? '<p class="rtext">' + esc(a.notiz) + '</p>' : '') +
+      (BL && fotos.length ? '<div class="bl-s">' + fotos.map(function (r, i) { return blTile(r, 'fs:' + carId + ':' + a.id, i, false); }).join('') + '</div>' : '') +
+      (can ? '<div class="sb-ex"><button type="button" class="btn ghost small" data-act="fs-edit" data-id="' + esc(carId) + '" data-a="' + esc(a.id) + '">Bearbeiten</button></div>' : '') + '</div></details></li>';
+  }
+  function fsHelp() {
+    return '<details class="wp-more" data-k="fs-help"><summary>So sind die Codes aufgebaut</summary><ul class="sb-l">' +
+      '<li>' + esc('Ein OBD-Code hat fünf Zeichen. Der Buchstabe nennt das System: P Antrieb (Motor, Getriebe, Kraftstoff, Abgas), C Fahrwerk mit Bremsen und Lenkung, B Karosserie, U Kommunikation der vernetzten Systeme.') + srcRefs(FS_Q, [1]) + '</li>' +
+      '<li>' + esc('Die erste Ziffer sagt, wer den Code festgelegt hat: 0 ist weltweit genormt, 1 legt der Hersteller fest. 2 ist bei P-Codes genormt, bei B, C und U herstellereigen. Bei 3: P3000 bis P33FF herstellereigen, ab P3400 genormt.') + srcRefs(FS_Q, [1]) + '</li>' +
+      '<li>' + esc('Gezählt wird hexadezimal, ein Code wie P20EE ist also richtig.') + srcRefs(FS_Q, [1]) + '</li>' +
+      '<li>' + esc('Codes mit anderem Aufbau trägst du genauso ein; dann sucht die Recherche nur Quellen zu diesem Hersteller.') + '</li></ul></details>';
+  }
+  function sheetFs(carId) {
+    var car = S.cars.get(carId) || {}, can = canWrite(), list = fsList(car).slice().reverse(), agg = fsAgg(car), d = xDoc('fc', carId);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Fehlerspeicher</p><h2 class="sh-title" id="sheet-title">' + esc(car.name || 'Auto') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    if (can) h += '<div class="sh-btns"><button type="button" class="btn" data-act="fs-new" data-id="' + esc(carId) + '">Auslesung eintragen</button></div>';
+    h += '<div class="sh-sec fs-codes">' + fsHead(carId, d, can, agg) +
+      (agg.length ? '<ul class="fs-cl">' + agg.map(function (e) { return fsCodeItem(carId, e, can); }).join('') + '</ul>' : '<p class="note">In den Auslesungen steht kein Code.</p>') +
+      (agg.length && !d ? '<p class="help">Claude sucht je Code die Bedeutung, übliche Ursachen bei genau diesem Modell und sinnvolle Prüfschritte, jeweils mit Quelle.</p>' : '') + '</div>';
+    h += '<div class="sh-sec"><h3 class="sec">' + esc('Auslesungen · ' + list.length) + '</h3>' + (list.length ? '<ul class="av-ml">' + list.map(function (a, i) { return fsItem(carId, a, i === 0, can); }).join('') + '</ul>' : '<p class="note">Noch keine Auslesung eingetragen.</p>') + '</div>';
+    h += fsHelp();
+    h += '<p class="err" id="fs-err" role="alert"></p><div class="sh-foot"><button type="button" class="btn ghost" data-act="open-car" data-id="' + esc(carId) + '">Zum Auto</button></div>';
+    return h;
+  }
+  function openFs(carId) {
+    if (!S.cars.has(carId)) return;
+    openSheet('fs', { id: carId }, sheetFs(carId));
+    try { $('#sheet').focus({ preventScroll: true }); } catch (_) {}
+  }
+  /* ---------- Eintragen ---------- */
+  function fsRow(x, i) {
+    var st = FS_STM[x.st] ? x.st : '';
+    return '<div class="kvp fs-r" data-i="' + i + '"><div class="kvp-h"><span class="kvp-n">' + esc('Code ' + (i + 1)) + '</span><span class="kvp-s fs-kind" id="fc-k' + i + '"></span>' +
+      '<button type="button" class="kvp-x" data-act="fs-rm" data-i="' + i + '" aria-label="' + esc('Code ' + (i + 1) + ' entfernen') + '">×</button></div>' +
+      '<div class="fs-rg"><label class="f"><span>Code</span><input id="fc-c' + i + '" class="fs-mono" value="' + esc(x.c || '') + '" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="z. B. P0171"></label>' +
+      '<label class="f"><span>Status laut Gerät</span><select id="fc-s' + i + '">' + FS_ST.map(function (p) { return '<option value="' + p[0] + '"' + (p[0] === st ? ' selected' : '') + '>' + esc(p[1]) + '</option>'; }).join('') + '</select></label></div>' +
+      '<label class="f"><span>Text am Gerät <span class="muted">(optional)</span></span><input id="fc-t' + i + '" value="' + esc(x.t || '') + '" maxlength="120" autocomplete="off" placeholder="z. B. System zu mager, Bank 1"></label></div>';
+  }
+  function fsRead() {
+    return $$('#fsform .fs-r').map(function (row) {
+      var i = row.dataset.i, g = function (k) { var el = $('#fc-' + k + i); return el ? el.value.trim() : ''; };
+      return { raw: g('c'), c: fsNorm(g('c')), t: g('t').slice(0, 120), st: FS_STM[g('s')] ? g('s') : '' };
+    });
+  }
+  function fsLive() {
+    var l = fsRead(), seen = {};
+    l.forEach(function (x, i) {
+      var el = $('#fc-k' + i);
+      if (!el) return;
+      el.textContent = x.c.length >= 2 ? (seen[x.c] ? 'doppelt' : fsKindTxt(x.c)) : '';
+      el.classList.toggle('err', !!seen[x.c] && x.c.length >= 2);
+      if (x.c) seen[x.c] = true;
+    });
+  }
+  function fsRows(list) { var box = $('#fs-rows'); if (box) box.innerHTML = list.map(fsRow).join(''); fsLive(); }
+  function fsAdd() {
+    var l = fsRead();
+    l.push({ c: '', t: '', st: '' });
+    fsRows(l);
+    var el = $('#fc-c' + (l.length - 1));
+    if (el) { try { el.focus(); } catch (_) {} }
+  }
+  function fsRm(i) {
+    var l = fsRead();
+    l.splice(Number(i), 1);
+    if (!l.length) l.push({ c: '', t: '', st: '' });
+    fsRows(l);
+    var b = $('[data-act="fs-add"]');
+    if (b) { try { b.focus(); } catch (_) {} }
+  }
+  function openFsForm(carId, aid) {
+    var car = S.cars.get(carId);
+    if (!car) return;
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var list = fsList(car), A = aid ? list.filter(function (x) { return x.id === aid; })[0] : null;
+    if (aid && !A) return;
+    var prev = list[list.length - 1], today = dayKey(new Date()), ck = curKmEst(car), rows = A ? fsCodesOf(A).map(function (x) { return { c: fsNorm(x.c), t: x.t || '', st: x.st || '' }; }) : [];
+    if (!rows.length) rows = [{ c: '', t: '', st: '' }];
+    openSheet('fsform', { id: carId, aid: A ? A.id : null, bl: BL ? { keep: A ? blList(A.fotos) : [], pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Fehlerspeicher · ' + (car.name || 'Auto')) + '</p><h2 class="sh-title" id="sheet-title">' + (A ? 'Auslesung bearbeiten' : 'Auslesung eintragen') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="fsform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Ausgelesen am</span><input type="date" id="fs-d" value="' + esc(A ? A.datum : today) + '" max="' + today + '"></label>' +
+      '<label class="f"><span>Kilometerstand</span><input id="fs-km" inputmode="numeric" value="' + (A && numOrNull(A.km) !== null ? A.km : '') + '" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'optional') + '" autocomplete="off"></label></div>' +
+      '<label class="f"><span>Gerät oder App <span class="muted">(optional)</span></span><input id="fs-g" value="' + esc(A ? A.geraet || '' : prev && prev.geraet || '') + '" maxlength="60" autocomplete="off" placeholder="z. B. OBD-Stecker mit Handy-App"></label>' +
+      '<h3 class="sec">Codes</h3><p class="help">Je Code eine Zeile, so wie das Gerät ihn zeigt. Zeigt es keinen Fehler, die Zeile leer lassen.</p>' +
+      '<div id="fs-rows">' + rows.map(fsRow).join('') + '</div>' +
+      '<button type="button" class="linkbtn" data-act="fs-add">+ Code</button>' +
+      '<label class="check"><input type="checkbox" id="fs-del"' + (A && A.geloescht ? ' checked' : '') + '><span>Fehlerspeicher danach gelöscht</span></label>' +
+      '<p class="help">Kommt ein gelöschter Code bei der nächsten Auslesung wieder, zeigt die App das an.</p>' +
+      blField(A ? A.fotos : [], 'z. B. das Display des Diagnosegeräts.') +
+      '<label class="f"><span>Notiz</span><textarea id="fs-no" rows="2" maxlength="600" placeholder="z. B. Motorkontrollleuchte an, ruckelt im Leerlauf">' + esc(A && A.notiz || '') + '</textarea></label>' +
+      '<p class="err" id="fs-ferr" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="fs-cancel">Zurück</button></div></form>');
+    fsLive();
+  }
+  function fsInput(t) { if (!t || !S.sheet || S.sheet.type !== 'fsform' || !t.id || !/^fc-c\d+$/.test(t.id)) return false; fsLive(); return true; }
+  function fsCancel() {
+    var s = S.sheet;
+    if (!s || s.type !== 'fsform') return;
+    if (fsList(S.cars.get(s.id)).length) openFs(s.id); else openCar(s.id);
+  }
+  async function saveFs() {
+    var s = S.sheet;
+    if (!s || s.type !== 'fsform' || S.busy) return;
+    var car = S.cars.get(s.id), err = function (m) { var el = $('#fs-ferr'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!car) { err('Dieses Auto gibt es nicht mehr.'); return; }
+    var d = g('fs-d'), km = parseNum(g('fs-km')), today = dayKey(new Date());
+    if (!isDay(d) || d > today) { err('Bitte das Datum der Auslesung eintragen, nicht in der Zukunft.'); return; }
+    if (km !== null && (isNaN(km) || km < 0 || km > 3000000)) { err('Den Kilometerstand bitte als Zahl eintragen.'); return; }
+    var rows = fsRead(), codes = [], seen = {};
+    for (var i = 0; i < rows.length; i++) {
+      var x = rows[i];
+      if (!x.raw && !x.t) continue;
+      if (x.c.length < 2) { err('Code ' + (i + 1) + ': Bitte den Code eintragen, z. B. P0171.'); var f = $('#fc-c' + i); if (f) { try { f.focus(); } catch (_) {} } return; }
+      if (seen[x.c]) continue;
+      seen[x.c] = true;
+      codes.push({ c: x.c, t: x.t || null, st: x.st || null });
+    }
+    var old = s.aid ? fsList(car).filter(function (a) { return a.id === s.aid; })[0] : null, now = new Date().toISOString();
+    var A = Object.assign({}, old || { id: rid(10), erstellt: now }, { datum: d, km: km === null ? null : Math.round(km), geraet: g('fs-g').slice(0, 60) || null, codes: codes,
+      geloescht: !!(($('#fs-del') || {}).checked), notiz: g('fs-no').slice(0, 600) || null, geaendert: now });
+    setBusy(true);
+    try {
+      var fotos = BL && s.bl ? await blCommitForm(s.id, 'Fehlerspeicher') : null;
+      if (fotos) A.fotos = fotos;
+      car = S.cars.get(s.id) || car;
+      var list = fsList(car).filter(function (a) { return a.id !== A.id; }).concat([A]).sort(avSort).slice(-60);
+      var patch = { fehlerspeicher: Object.assign({}, fsDoc(car), { auslesungen: list }), geaendert: now };
+      if (A.km !== null && (numOrNull(car.km) === null || A.km >= num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) { patch.km = A.km; patch.kmDatum = d; patch.kmLog = kmLogWith(car, d, A.km); }
+      await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
+      S.cars.set(s.id, Object.assign({}, car, patch));
+      setBusy(false);
+      openFs(s.id);
+      renderAll();
+      var nc = Object.assign({}, car, patch), back = fsAgg(nc).filter(function (e) { return e.akt && e.zurueck; });
+      toast(!codes.length ? 'Gespeichert: kein Fehler.' : back.length ? 'Gespeichert. Nach dem Löschen wieder da: ' + back.map(function (e) { return e.c; }).join(', ') + '.' : 'Gespeichert: ' + codes.length + (codes.length === 1 ? ' Code.' : ' Codes.'));
+    } catch (e) { writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Recherche der Bedeutung beim geplanten Lauf: fehlercodes/<auto>.json, Ergebnisse je Code */
+  async function fsRequest(carId) {
+    if (!canWrite() || S.busy || S.xFiring) return;
+    var car = S.cars.get(carId);
+    if (!car) return;
+    var d = xDoc('fc', carId), agg = fsAgg(car), neu = agg.filter(function (e) { return !fsRes(carId, e.c); }), addTo = xPending(d) && !d.laeuft, codes;
+    if (addTo) {
+      var have = arr(d.codes).filter(function (x) { return x && x.c; });
+      codes = have.concat(neu.filter(function (e) { return !have.some(function (x) { return x.c === e.c; }); }).map(function (e) { return { c: e.c, t: e.t || null }; })).slice(0, 12);
+      if (codes.length === have.length) return;
+    } else codes = (neu.length ? neu : agg).slice(0, 12).map(function (e) { return { c: e.c, t: e.t || null }; });
+    if (!codes.length) return;
+    var now = new Date().toISOString(), fuer = { name: car.name || null, baujahr: numOrNull(car.baujahr), erstzulassung: car.erstzulassung || null, kraftstoff: car.kraftstoff || null, leistungPs: numOrNull(car.leistungPs), hubraum: car.hubraum || null };
+    S.xFiring = { kind: 'fc', car: carId }; S.xMsg = null; refreshSheet();
+    try {
+      var anf = addTo ? d.anfrage : now;
+      await write(function () { var ref = S.db.doc('fehlercodes/' + carId); return d ? ref.update({ anfrage: anf, fuer: fuer, codes: codes, laeuft: false }) : ref.set({ fahrzeug: carId, anfrage: anf, fuer: fuer, codes: codes, laeuft: false }); });
+      S.fc.set(carId, Object.assign({}, d || { fahrzeug: carId }, { anfrage: anf, fuer: fuer, codes: codes, laeuft: false }));
+    } catch (e) {
+      S.xFiring = null;
+      writeError(e, function (m) { S.xMsg = { kind: 'fc', car: carId, text: m }; });
+      refreshSheet();
+      return;
+    }
+    S.xFiring = null;
+    toast(addTo ? 'Zum Auftrag dazugenommen, jetzt ' + codes.length + ' Codes.' : 'Auftrag abgelegt: ' + codes.length + (codes.length === 1 ? ' Code' : ' Codes') + '. Claude recherchiert beim nächsten geplanten Lauf.');
+    refreshSheet(); renderAll();
+  }
+  function fsPlan(carId, c) {
+    var car = S.cars.get(carId), e = car ? fsAgg(car).filter(function (x) { return x.c === c; })[0] : null;
+    if (!e) return;
+    var B = fsMean(fsRes(carId, c));
+    openRepForm(null, { fahrzeug: carId, titel: ('Fehlercode ' + c + (e.t ? ': ' + e.t : '')).slice(0, 80),
+      notiz: ('Aus dem Fehlerspeicher: ' + c + (B ? ', ' + B.text : '') + '. ' + (e.n > 1 ? e.n + '-mal ausgelesen, zuerst am ' + datum(e.first) + '.' : 'Ausgelesen am ' + datum(e.first) + '.') + (e.zurueck ? ' Nach dem Löschen wiedergekommen.' : '')).slice(0, 500) });
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -15648,6 +15971,14 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       case 'gare-paid': gaRePaid(t.dataset.id); break;
       case 'gare-back': openGa(t.dataset.id, 'start'); break;
       case 'gare-add': gaReAdd(t.dataset.w); break;
+      case 'fs-open': openFs(t.dataset.id); break;
+      case 'fs-new': openFsForm(t.dataset.id, null); break;
+      case 'fs-edit': openFsForm(t.dataset.id, t.dataset.a); break;
+      case 'fs-cancel': fsCancel(); break;
+      case 'fs-add': fsAdd(); break;
+      case 'fs-rm': fsRm(t.dataset.i); break;
+      case 'fs-req': fsRequest(t.dataset.id); break;
+      case 'fs-plan': fsPlan(t.dataset.id, t.dataset.c); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
@@ -15821,6 +16152,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       else if (e.target.id === 'vmform') { e.preventDefault(); saveVmPdf(); }
       else if (e.target.id === 'rkform') { e.preventDefault(); saveRk(); }
       else if (e.target.id === 'avform') { e.preventDefault(); saveAv(); }
+      else if (e.target.id === 'fsform') { e.preventDefault(); saveFs(); }
       else if (e.target.id === 'keein') { e.preventDefault(); saveKeEin(); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
@@ -15841,6 +16173,7 @@ button.pkb { cursor: pointer; border-radius: 28px; }
       if (reInput(e.target)) return;
       if (rkInput(e.target)) return;
       if (avInput(e.target)) return;
+      if (fsInput(e.target)) return;
       if (wpTippsInput(e.target)) return;
       if (gaInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
