@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "41", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "42", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -2105,6 +2105,30 @@ input.fs-mono { text-transform: uppercase; }
 /* Gutachten in die Oldtimer-Datenbank */
 .odb-sec .kva-act a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .odb-sec .rtext, .odb-sec .note, .odb-sec .help { margin: 0; }
+/* Betrieb: Arbeitsstoffe, Lagerung, Geräte mit Prüfbuch, Abfallbuch */
+.pill-stoff { background: var(--ro-soft); color: var(--ro-text); }
+.bt-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+.bt-top .help { margin: 8px 0 0; }
+.bt-raum { margin-top: 6px; }
+.bt-raum .sb-h { margin-bottom: 4px; }
+.bt-t th small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; white-space: normal; }
+.bt-t td.bt-bad { color: var(--kaufen); font-weight: 700; }
+.bt-raum .rstat, .bt-raum .note, .bt-raum .help { margin: 6px 0 0; }
+.bt-kg { font-variant-numeric: tabular-nums; font-size: 14px; white-space: nowrap; }
+.bt-st { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.bt-st .rtext { margin: 0; }
+.bt-dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 12px; margin: 10px 0 0; font-size: 14px; }
+.bt-dl dt { color: var(--muted); }
+.bt-dl dd { margin: 0; overflow-wrap: anywhere; }
+.bt-pr { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.bt-pr > li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.bt-prh { display: flex; align-items: baseline; gap: 8px; }
+.bt-prs { font-size: 13px; color: var(--muted); }
+.bt-pr .rtext { margin: 0; }
+.bt-pr .bl-s { margin-top: 2px; }
+.bt-storno .i-n { text-decoration: line-through; text-decoration-thickness: 1px; }
+.bt-years .btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.bt-gef { align-self: end; padding-bottom: 12px; }
 </style>
 
 <div class="wrap">
@@ -2147,7 +2171,7 @@ input.fs-mono { text-transform: uppercase; }
       <div class="filters" id="filters"></div>
     </div>
     <div class="groups" id="items"></div>
-    <div class="listfoot"><span id="count"></span><span class="lf-a"><button type="button" class="linkbtn" data-act="einkauf">Einkaufsliste</button><button type="button" class="linkbtn" data-act="csv" id="csvbtn" hidden>Bestand als CSV speichern</button></span></div>
+    <div class="listfoot"><span id="count"></span><span class="lf-a"><button type="button" class="linkbtn" data-act="bt-open">Arbeitsstoffe</button><button type="button" class="linkbtn" data-act="einkauf">Einkaufsliste</button><button type="button" class="linkbtn" data-act="csv" id="csvbtn" hidden>Bestand als CSV speichern</button></span></div>
   </section>
 
   <section class="view" id="view-karte" aria-label="Karte" hidden>
@@ -2166,7 +2190,7 @@ input.fs-mono { text-transform: uppercase; }
 
   <section class="view" id="view-autos" aria-label="Autos" hidden>
     <div class="vhead"><h2 class="sec">Autos und ihre Teile</h2><button type="button" class="linkbtn" data-act="car-new">+ Auto anlegen</button></div>
-    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="ka-open">Kosten</button><button type="button" class="btn ghost small" data-act="rk-open">Rad-Reifen-Rechner</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button></div>
+    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="ka-open">Kosten</button><button type="button" class="btn ghost small" data-act="rk-open">Rad-Reifen-Rechner</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button><button type="button" class="btn ghost small" data-act="bt-open">Betrieb</button></div>
     <ul class="cars" id="cars"></ul>
     <p class="hint">Jedes Auto bekommt ein eigenes Fach im Regal: auf der Karte das Fach antippen, „Fach einstellen“ und das Auto wählen. Im Auto trägst du Kaufpreis und erledigte Arbeiten ein, Einbauteile brauchen Kaufdatum und Preis. Der Wartungsplan im Auto zeigt, welche Wechsel fällig sind, und typische Probleme je km-Stand. Der Zeitplan sammelt die Termine aller Autos für die nächsten 12 Monate.</p>
   </section>
@@ -2266,7 +2290,7 @@ input.fs-mono { text-transform: uppercase; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), odb: new Map(), gaConf: null, gaArm: null, gaLastUri: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), odb: new Map(), gr: new Map(), abf: new Map(), btConf: null, gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2656,14 +2680,14 @@ input.fs-mono { text-transform: uppercase; }
         renderAll(); refreshSheet();
       }, function () { S.repsReady = true; renderAll(); });
       S.db.collection('meta').onSnapshot(function (snap) {
-        var m = null, e = null, ri = null, kl = null, kv = null, gk = null;
+        var m = null, e = null, ri = null, kl = null, kv = null, gk = null, bt = null;
         snap.docs.forEach(function (d) {
           if (!d.exists) return;
           var v = d.data();
           if (!v || typeof v !== 'object') return;
-          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v; else if (d.id === 'gutachten') gk = v;
+          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v; else if (d.id === 'gutachten') gk = v; else if (d.id === 'betrieb') bt = v;
         });
-        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.gaConf = gk; S.metaReady = true; renderAll(); refreshSheet();
+        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.gaConf = gk; S.btConf = bt; S.metaReady = true; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('wartung').onSnapshot(function (snap) {
         var m = new Map();
@@ -2676,6 +2700,16 @@ input.fs-mono { text-transform: uppercase; }
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.rr = m;
         renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('geraete').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.gr = m; renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('abfall').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.abf = m; refreshSheet();
       }, function () {});
       S.db.collection('odb').onSnapshot(function (snap) {
         var m = new Map();
@@ -4012,6 +4046,7 @@ input.fs-mono { text-transform: uppercase; }
       $$('details[data-k]', sh).forEach(function (d) { if (od.indexOf(d.dataset.k) >= 0) d.open = true; });
       sh.scrollTop = top;
     }
+    else if (S.sheet.type === 'betrieb' || S.sheet.type === 'geraet' || S.sheet.type === 'abfall') btRefresh(sh, top);
     else if (S.sheet.type === 'kosten') { setHTML(sh, sheetKosten()); sh.scrollTop = top; }
     else if (S.sheet.type === 'fs' && S.cars.has(S.sheet.id)) {
       var fod = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; }), fcl = $$('details[data-k]', sh).filter(function (d) { return !d.open; }).map(function (d) { return d.dataset.k; });
@@ -5599,6 +5634,7 @@ input.fs-mono { text-transform: uppercase; }
     var fl = fluidUsesText(it);
     if (fl) h += '<div class="xrow"><span class="pill pill-fluid">Betriebsstoff</span><span>' + esc(fl) + '</span></div>';
     h += useExtra(id, it);
+    h += stItemExtra(id, it);
     return h;
   }
   /* Verleihen */
@@ -5934,14 +5970,15 @@ input.fs-mono { text-transform: uppercase; }
       e.now = now; e.d = now ? today : r.faellig;
       ev.push(e);
     });
+    btEvents(today, until).forEach(function (x) { ev.push(x); });
     var byDate = function (a, b) { return (a.d < b.d ? -1 : a.d > b.d ? 1 : 0) || coll.compare(a.carName, b.carName) || coll.compare(String(a.title), String(b.title)); };
     ev.sort(function (a, b) { return (a.now === b.now ? 0 : a.now ? -1 : 1) || byDate(a, b); });
     ohne.sort(function (a, b) { return coll.compare(a.carName, b.carName) || coll.compare(String(a.title), String(b.title)); });
     return { ev: ev, ohne: ohne, offen: offen, noPk: noPk, until: until, missingKm: activeCars().filter(function (p) { return !p[1].fremd && numOrNull(p[1].km) === null; }) };
   }
-  var ZP_KIND = { wart: 'Wartung', pickerl: 'Pickerl', rep: 'Arbeit', reifen: 'Reifen', ub: 'Unterboden', wp: 'Winterpause' };
+  var ZP_KIND = { wart: 'Wartung', pickerl: 'Pickerl', rep: 'Arbeit', reifen: 'Reifen', ub: 'Unterboden', wp: 'Winterpause', pruef: 'Prüfung' };
   function zpSub(e) {
-    if (e.kind === 'ub' || e.kind === 'wp') return e.info || '';
+    if (e.kind === 'ub' || e.kind === 'wp' || e.kind === 'pruef') return e.info || '';
     if (e.kind === 'reifen') return e.auf === 'winter' ? 'Winterreifenpflicht bei Schnee, Schneematsch oder Eis vom 1.11. bis 15.4.' : 'Die Winterreifenpflicht endet am 15.4.';
     if (e.kind === 'wart') return (shortNext(e.r) || 'laut Wartungsplan') + (e.est ? ' · Termin geschätzt aus deiner Fahrleistung' : '') + (e.plan ? ' · schon eingeplant' : '');
     if (e.kind === 'pickerl') return 'fällig ' + ymTxt(e.pk.due) + (e.pk.neu ? ', möglich ab ' + ymTxt(e.pk.from) : ', möglich bis ' + ymTxt(e.pk.to));
@@ -5962,6 +5999,9 @@ input.fs-mono { text-transform: uppercase; }
     } else if (e.kind === 'ub') {
       act = 'data-act="ub-new" data-id="' + esc(e.car) + '" data-typ="' + (e.sub === 'pruef' ? 'pruefung' : 'behandlung') + '" data-back="zeitplan"';
       chip = '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Unterboden</span>';
+    } else if (e.kind === 'pruef') {
+      act = btZpAct(e);
+      chip = btZpChip(e);
     } else if (e.kind === 'wp') {
       act = 'data-act="wp-open" data-id="' + esc(e.car) + '" data-back="zeitplan"';
       chip = '<span class="wst ' + (e.now ? (e.sub === 'laden' ? 'faellig' : 'bald') : 'plan') + '">' + (e.sub === 'laden' ? 'Batterie' : 'Winterpause') + '</span>';
@@ -5974,7 +6014,7 @@ input.fs-mono { text-transform: uppercase; }
   function sheetZeitplan() {
     var d = zeitplanData(), can = canWrite(), h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Arbeitsplanung · alle Autos</p>' +
       '<h2 class="sh-title" id="sheet-title">Zeitplan: 12 Monate</h2>' +
-      '<p class="buy">' + esc('Wartung, Pickerl, Reifenwechsel, Unterboden, Winterpause und anstehende Arbeiten bis ' + ymLong(ymAdd(d.until, -1)) + ', nach Monat sortiert.') + '</p></div>' +
+      '<p class="buy">' + esc('Wartung, Pickerl, Reifenwechsel, Unterboden, Winterpause, Prüfungen und anstehende Arbeiten bis ' + ymLong(ymAdd(d.until, -1)) + ', nach Monat sortiert.') + '</p></div>' +
       '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
     var now = d.ev.filter(function (e) { return e.now; }), later = d.ev.filter(function (e) { return !e.now; });
     if (now.length) h += zpMonth('jetzt', 'Jetzt fällig', now);
@@ -6604,9 +6644,9 @@ input.fs-mono { text-transform: uppercase; }
     if (!list.length) return '';
     return '<div class="vhead"><h2 class="sec">Als Nächstes</h2><button type="button" class="linkbtn" data-act="zeitplan">Zeitplan</button></div><ul class="nu">' + list.map(function (e) {
       var car = S.cars.get(e.car), bar = e.kind === 'wart' && car ? wbarHtml(e.r, car, true) : '';
-      var chip = e.kind === 'wart' ? wstHtml(e.r) : e.kind === 'pickerl' ? pkChip(e.pk) : e.kind === 'reifen' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Reifen</span>' : e.kind === 'ub' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Unterboden</span>' : e.kind === 'wp' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">' + (e.sub === 'laden' ? 'Batterie' : 'Winterpause') + '</span>' : '<span class="wst plan">Arbeit</span>';
-      var act = e.kind === 'wp' ? 'data-act="wp-open" data-id="' + esc(e.car) + '"' : e.kind === 'ub' ? 'data-act="ub-new" data-id="' + esc(e.car) + '" data-typ="' + (e.sub === 'pruef' ? 'pruefung' : 'behandlung') + '"' : e.kind === 'reifen' ? 'data-act="reifen-wechsel" data-id="' + esc(e.car) + '"' : e.kind === 'rep' ? 'data-act="open-rep" data-id="' + esc(e.id) + '"' : e.kind === 'wart' && e.plan && S.reps.has(e.plan) ? 'data-act="open-rep" data-id="' + esc(e.plan) + '"' : 'data-act="wart-open" data-id="' + esc(e.car) + '"';
-      var lv = e.kind === 'reifen' || e.kind === 'ub' || e.kind === 'wp' ? (e.now ? 'bald' : 'plan') : e.now || (e.kind === 'wart' && (e.r.over || e.r.status === 'faellig')) || (e.kind === 'pickerl' && (e.pk.status === 'faellig' || e.pk.status === 'ueber')) ? 'faellig'
+      var chip = e.kind === 'pruef' ? btZpChip(e) : e.kind === 'wart' ? wstHtml(e.r) : e.kind === 'pickerl' ? pkChip(e.pk) : e.kind === 'reifen' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Reifen</span>' : e.kind === 'ub' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">Unterboden</span>' : e.kind === 'wp' ? '<span class="wst ' + (e.now ? 'bald' : 'plan') + '">' + (e.sub === 'laden' ? 'Batterie' : 'Winterpause') + '</span>' : '<span class="wst plan">Arbeit</span>';
+      var act = e.kind === 'pruef' ? btZpAct(e) : e.kind === 'wp' ? 'data-act="wp-open" data-id="' + esc(e.car) + '"' : e.kind === 'ub' ? 'data-act="ub-new" data-id="' + esc(e.car) + '" data-typ="' + (e.sub === 'pruef' ? 'pruefung' : 'behandlung') + '"' : e.kind === 'reifen' ? 'data-act="reifen-wechsel" data-id="' + esc(e.car) + '"' : e.kind === 'rep' ? 'data-act="open-rep" data-id="' + esc(e.id) + '"' : e.kind === 'wart' && e.plan && S.reps.has(e.plan) ? 'data-act="open-rep" data-id="' + esc(e.plan) + '"' : 'data-act="wart-open" data-id="' + esc(e.car) + '"';
+      var lv = e.kind === 'pruef' ? (e.now ? 'faellig' : 'plan') : e.kind === 'reifen' || e.kind === 'ub' || e.kind === 'wp' ? (e.now ? 'bald' : 'plan') : e.now || (e.kind === 'wart' && (e.r.over || e.r.status === 'faellig')) || (e.kind === 'pickerl' && (e.pk.status === 'faellig' || e.pk.status === 'ueber')) ? 'faellig'
         : (e.kind === 'wart' && e.r.status === 'bald') || (e.kind === 'pickerl' && e.pk.status === 'bald') ? 'bald' : e.kind === 'rep' ? 'plan' : 'ok';
       return '<li><button type="button" class="nu-b lvl-' + lv + '" ' + act + '><span class="nu-t"><span class="nu-c">' + esc(e.carName) + '</span>' + chip + '</span>' +
         '<span class="nu-n">' + esc(e.title) + '</span>' + bar + '<span class="nu-x">' + esc(zpSub(e)) + '</span></button></li>';
@@ -7146,7 +7186,7 @@ input.fs-mono { text-transform: uppercase; }
   function erinnerungenData() {
     var monEnd = function (d) { return addDays(addMonths(d.slice(0, 7) + '-01', 1), -1); };
     return zeitplanData().ev.map(function (e) {
-      var key = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : e.kind === 'reifen' ? 'reifen-' + e.car + '-' + e.auf : e.kind === 'ub' ? 'ub-' + e.car + '-' + e.sub : e.kind === 'wp' ? 'wp-' + e.car + '-' + e.sub : 'rep-' + e.id;
+      var key = e.kind === 'wart' ? 'wart-' + e.car + '-' + e.r.p.id : e.kind === 'pickerl' ? 'pickerl-' + e.car : e.kind === 'reifen' ? 'reifen-' + e.car + '-' + e.auf : e.kind === 'ub' ? 'ub-' + e.car + '-' + e.sub : e.kind === 'wp' ? 'wp-' + e.car + '-' + e.sub : e.kind === 'pruef' ? 'pruef-' + e.id + '-' + e.sub : 'rep-' + e.id;
       /* Datum für die 14-Tage-Grenze. Geschätzte Termine nur auf den Monat genau, sonst ändert sich die Datei jeden Tag.
          Arbeiten mit „bis Monat/Jahr“ zählen bis zum Ende des Monats bzw. Jahres. */
       var datum = e.now ? null : e.est ? e.d.slice(0, 7) + '-01'
@@ -7483,7 +7523,7 @@ input.fs-mono { text-transform: uppercase; }
   }
   async function blUpload(carId, p, label) {
     var path = 'belege/' + blSafe(carId) + '/' + dayKey(new Date()) + '-' + rid(8) + '.' + p.ext;
-    var msg = ('App: ' + (p.typ === 'pdf' ? 'PDF' : 'Foto') + ' · ' + carName(carId) + (label ? ' · ' + label : '')).slice(0, 180);
+    var msg = ('App: ' + (p.typ === 'pdf' ? 'PDF' : 'Foto') + ' · ' + (carId === 'betrieb' ? 'Betrieb' : carName(carId)) + (label ? ' · ' + label : '')).slice(0, 180);
     var r = await track(function () { return BL.put(path, p.blob, msg); });
     var ref = { id: rid(8), pfad: r.pfad, sha: r.sha || null, typ: p.typ, bytes: r.bytes || p.blob.size, name: p.name, am: new Date().toISOString() };
     if (p.w) { ref.w = p.w; ref.h = p.h; }
@@ -7631,6 +7671,8 @@ input.fs-mono { text-transform: uppercase; }
     if (String(ctx).indexOf('ga:') === 0) return gaCtxList(ctx);
     if (String(ctx).indexOf('z:') === 0) return ubZoneFormList(String(ctx).slice(2));
     if (String(ctx).indexOf('uz:') === 0) { var uq = String(ctx).split(':'); return ubZonePhotos(uq[1], uq[2]).map(function (x) { return x.r; }); }
+    var btl = btCtxList(ctx);
+    if (btl) return btl;
     var p = String(ctx || '').split(':'), car = S.cars.get(p[1]);
     if (!car) return [];
     if (p[0] === 'c') return blList(car.fotos);
@@ -16070,6 +16112,859 @@ input.fs-mono { text-transform: uppercase; }
     gaRerender();
     toast('Auftrag abgelegt. Claude überträgt das Gutachten beim nächsten geplanten Lauf nach Notion.');
   }
+  /* ---------- Betrieb (Version 42): Arbeitsstoffe und Lagerung, Maschinen mit Prüfbuch, Abfallbuch, Beilagen für die Einreichung ---------- */
+  var BT_Q = { quellen: [
+    { titel: 'WKO OÖ / Land OÖ: Ansuchen um Erteilung der Betriebsanlagengenehmigung, Hinweise und Ausfüllhilfe (Stand März 2018)', url: 'https://www.wko.at/ooe/umwelt-energie/einreichunterlagen-ausfuellhilfen-004-.pdf' },
+    { titel: 'VbF 2023 § 33: Oberirdische Lagerung, Lagermengen (Fassung BGBl. II Nr. 141/2024)', url: 'https://www.forum-media.at/arbeitssicherheit/Vorschriften/Verordnung-ueber-brennbare-Fluessigkeiten-2023/5.-Abschnitt/33.-Oberirdische-Lagerung-Lagermengen' },
+    { titel: 'VbF 2023 § 3: Brennbare Flüssigkeiten, Gefahrenkategorien', url: 'https://www.forum-media.at/arbeitssicherheit/Vorschriften/Verordnung-ueber-brennbare-Fluessigkeiten-2023/1.-Abschnitt/3.-Brennbare-Fluessigkeiten' },
+    { titel: 'VbF 2023 § 1: Geltungsbereich (Aerosole ausgenommen, Abs. 7)', url: 'https://www.forum-media.at/arbeitssicherheit/Vorschriften/Verordnung-ueber-brennbare-Fluessigkeiten-2023/1.-Abschnitt/1.-Allgemeines' },
+    { titel: 'AUVA: Prüfpflichten, allgemeine Einstufung (Stand 2.3.2026)', url: 'https://auva.at/media/csuffzp3/kw07_pruefpflichten-allgemeinpluseinstufung_stand_2026_03_02.pdf' },
+    { titel: 'USP: Abfall – Aufzeichnungspflicht (aktualisiert 1.1.2026)', url: 'https://www.usp.gv.at/themen/betrieb-und-umwelt/abfallrecht/weitere-informationen-abfallrecht/abfallerzeugung/aufzeichnungspflicht.html' },
+    { titel: 'WKO: Abfallwirtschaftskonzept für Servicestationen (Stand Jänner 2022)', url: 'https://www.wko.at/oe/abfall/awk-servicestationen.pdf' }
+  ] };
+  /* Gefahrenkategorien nach § 3 VbF 2023; die Bezeichnungen entsprechen den Gefahrenhinweisen H224, H225, H226 */
+  var ST_KAT = {
+    '1': { n: 'Kategorie 1', z: 'extrem entzündbar', h: 'H224' },
+    '2': { n: 'Kategorie 2', z: 'leicht entzündbar', h: 'H225' },
+    '3': { n: 'Kategorie 3', z: 'entzündbar', h: 'H226' },
+    '4': { n: 'Kategorie 4', z: 'Gasöl, Petroleum', h: '' }
+  };
+  var ST_AGG = { fluessig: 'flüssig', pastoes: 'pastös', fest: 'fest', aerosol: 'Spraydose (Aerosol)', gas: 'gasförmig' };
+  /* § 33 Abs. 1 VbF 2023, Liter: Z 1 Arbeitsräume bis 500 m² außerhalb von Sicherheitsschränken (ohne bzw. mit Kategorie 1), Z 2 Sicherheitsschränke */
+  var ST_MAX = { ohne1: { '2': 100, '3': 600, '4': 1000 }, mit1: { '1': 10, '2': 50, '3': 300, '4': 500 }, schrank: { '1': 50, '2': 500, '3': 2500, '4': 5000 } };
+  /* § 33 Abs. 2 bis 4: größter Nenninhalt je Gebinde außerhalb von Sicherheitsschränken */
+  var ST_GEB = { '1': 2.5, '2': 10, '3': 25 };
+  var ST_RE = /spray|dose|wachs|fett|reiniger|verd[uü]nn|l[oö]semittel|lack|[oö]l\b|[oö]le\b|schutz|kleber|dicht|konserv|bitumen|benzin|diesel|frostschutz|k[uü]hlmittel|bremsfl/i;
+  function stOf(it) { var s = it && it.stoff; return s && typeof s === 'object' && s.aktiv !== false ? s : null; }
+  function stHList(s) { return String((s && s.h) || '').toUpperCase().match(/(?:EUH|H)\d{3}[A-Z]{0,2}/g) || []; }
+  function stAero(s) { return !!s && s.aggregat === 'aerosol'; }
+  function stKat(s) {
+    if (!s || stAero(s) || s.aggregat === 'fest' || s.aggregat === 'gas') return null;
+    if (ST_KAT[s.kat]) return s.kat;
+    if (s.kat === '0') return null;
+    var h = stHList(s);
+    return h.indexOf('H224') >= 0 ? '1' : h.indexOf('H225') >= 0 ? '2' : h.indexOf('H226') >= 0 ? '3' : null;
+  }
+  function stLiterIn(it, n) { if (unitOf(it) === 'l') return n; var inh = numOrNull(it.inhalt); return inh === null ? null : n * inh; }
+  function stItems() {
+    var out = [];
+    S.items.forEach(function (it, id) { if (it && !it.archiviert && it.bereich === 'verbrauch' && stOf(it)) out.push([id, it]); });
+    return out.sort(function (a, b) { return coll.compare(itemName(a[1]), itemName(b[1])); });
+  }
+  function btConf() {
+    var c = S.btConf && typeof S.btConf === 'object' ? S.btConf : {}, r = c.raum && typeof c.raum === 'object' ? c.raum : {};
+    return { raum: { wb: String(r.wb || '').trim().slice(0, 40) || 'Halle', ro: String(r.ro || '').trim().slice(0, 40) || 'Halle' } };
+  }
+  function stOrte(it) { var o = []; if (num(it.wb) > 0) o.push(lagerName('wb')); if (num(it.ro) > 0) o.push(lagerName('ro')); return o; }
+  function stMengeTxt(it) {
+    var n = round3(num(it.wb) + num(it.ro)), e = unitOf(it), l = stLiterIn(it, n);
+    return fmt(n) + ' ' + e + (e !== 'l' && l !== null && n > 0 ? ' (' + nf.format(round2(l)) + ' l)' : '');
+  }
+  function stLTxt(l) { return l > 0 ? nf.format(round2(l)) + ' l' : '–'; }
+  function stKatTxt(s) { var k = stKat(s); return k ? ST_KAT[k].n + ' (' + ST_KAT[k].z + ')' : stAero(s) ? 'Spraydose, nicht von der VbF erfasst' : 'keine brennbare Flüssigkeit laut Angaben'; }
+  /* Mengen je Raum: außerhalb und in Sicherheitsschränken, Spraydosen getrennt */
+  function stLagerung() {
+    var c = btConf(), rooms = {}, order = [];
+    var room = function (name) {
+      if (!rooms[name]) { rooms[name] = { raum: name, out: { '1': 0, '2': 0, '3': 0, '4': 0 }, sch: { '1': 0, '2': 0, '3': 0, '4': 0 }, spray: {}, offen: [], geb: [] }; order.push(name); }
+      return rooms[name];
+    };
+    room(c.raum.wb); room(c.raum.ro);
+    stItems().forEach(function (p) {
+      var id = p[0], it = p[1], s = stOf(it), k = stKat(s);
+      ['wb', 'ro'].forEach(function (L) {
+        var n = num(it[L]);
+        if (n <= 0) return;
+        var r = room(c.raum[L]);
+        if (stAero(s)) { var u = unitOf(it); r.spray[u] = round3((r.spray[u] || 0) + n); return; }
+        if (!k) return;
+        var l = stLiterIn(it, n);
+        if (l === null) { if (r.offen.indexOf(id) < 0) r.offen.push(id); return; }
+        var box = s.schrank ? r.sch : r.out;
+        box[k] = round3(box[k] + l);
+        var inh = unitOf(it) === 'l' ? null : numOrNull(it.inhalt);
+        if (!s.schrank && ST_GEB[k] && inh !== null && inh > ST_GEB[k] && r.geb.indexOf(id) < 0) r.geb.push(id);
+      });
+    });
+    return order.map(function (n) {
+      var r = rooms[n];
+      r.mit1 = r.out['1'] > 0; r.max = r.mit1 ? ST_MAX.mit1 : ST_MAX.ohne1; r.ueber = [];
+      ['1', '2', '3', '4'].forEach(function (k) {
+        if (r.out[k] > 0 && (r.max[k] === undefined || r.out[k] > r.max[k])) r.ueber.push({ k: k, wo: 'out', l: r.out[k], max: r.max[k] || 0 });
+        if (r.sch[k] > ST_MAX.schrank[k]) r.ueber.push({ k: k, wo: 'sch', l: r.sch[k], max: ST_MAX.schrank[k] });
+      });
+      return r;
+    });
+  }
+  function stSprayTxt(r) { return Object.keys(r.spray).map(function (u) { return fmt(r.spray[u]) + ' ' + u; }).join(', '); }
+  function stNames(ids) { return ids.map(function (id) { return itemName(S.items.get(id)); }).join(', '); }
+  /* ---------- Maschinen und Geräte, Prüfbuch ---------- */
+  var GR_ART = {
+    hebebuehne: { n: 'Fahrzeughebebühne', iv: 12, vier: true },
+    kompressor: { n: 'Kompressor mit Druckluftbehälter', iv: 12 },
+    feuerloescher: { n: 'Feuerlöscher', iv: 24 },
+    absaugung: { n: 'Absaugung oder Lüftung', iv: null },
+    reiniger: { n: 'Hochdruckreiniger', iv: null },
+    sonst: { n: 'Sonstiges Gerät', iv: null }
+  };
+  var GR_ORDER = ['hebebuehne', 'kompressor', 'feuerloescher', 'absaugung', 'reiniger', 'sonst'];
+  var PR_ART = { wiederkehrend: 'Wiederkehrende Prüfung', vier: 'Prüfung durch Prüfstelle (alle 4 Jahre)', abnahme: 'Abnahmeprüfung vor Inbetriebnahme', sonst: 'Prüfung nach Reparatur oder Ereignis' };
+  var PR_ERG = { ok: 'in Ordnung', maengel: 'Mängel', gesperrt: 'gesperrt' };
+  function grOf(id) { var g = S.gr && S.gr.get(id); return g && typeof g === 'object' ? g : null; }
+  function grArt(g) { return GR_ART[g && g.art] || GR_ART.sonst; }
+  function grName(g) { return String((g && g.name) || grArt(g).n); }
+  function grList(arch) {
+    var out = [];
+    if (S.gr) S.gr.forEach(function (g, id) { if (g && typeof g === 'object' && !!g.archiviert === !!arch) out.push([id, g]); });
+    var oi = function (a) { var i = GR_ORDER.indexOf(a); return i < 0 ? 99 : i; };
+    return out.sort(function (a, b) { return oi(a[1].art) - oi(b[1].art) || coll.compare(grName(a[1]), grName(b[1])); });
+  }
+  function grIv(g) { var n = numOrNull(g && g.intervall); return n !== null && n > 0 ? Math.round(n) : null; }
+  function grPr(g) {
+    return arr(g && g.pruefungen).filter(function (p) { return p && typeof p === 'object' && isDay(p.datum) && !p.entfernt; })
+      .sort(function (a, b) { return a.datum < b.datum ? 1 : a.datum > b.datum ? -1 : 0; });
+  }
+  function grVierOn(g) { return !!grArt(g).vier && !g.fachfirma; }
+  function grNext(g) {
+    var iv = grIv(g), pr = grPr(g), today = dayKey(new Date()), last = pr.filter(function (p) { return p.art !== 'sonst'; })[0] || null;
+    var out = { iv: iv, last: last, due: null, st: iv ? 'neu' : 'ohne', vLast: null, vDue: null, maengel: null };
+    if (iv && last) { out.due = addMonths(last.datum, iv); out.st = out.due < today ? 'faellig' : dayNum(out.due) - dayNum(today) <= 60 ? 'bald' : 'ok'; }
+    if (grVierOn(g)) {
+      out.vLast = pr.filter(function (p) { return p.art === 'vier' || p.art === 'abnahme'; })[0] || null;
+      out.vDue = out.vLast ? addMonths(out.vLast.datum, 48) : null;
+      if (out.vDue && out.vDue < today) out.st = 'faellig';
+    }
+    if (pr[0] && (pr[0].ergebnis === 'maengel' || pr[0].ergebnis === 'gesperrt')) out.maengel = pr[0].ergebnis;
+    return out;
+  }
+  function grChip(n) {
+    if (n.maengel) return '<span class="wst faellig">' + (n.maengel === 'gesperrt' ? 'gesperrt' : 'Mängel') + '</span>';
+    if (n.st === 'faellig') return '<span class="wst faellig">Prüfung fällig</span>';
+    if (n.st === 'bald') return '<span class="wst bald">bald prüfen</span>';
+    if (n.st === 'ok') return '<span class="wst ok">geprüft</span>';
+    if (n.st === 'neu') return '<span class="wst plan">Prüfung eintragen</span>';
+    return '';
+  }
+  /* Prüftermine für Zeitplan und Erinnerungen */
+  function btEvents(today, until) {
+    var ev = [];
+    grList(false).forEach(function (p) {
+      var id = p[0], g = p[1], n = grNext(g), name = grName(g);
+      if (n.due) {
+        var now = n.due < today;
+        if (now || n.due.slice(0, 7) < until) ev.push({ kind: 'pruef', sub: 'iv', id: id, car: '', carName: 'Betrieb', title: name + ': Prüfung', d: now ? today : n.due, now: now, info: 'Zuletzt geprüft am ' + datum(n.last.datum) + ', Prüfung alle ' + n.iv + ' Monate' });
+      }
+      if (n.vDue) {
+        var vnow = n.vDue < today;
+        if (vnow || n.vDue.slice(0, 7) < until) ev.push({ kind: 'pruef', sub: 'vier', id: id, car: '', carName: 'Betrieb', title: name + ': Prüfung durch Prüfstelle', d: vnow ? today : n.vDue, now: vnow, info: 'Alle 4 Jahre durch Ziviltechniker, TÜV oder Ingenieurbüro; zuletzt am ' + datum(n.vLast.datum) });
+      }
+    });
+    return ev;
+  }
+  function btZpChip(e) { return '<span class="wst ' + (e.now ? 'faellig' : 'plan') + '">Prüfung</span>'; }
+  function btZpAct(e) { return 'data-act="bt-geraet" data-id="' + esc(e.id) + '"'; }
+  /* ---------- Abfallbuch ---------- */
+  var ABF = [
+    ['54917', 'Festes Dichtungsmaterial und Unterbodenschutzabfälle', true],
+    ['59803', 'Druckgaspackungen (Spraydosen) mit Restinhalten', true],
+    ['35105', 'Eisenmetallverpackungen; entleerte Spraydosen', false],
+    ['54930', 'Feste fett- und ölverschmutzte Betriebsmittel (Werkstätten-, Industrie-, Tankstellenabfälle)', true],
+    ['54926', 'Gebrauchte Ölbindematerialien', true],
+    ['55370', 'Lösemittelgemische ohne halogenierte Bestandteile, Farb- und Lackverdünnungen, auch Frostschutzmittel', true],
+    ['54102', 'Altöle', true],
+    ['54202', 'Fette (aus Mineralöl), Abschmierfette', true],
+    ['54408', 'Sonstige Öl-Wasser-Gemische', true],
+    ['54701', 'Sandfanginhalte, öl- oder kaltreinigerhaltig', true],
+    ['54702', 'Ölabscheiderinhalte (Benzinabscheiderinhalte)', true],
+    ['57127', 'Kunststoffverpackungen mit gefährlichen Restinhalten', true],
+    ['35106', 'Eisenmetallverpackungen mit gefährlichen Restinhalten', true],
+    ['57118', 'Kunststoffverpackungen und -behältnisse', false],
+    ['91101', 'Siedlungsabfälle und ähnliche Gewerbeabfälle', false]
+  ];
+  var ABF_M = {};
+  ABF.forEach(function (a) { ABF_M[a[0]] = a; });
+  function abOf(id) { var a = S.abf && S.abf.get(id); return a && typeof a === 'object' ? a : null; }
+  function abAll() {
+    var out = [];
+    if (S.abf) S.abf.forEach(function (a, id) { if (a && typeof a === 'object' && isDay(a.datum)) out.push([id, a]); });
+    return out.sort(function (x, y) { return x[1].datum < y[1].datum ? 1 : x[1].datum > y[1].datum ? -1 : String(y[1].erstellt || '').localeCompare(String(x[1].erstellt || '')); });
+  }
+  function abYear(y) { return abAll().filter(function (p) { return p[1].datum.slice(0, 4) === String(y); }); }
+  function abYears() { var ys = {}; ys[dayKey(new Date()).slice(0, 4)] = 1; abAll().forEach(function (p) { ys[p[1].datum.slice(0, 4)] = 1; }); return Object.keys(ys).sort().reverse(); }
+  function abBez(a) { return String(a.bez || (ABF_M[a.sn] ? ABF_M[a.sn][1] : '') || 'Abfall'); }
+  function abSum(y) {
+    var m = {}, order = [];
+    abYear(y).forEach(function (p) {
+      var a = p[1];
+      if (a.storno) return;
+      var k = String(a.sn || '?');
+      if (!m[k]) { m[k] = { sn: k, bez: abBez(a), gef: !!a.gef, kg: 0, n: 0, herkunft: a.herkunft || '', sammlung: a.sammlung || '', empf: a.empfaenger || '' }; order.push(k); }
+      m[k].kg = round3(m[k].kg + num(a.kg)); m[k].n++;
+    });
+    return order.map(function (k) { return m[k]; }).sort(function (a, b) { return b.kg - a.kg || coll.compare(a.sn, b.sn); });
+  }
+  function abKg(v) { return nf.format(round2(num(v))) + ' kg'; }
+  /* ---------- Übersicht ---------- */
+  function openBetrieb() { openSheet('betrieb', {}, sheetBetrieb()); }
+  function sheetBetrieb() {
+    var can = canWrite(), y = dayKey(new Date()).slice(0, 4);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Werkstatt als Betriebsanlage</p><h2 class="sh-title" id="sheet-title">Betrieb</h2>' +
+      '<p class="buy">Arbeitsstoffe, Lagerung, Maschinen mit Prüfbuch und Abfälle: für die Einreichung und die laufenden Pflichten.</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    h += '<div class="sh-sec bt-top">' + (S.dl ? '<div class="kva-act"><button type="button" class="btn" data-act="bt-pdf">Beilagen für die Einreichung (PDF)</button></div>' : '') +
+      '<p class="help">Tabellen für die Beilagen zum Ansuchen: Arbeitsstoffe mit Einstufung und Aggregatzustand, Lagerung brennbarer Flüssigkeiten mit Art, Menge und Lagerort, Maschinenliste mit Schallpegel und die Abfälle' + srcRefs(BT_Q, [1]) + '. Formular, Pläne und Betriebsbeschreibung kommen dazu.</p></div>';
+    h += stSec(can) + stLagerSec(can) + grSec(can) + abSec(can, y) + xQuellen(BT_Q);
+    return h + '<div class="sh-foot"><button type="button" class="btn ghost" data-act="close">Schließen</button></div>';
+  }
+  function stSec(can) {
+    var list = stItems(), noSdb = list.filter(function (p) { return !stSdb(stOf(p[1])); });
+    var h = '<div class="sh-sec"><div class="vhead"><h3 class="sec">' + esc('Arbeitsstoffe' + (list.length ? ' · ' + list.length : '')) + '</h3>' + (can ? '<button type="button" class="linkbtn" data-act="st-pick">+ Arbeitsstoff</button>' : '') + '</div>';
+    if (!list.length) return h + '<p class="note">Noch keine Arbeitsstoffe. Wähle Verbrauchsmaterial aus dem Bestand (Wachs, Unterbodenschutz, Reiniger, Verdünnung) und trag die Angaben aus dem Sicherheitsdatenblatt ein.</p></div>';
+    h += '<ul class="works">' + list.map(function (p) {
+      var it = p[1], s = stOf(it), k = stKat(s), sdb = stSdb(s);
+      var sub = [s.hersteller || '', stHList(s).join(' ') || 'ohne Gefahrenhinweise', ST_AGG[s.aggregat] || '', stMengeTxt(it), stOrte(it).join(', ')].filter(Boolean).join(' · ');
+      return '<li><button type="button" class="wbtn" data-act="st-edit" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(itemName(it)) + '<small>' + esc(sub) + '</small></span><span class="i-p bt-chips">' +
+        (k ? '<span class="wst bald">' + esc('Kat. ' + k) + '</span>' : stAero(s) ? '<span class="wst plan">Spray</span>' : '') +
+        (sdb ? '' : '<span class="wst faellig">SDB fehlt</span>') + '</span></button></li>';
+    }).join('') + '</ul>';
+    if (noSdb.length) h += '<p class="note">' + esc(noSdb.length === 1 ? 'Bei einem Arbeitsstoff fehlt das Sicherheitsdatenblatt.' : 'Bei ' + noSdb.length + ' Arbeitsstoffen fehlt das Sicherheitsdatenblatt.') + ' Sicherheitsdatenblätter für gefährliche Stoffe müssen im Betrieb vorhanden sein' + srcRefs(BT_Q, [1]) + '.</p>';
+    return h + '</div>';
+  }
+  function stRaumForm(can) {
+    var c = btConf(), dis = can ? '' : ' disabled';
+    return '<details class="wp-more" data-k="bt-raum"><summary>Räume der Lager</summary>' +
+      '<p class="help">Stehen Werkbank und Regal oben im selben Raum (Brandabschnitt), gib beiden denselben Namen; dann zählt die App die Mengen zusammen.</p>' +
+      '<div class="row2"><label class="f"><span>Werkbank</span><input id="bt-r-wb" value="' + esc(c.raum.wb) + '" maxlength="40" autocomplete="off"' + dis + '></label>' +
+      '<label class="f"><span>Regal oben</span><input id="bt-r-ro" value="' + esc(c.raum.ro) + '" maxlength="40" autocomplete="off"' + dis + '></label></div>' +
+      (can ? '<div class="kva-act"><button type="button" class="btn ghost small" data-act="bt-raum-save">Räume speichern</button></div>' : '') + '</details>';
+  }
+  function stLagerSec(can) {
+    var h = '<div class="sh-sec"><h3 class="sec">Lagerung brennbarer Flüssigkeiten</h3>';
+    if (!stItems().length) return h + '<p class="note">Erscheint, sobald Arbeitsstoffe eingetragen sind.</p>' + stRaumForm(can) + '</div>';
+    stLagerung().forEach(function (r) {
+      h += '<div class="bt-raum"><h4 class="sb-h">' + esc(r.raum) + '</h4><table class="ka-t bt-t"><thead><tr><th>Kategorie</th><th>im Raum</th><th>im Sicherheitsschrank</th></tr></thead><tbody>' +
+        ['1', '2', '3', '4'].map(function (k) {
+          var bo = r.ueber.some(function (u) { return u.k === k && u.wo === 'out'; }), bs = r.ueber.some(function (u) { return u.k === k && u.wo === 'sch'; });
+          return '<tr><th>' + esc(ST_KAT[k].n) + '<small>' + esc(ST_KAT[k].z) + '</small></th>' +
+            '<td' + (bo ? ' class="bt-bad"' : '') + '>' + esc(stLTxt(r.out[k])) + '<small>' + esc('bis ' + nf.format(k === '1' ? ST_MAX.mit1['1'] : r.max[k]) + ' l') + '</small></td>' +
+            '<td' + (bs ? ' class="bt-bad"' : '') + '>' + esc(stLTxt(r.sch[k])) + '<small>' + esc('bis ' + nf.format(ST_MAX.schrank[k]) + ' l') + '</small></td></tr>';
+        }).join('') + '</tbody></table>';
+      r.ueber.forEach(function (u) { h += '<p class="rstat warn">' + esc(ST_KAT[u.k].n + (u.wo === 'out' ? ' im Raum: ' : ' im Sicherheitsschrank: ') + stLTxt(u.l) + ', erlaubt sind ' + (u.max ? nf.format(u.max) + ' l.' : 'keine.')) + '</p>'; });
+      if (r.mit1) h += '<p class="help">Weil Kategorie 1 im Raum lagert, gelten die kleineren Höchstmengen.</p>';
+      if (r.geb.length) h += '<p class="rstat warn">' + esc('Gebinde zu groß für die Lagerung außerhalb eines Sicherheitsschranks (Kategorie 2 höchstens 10 l, Kategorie 3 höchstens 25 l je Gebinde): ' + stNames(r.geb) + '.') + srcRefs(BT_Q, [2]) + '</p>';
+      if (r.offen.length) h += '<p class="note">' + esc('Ohne Literangabe, deshalb nicht mitgezählt: ' + stNames(r.offen) + '. Im Artikel unter „Bearbeiten“ den Inhalt je Einheit in Litern eintragen.') + '</p>';
+      if (Object.keys(r.spray).length) h += '<p class="help">' + esc('Spraydosen: ' + stSprayTxt(r) + '. Aerosole fallen nicht unter die VbF') + srcRefs(BT_Q, [4]) + '.</p>';
+      h += '</div>';
+    });
+    h += '<p class="help">Höchstmengen je Brandabschnitt laut § 33 VbF 2023 für Arbeitsräume bis 500 m² Grundfläche und für Sicherheitsschränke' + srcRefs(BT_Q, [2]) + '. Die Kategorie kommt aus den Gefahrenhinweisen im Sicherheitsdatenblatt (H224, H225, H226) oder wird von Hand gewählt' + srcRefs(BT_Q, [3]) + '.</p>';
+    return h + stRaumForm(can) + '</div>';
+  }
+  function grSec(can) {
+    var list = grList(false), arch = grList(true);
+    var row = function (p) {
+      var g = p[1], n = grNext(g);
+      var sub = [[g.hersteller, g.typ].filter(Boolean).join(' '), n.last ? 'geprüft am ' + datum(n.last.datum) : n.iv ? 'noch keine Prüfung eingetragen' : 'ohne Prüfintervall', n.due ? 'nächste bis ' + datum(n.due) : ''].filter(Boolean).join(' · ');
+      return '<li><button type="button" class="wbtn" data-act="bt-geraet" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(grName(g)) + '<small>' + esc(sub) + '</small></span><span class="i-p">' + (g.archiviert ? '' : grChip(n)) + '</span></button></li>';
+    };
+    var h = '<div class="sh-sec"><div class="vhead"><h3 class="sec">' + esc('Maschinen und Geräte' + (list.length ? ' · ' + list.length : '')) + '</h3>' + (can ? '<button type="button" class="linkbtn" data-act="gr-new">+ Gerät</button>' : '') + '</div>';
+    h += list.length ? '<ul class="works">' + list.map(row).join('') + '</ul>' : '<p class="note">Noch keine Geräte. Trag Hebebühne, Kompressor, Feuerlöscher, Absaugung und Reiniger ein: Sie kommen in die Maschinenliste, und die App erinnert an die Prüfungen.</p>';
+    if (arch.length) h += '<details class="wp-more" data-k="gr-arch"><summary>' + esc('Außer Betrieb · ' + arch.length) + '</summary><ul class="works">' + arch.map(row).join('') + '</ul></details>';
+    if ((list.length || arch.length) && S.dl) h += '<div class="kva-act"><button type="button" class="btn ghost small" data-act="gr-pdf">Prüfbuch (PDF)</button></div>';
+    h += '<p class="help">Fristen laut AUVA-Liste: Fahrzeughebebühne jährlich, alle 4 Jahre zusätzlich durch Ziviltechniker, TÜV oder Ingenieurbüro (entfällt, wenn eine Fachfirma jährlich prüft); Feuerlöscher alle 2 Jahre; Druckluftbehälter je nach Druck × Inhalt jährlich als Eigenkontrolle oder durch die Kesselprüfstelle' + srcRefs(BT_Q, [5]) + '. Diese Fristen gelten für Arbeitgeber; ohne Mitarbeiter zählt, was der Bescheid vorschreibt. Prüftermine stehen im Zeitplan und kommen mit den Erinnerungen am Abend.</p>';
+    return h + '</div>';
+  }
+  function abSec(can, y) {
+    var sum = abSum(y), all = abAll();
+    var h = '<div class="sh-sec"><div class="vhead"><h3 class="sec">' + esc('Abfallbuch ' + y) + '</h3>' + (can ? '<button type="button" class="linkbtn" data-act="ab-new">+ Übergabe</button>' : '') + '</div>';
+    if (!sum.length) h += '<p class="note">' + esc(all.length ? 'Heuer noch keine Übergabe eingetragen.' : 'Noch keine Übergabe eingetragen. Bei jeder Abholung durch den Entsorger: Abfallart, Menge in kg, Herkunft, Empfänger und Datum; bei gefährlichen Abfällen den Begleitschein fotografieren.') + '</p>';
+    else h += '<ul class="works">' + sum.map(function (a) {
+      return '<li><button type="button" class="wbtn" data-act="ab-list" data-year="' + esc(y) + '"><span class="i-n">' + esc(a.bez) + '<small>' + esc('SN ' + a.sn + (a.gef ? ' · gefährlich' : '') + ' · ' + a.n + (a.n === 1 ? ' Übergabe' : ' Übergaben')) + '</small></span><span class="i-p"><b class="bt-kg">' + esc(abKg(a.kg)) + '</b></span></button></li>';
+    }).join('') + '</ul>';
+    if (all.length) h += '<div class="kva-act"><button type="button" class="btn ghost small" data-act="ab-list" data-year="' + esc(y) + '">Alle Einträge</button>' + (S.dl ? '<button type="button" class="btn ghost small" data-act="ab-pdf" data-year="' + esc(y) + '">' + esc('Aufzeichnungen ' + y + ' (PDF)') + '</button>' : '') + '</div>';
+    h += '<p class="help">Aufzuzeichnen sind Abfallart, Menge in kg, Herkunft und Verbleib (Empfänger und Datum), je Kalenderjahr fortlaufend; bei gefährlichen Abfällen genügt es, die Begleitscheine zu sammeln. Aufbewahren: 7 Jahre' + srcRefs(BT_Q, [6]) + '. Abfallarten und Schlüsselnummern aus dem Abfallwirtschaftskonzept der WKO für Servicestationen' + srcRefs(BT_Q, [7]) + '.</p>';
+    return h + '</div>';
+  }
+  async function btRaumSave() {
+    if (!canWrite() || S.busy) return;
+    var wb = (($('#bt-r-wb') || {}).value || '').trim().slice(0, 40) || 'Halle', ro = (($('#bt-r-ro') || {}).value || '').trim().slice(0, 40) || 'Halle';
+    var data = Object.assign({}, S.btConf && typeof S.btConf === 'object' ? S.btConf : {}, { raum: { wb: wb, ro: ro }, geaendert: new Date().toISOString() });
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('meta/betrieb').set(data); });
+      S.btConf = data;
+      setBusy(false);
+      refreshSheet();
+      toast(wb === ro ? 'Gespeichert: beide Lager im Raum „' + wb + '“.' : 'Gespeichert: Werkbank in „' + wb + '“, Regal oben in „' + ro + '“.');
+    } catch (e) { setBusy(false); writeError(e, function (m) { toast(m); }); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Arbeitsstoff erfassen ---------- */
+  /* Sicherheitsdatenblatt gilt als vorhanden mit Datei oder Datum (Papierordner) */
+  function stSdb(s) { return !!s && (blList(s.sdb).length > 0 || isDay(s.sdbStand)); }
+  function stLikely(it) { return unitOf(it) === 'l' || unitOf(it) === 'kg' || numOrNull(it.inhalt) !== null || ST_RE.test(itemName(it)); }
+  function stItemExtra(id, it) {
+    if (!it || it.bereich !== 'verbrauch') return '';
+    var s = stOf(it), can = canWrite();
+    if (!s) return can && !it.archiviert && stLikely(it) ? '<div class="xrow"><button type="button" class="linkbtn inl" data-act="st-edit-item" data-id="' + esc(id) + '">Als Arbeitsstoff eintragen</button><span>Für die Arbeitsstoffliste unter Betrieb.</span></div>' : '';
+    var sdb = stSdb(s);
+    return '<div class="xrow"><span class="pill pill-stoff">Arbeitsstoff</span><span>' + esc(stKatTxt(s) + ' · ' + (sdb ? 'Sicherheitsdatenblatt' + (isDay(s.sdbStand) ? ' vom ' + datum(s.sdbStand) : '') : 'Sicherheitsdatenblatt fehlt')) + '</span>' +
+      (can ? '<button type="button" class="linkbtn inl" data-act="st-edit-item" data-id="' + esc(id) + '">Ändern</button>' : '') + '</div>';
+  }
+  function openStPick() {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var list = [];
+    S.items.forEach(function (it, id) { if (it && !it.archiviert && it.bereich === 'verbrauch' && !stOf(it)) list.push([id, it]); });
+    list.sort(function (a, b) { return (stLikely(b[1]) ? 1 : 0) - (stLikely(a[1]) ? 1 : 0) || coll.compare(itemName(a[1]), itemName(b[1])); });
+    openSheet('stpick', {}, '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Betrieb · Arbeitsstoffe</p><h2 class="sh-title" id="sheet-title">Arbeitsstoff wählen</h2>' +
+      '<p class="buy">Verbrauchsmaterial aus dem Bestand. Fehlt ein Produkt, leg es zuerst im Bestand an.</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      (list.length ? '<ul class="works">' + list.map(function (p) {
+        return '<li><button type="button" class="wbtn" data-act="st-edit" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(itemName(p[1])) + '<small>' + esc([stMengeTxt(p[1]), stOrte(p[1]).join(', ')].filter(Boolean).join(' · ')) + '</small></span></button></li>';
+      }).join('') + '</ul>' : '<p class="note">Alles Verbrauchsmaterial ist schon eingetragen.</p>') +
+      '<div class="sh-foot"><button type="button" class="btn ghost" data-act="bt-open">Zurück</button></div>');
+  }
+  function stKatInfo() {
+    var g = function (id) { var el = $('#' + id); return el ? el.value : ''; };
+    var s = { h: g('st-h'), aggregat: g('st-agg'), kat: g('st-kat') }, k = stKat(s), el = $('#st-kat-info');
+    if (el) el.textContent = k ? 'Zählt als brennbare Flüssigkeit, ' + ST_KAT[k].n + ' (' + ST_KAT[k].z + ').' : stAero(s) ? 'Spraydose: zählt nicht zu den brennbaren Flüssigkeiten nach VbF.' : 'Zählt nicht zu den brennbaren Flüssigkeiten.';
+  }
+  function openStForm(id, back) {
+    var it = id ? S.items.get(id) : null;
+    if (!it) return;
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var s = it.stoff && typeof it.stoff === 'object' ? it.stoff : {}, agg = ST_AGG[s.aggregat] ? s.aggregat : 'fluessig', kat = ST_KAT[s.kat] || s.kat === '0' ? s.kat : 'auto';
+    openSheet('stform', { id: id, back: back === 'item' ? 'item' : 'betrieb', bl: BL ? { keep: blList(s.sdb), pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Arbeitsstoff · ' + itemName(it)) + '</p><h2 class="sh-title" id="sheet-title">Angaben aus dem Sicherheitsdatenblatt</h2>' +
+      '<p class="buy">' + esc(['Bestand ' + stMengeTxt(it), stOrte(it).join(', ')].filter(Boolean).join(' · ')) + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="stform" novalidate>' +
+      '<label class="f"><span>Hersteller <span class="muted">(optional)</span></span><input id="st-her" value="' + esc(s.hersteller || '') + '" maxlength="60" autocomplete="off"></label>' +
+      '<label class="f"><span>Gefahrenhinweise (H-Sätze)</span><input id="st-h" value="' + esc(stHList(s).join(' ')) + '" maxlength="120" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="z. B. H226 H304 H336"><small>Stehen in Abschnitt 2 des Sicherheitsdatenblatts. Ohne Gefahrenhinweise leer lassen.</small></label>' +
+      '<div class="row2"><label class="f"><span>Aggregatzustand</span><select id="st-agg">' + Object.keys(ST_AGG).map(function (k) { return '<option value="' + k + '"' + (k === agg ? ' selected' : '') + '>' + esc(ST_AGG[k]) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Brennbare Flüssigkeit</span><select id="st-kat"><option value="auto"' + (kat === 'auto' ? ' selected' : '') + '>aus den Gefahrenhinweisen</option>' +
+      ['1', '2', '3', '4'].map(function (k) { return '<option value="' + k + '"' + (kat === k ? ' selected' : '') + '>' + esc(ST_KAT[k].n + ' (' + ST_KAT[k].z + ')') + '</option>'; }).join('') +
+      '<option value="0"' + (kat === '0' ? ' selected' : '') + '>keine brennbare Flüssigkeit</option></select></label></div>' +
+      '<p class="help" id="st-kat-info" aria-live="polite"></p>' +
+      '<label class="check"><input type="checkbox" id="st-sch"' + (s.schrank ? ' checked' : '') + '><span>Steht im Sicherheitsschrank</span></label>' +
+      '<label class="f"><span>Datum des Sicherheitsdatenblatts</span><input type="date" id="st-sd" value="' + esc(isDay(s.sdbStand) ? s.sdbStand : '') + '" max="' + dayKey(new Date()) + '"></label>' +
+      blField(s.sdb, 'Sicherheitsdatenblatt als PDF oder Foto. Liegt es im Ordner, reicht das Datum.') +
+      '<label class="f"><span>Notiz <span class="muted">(optional)</span></span><textarea id="st-no" rows="2" maxlength="400">' + esc(s.notiz || '') + '</textarea></label>' +
+      '<p class="err" id="st-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' + (stOf(it) ? '<button type="button" class="btn ghost" data-act="st-off">Aus der Liste nehmen</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="st-back">Zurück</button></div></form>');
+    stKatInfo();
+  }
+  function stBack() { var s = S.sheet; if (s && s.type === 'stform' && s.back === 'item' && S.items.has(s.id)) openItem(s.id); else openBetrieb(); }
+  async function saveSt() {
+    var s = S.sheet;
+    if (!s || s.type !== 'stform' || S.busy) return;
+    var it = S.items.get(s.id), err = function (m) { var el = $('#st-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!it) { err('Diesen Artikel gibt es nicht mehr.'); return; }
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var raw = g('st-h'), hl = stHList({ h: raw }), sd = g('st-sd');
+    if (raw && !hl.length) { err('Die Gefahrenhinweise bitte als H-Sätze eintragen, z. B. H226 H304.'); return; }
+    if (sd && (!isDay(sd) || sd > dayKey(new Date()))) { err('Das Datum des Sicherheitsdatenblatts ist ungültig.'); return; }
+    var old = it.stoff && typeof it.stoff === 'object' ? it.stoff : {}, now = new Date().toISOString();
+    setBusy(true);
+    try {
+      var sdb = BL && s.bl ? await blCommitForm('betrieb', 'Sicherheitsdatenblatt ' + itemName(it)) : blList(old.sdb);
+      it = S.items.get(s.id) || it;
+      var data = { aktiv: true, hersteller: g('st-her').slice(0, 60) || null, h: hl.join(' '), aggregat: ST_AGG[g('st-agg')] ? g('st-agg') : 'fluessig', kat: g('st-kat') || 'auto',
+        schrank: !!(($('#st-sch') || {}).checked), sdbStand: isDay(sd) ? sd : null, sdb: sdb || [], notiz: g('st-no').slice(0, 400) || null, erstellt: old.erstellt || now, geaendert: now };
+      var patch = { stoff: data, geaendert: now };
+      await write(function () { return S.db.doc('artikel/' + s.id).update(patch); });
+      S.items.set(s.id, Object.assign({}, it, patch));
+      setBusy(false);
+      var back = s.back, id = s.id;
+      if (back === 'item') openItem(id); else openBetrieb();
+      renderAll();
+      toast('Gespeichert: ' + itemName(it) + ' · ' + stKatTxt(data) + '.');
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  async function stOff() {
+    var s = S.sheet;
+    if (!s || s.type !== 'stform' || S.busy || !canWrite()) return;
+    var it = S.items.get(s.id);
+    if (!it || !stOf(it)) return;
+    var now = new Date().toISOString(), patch = { stoff: Object.assign({}, it.stoff, { aktiv: false, geaendert: now }), geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('artikel/' + s.id).update(patch); });
+      S.items.set(s.id, Object.assign({}, it, patch));
+      setBusy(false);
+      if (s.back === 'item') openItem(s.id); else openBetrieb();
+      renderAll();
+      toast('Aus der Arbeitsstoffliste genommen. Die Angaben bleiben gespeichert.');
+    } catch (e) { setBusy(false); writeError(e, function (m) { toast(m); }); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Gerät anlegen und bearbeiten ---------- */
+  function grIvHelp(art) {
+    var A = GR_ART[art] || GR_ART.sonst;
+    if (art === 'hebebuehne') return 'Laut AUVA-Liste jährlich, alle 4 Jahre zusätzlich durch Ziviltechniker, TÜV oder Ingenieurbüro.';
+    if (art === 'feuerloescher') return 'Laut AUVA-Liste alle 2 Jahre.';
+    if (art === 'kompressor') return 'Laut AUVA-Liste jährlich als Eigenkontrolle, wenn Druck × Inhalt unter 3000 liegt; darüber durch die Kesselprüfstelle (alle 2, 6 oder 12 Jahre).';
+    return A.iv ? '' : 'Leer lassen, wenn keine Prüfung vorgeschrieben ist.';
+  }
+  function openGrForm(id) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var g = id ? grOf(id) : null;
+    if (id && !g) return;
+    var art = g && GR_ART[g.art] ? g.art : 'hebebuehne', A = GR_ART[art], iv = g ? grIv(g) : A.iv, c = btConf(), raeume = [];
+    [c.raum.wb, c.raum.ro].concat(grList(false).map(function (p) { return String(p[1].raum || ''); })).forEach(function (r) { if (r && raeume.indexOf(r) < 0) raeume.push(r); });
+    openSheet('grform', { id: id || null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Betrieb · Maschinen und Geräte</p><h2 class="sh-title" id="sheet-title">' + (g ? 'Gerät bearbeiten' : 'Gerät anlegen') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="grform" novalidate>' +
+      '<label class="f"><span>Art</span><select id="gr-art">' + GR_ORDER.map(function (k) { return '<option value="' + k + '"' + (k === art ? ' selected' : '') + '>' + esc(GR_ART[k].n) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Bezeichnung</span><input id="gr-name" value="' + esc(g ? g.name || '' : A.n) + '" maxlength="60" autocomplete="off"></label>' +
+      '<div class="row2"><label class="f"><span>Hersteller</span><input id="gr-her" value="' + esc(g && g.hersteller || '') + '" maxlength="40" autocomplete="off"></label>' +
+      '<label class="f"><span>Typ</span><input id="gr-typ" value="' + esc(g && g.typ || '') + '" maxlength="40" autocomplete="off"></label></div>' +
+      '<div class="kva-row3"><label class="f"><span>Baujahr</span><input id="gr-bj" inputmode="numeric" value="' + esc(g && numOrNull(g.baujahr) !== null ? String(g.baujahr) : '') + '" maxlength="4" autocomplete="off"></label>' +
+      '<label class="f"><span>Leistung (kW)</span><input id="gr-kw" inputmode="decimal" value="' + esc(g && numOrNull(g.kw) !== null ? nfIn.format(g.kw).replace('.', ',') : '') + '" autocomplete="off"></label>' +
+      '<label class="f"><span>Seriennummer</span><input id="gr-sn" value="' + esc(g && g.seriennr || '') + '" maxlength="40" autocomplete="off" spellcheck="false"></label></div>' +
+      '<label class="f"><span>Schallpegel laut Hersteller <span class="muted">(optional)</span></span><input id="gr-schall" value="' + esc(g && g.schall || '') + '" maxlength="60" autocomplete="off" placeholder="z. B. 72 dB(A) in 1 m"><small>Gehört in die Maschinenliste der Einreichung, als Schalldruckpegel in einer Entfernung oder als Schallleistungspegel.</small></label>' +
+      '<label class="f"><span>Raum</span><input id="gr-raum" value="' + esc(g && g.raum || c.raum.wb) + '" maxlength="40" autocomplete="off" list="gr-raeume"><datalist id="gr-raeume">' + raeume.map(function (r) { return '<option value="' + esc(r) + '"></option>'; }).join('') + '</datalist></label>' +
+      '<label class="f"><span>Prüfung alle … Monate</span><input id="gr-iv" inputmode="numeric" value="' + (iv ? iv : '') + '" maxlength="3" autocomplete="off"><small id="gr-iv-h">' + esc(grIvHelp(art)) + '</small></label>' +
+      '<label class="check" id="gr-fach-w"' + (art === 'hebebuehne' ? '' : ' hidden') + '><input type="checkbox" id="gr-fach"' + (g && g.fachfirma ? ' checked' : '') + '><span>Die jährliche Prüfung macht eine Fachfirma (dann entfällt die Prüfung alle 4 Jahre)</span></label>' +
+      '<label class="f"><span>Notiz <span class="muted">(optional)</span></span><textarea id="gr-no" rows="2" maxlength="400">' + esc(g && g.notiz || '') + '</textarea></label>' +
+      (g ? '<label class="check"><input type="checkbox" id="gr-arch"' + (g.archiviert ? ' checked' : '') + '><span>Außer Betrieb genommen (Prüfungen bleiben gespeichert)</span></label>' : '') +
+      '<p class="err" id="gr-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
+      (g ? '<button type="button" class="btn ghost" data-act="bt-geraet" data-id="' + esc(id) + '">Zurück</button>' : '<button type="button" class="btn ghost" data-act="bt-open">Zurück</button>') + '</div></form>');
+  }
+  function grArtChange(t) {
+    var old = t.dataset.prev || 'hebebuehne', art = t.value, A = GR_ART[art] || GR_ART.sonst, n = $('#gr-name'), iv = $('#gr-iv'), h = $('#gr-iv-h'), fw = $('#gr-fach-w');
+    if (n && (!n.value.trim() || n.value.trim() === (GR_ART[old] || GR_ART.sonst).n)) n.value = A.n;
+    if (iv && (!iv.value.trim() || Number(iv.value) === (GR_ART[old] || GR_ART.sonst).iv)) iv.value = A.iv ? String(A.iv) : '';
+    if (h) h.textContent = grIvHelp(art);
+    if (fw) fw.hidden = art !== 'hebebuehne';
+    t.dataset.prev = art;
+  }
+  async function saveGr() {
+    var s = S.sheet;
+    if (!s || s.type !== 'grform' || S.busy) return;
+    var err = function (m) { var el = $('#gr-err'); if (el) el.textContent = m; }, g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var old = s.id ? grOf(s.id) : null;
+    if (s.id && !old) { err('Dieses Gerät gibt es nicht mehr.'); return; }
+    var art = GR_ART[g('gr-art')] ? g('gr-art') : 'sonst', name = g('gr-name').slice(0, 60), bj = parseNum(g('gr-bj')), kw = parseNum(g('gr-kw')), iv = parseNum(g('gr-iv'));
+    if (!name) { err('Bitte eine Bezeichnung eintragen, z. B. Hebebühne.'); return; }
+    if (bj !== null && (isNaN(bj) || bj < 1950 || bj > Number(dayKey(new Date()).slice(0, 4)))) { err('Das Baujahr bitte als Jahreszahl eintragen, z. B. 2005.'); return; }
+    if (kw !== null && (isNaN(kw) || kw < 0 || kw > 1000)) { err('Die Leistung bitte in kW als Zahl eintragen, z. B. 3,5.'); return; }
+    if (iv !== null && (isNaN(iv) || iv < 1 || iv > 240)) { err('Das Prüfintervall bitte in Monaten eintragen, z. B. 12.'); return; }
+    var now = new Date().toISOString(), data = Object.assign({}, old || { pruefungen: [], erstellt: now }, {
+      art: art, name: name, hersteller: g('gr-her').slice(0, 40) || null, typ: g('gr-typ').slice(0, 40) || null, baujahr: bj === null ? null : Math.round(bj), kw: kw === null ? null : round2(kw),
+      seriennr: g('gr-sn').slice(0, 40) || null, schall: g('gr-schall').slice(0, 60) || null, raum: g('gr-raum').slice(0, 40) || null, intervall: iv === null ? null : Math.round(iv),
+      fachfirma: art === 'hebebuehne' && !!(($('#gr-fach') || {}).checked), notiz: g('gr-no').slice(0, 400) || null, archiviert: !!(($('#gr-arch') || {}).checked), geaendert: now });
+    setBusy(true);
+    try {
+      var id = s.id;
+      if (id) await write(function () { return S.db.doc('geraete/' + id).update(data); });
+      else { var ref = S.db.collection('geraete').doc(); id = ref.id; await write(function () { return ref.set(data); }); }
+      S.gr.set(id, data);
+      setBusy(false);
+      openGeraet(id);
+      renderAll();
+      toast((old ? 'Gespeichert: ' : 'Angelegt: ') + name + '.' + (!old && grIv(data) ? ' Trag jetzt die letzte Prüfung ein.' : ''));
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Gerät mit Prüfbuch ---------- */
+  function openGeraet(id) { if (!grOf(id)) { toast('Dieses Gerät gibt es nicht mehr.'); return; } openSheet('geraet', { id: id }, sheetGeraet(id)); }
+  function sheetGeraet(id) {
+    var g = grOf(id), can = canWrite(), A = grArt(g), n = grNext(g), pr = grPr(g);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Betrieb · ' + A.n) + '</p><h2 class="sh-title" id="sheet-title">' + esc(grName(g)) + '</h2>' +
+      '<p class="buy">' + esc([[g.hersteller, g.typ].filter(Boolean).join(' '), numOrNull(g.baujahr) !== null ? 'Baujahr ' + g.baujahr : '', g.archiviert ? 'außer Betrieb' : ''].filter(Boolean).join(' · ') || 'Noch ohne Hersteller und Typ') + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    var st = [];
+    if (n.iv) st.push('Prüfung alle ' + n.iv + ' Monate' + (n.due ? ', nächste bis ' + datum(n.due) : ''));
+    else st.push('Kein Prüfintervall eingetragen');
+    if (n.vDue) st.push('Prüfung durch Prüfstelle bis ' + datum(n.vDue));
+    else if (grVierOn(g)) st.push('Alle 4 Jahre prüft zusätzlich ein Ziviltechniker, TÜV oder Ingenieurbüro; die letzte solche Prüfung ist noch nicht eingetragen');
+    h += '<div class="sh-sec"><div class="bt-st">' + (g.archiviert ? '' : grChip(n)) + '<p class="rtext">' + esc(st.join('. ') + '.') + '</p></div>';
+    var facts = [['Seriennummer', g.seriennr], ['Leistung', numOrNull(g.kw) !== null ? nf.format(g.kw) + ' kW' : ''], ['Schallpegel', g.schall], ['Raum', g.raum], ['Notiz', g.notiz]].filter(function (f) { return f[1]; });
+    if (facts.length) h += '<dl class="bt-dl">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + '</dl>';
+    h += '</div><div class="sh-sec"><div class="vhead"><h3 class="sec">' + esc('Prüfbuch' + (pr.length ? ' · ' + pr.length : '')) + '</h3>' + (can ? '<button type="button" class="linkbtn" data-act="pr-new" data-id="' + esc(id) + '">+ Prüfung</button>' : '') + '</div>';
+    if (!pr.length) h += '<p class="note">Noch keine Prüfung eingetragen. Trag die letzte Prüfung mit Datum ein und fotografier den Prüfbefund.</p>';
+    else h += '<ul class="bt-pr">' + pr.map(function (p) {
+      var fotos = blList(p.befund), cls = p.ergebnis === 'maengel' || p.ergebnis === 'gesperrt' ? 'faellig' : 'ok';
+      return '<li><div class="bt-prh"><b>' + esc(datum(p.datum)) + '</b><span class="wst ' + cls + '">' + esc(PR_ERG[p.ergebnis] || 'in Ordnung') + '</span></div>' +
+        '<span class="bt-prs">' + esc([PR_ART[p.art] || PR_ART.wiederkehrend, p.durch ? 'durch ' + p.durch : ''].filter(Boolean).join(' · ')) + '</span>' +
+        (p.notiz ? '<p class="rtext">' + esc(p.notiz) + '</p>' : '') +
+        (fotos.length ? '<div class="bl-s">' + fotos.map(function (r, i) { return blTile(r, 'bg:' + id + ':' + p.id, i, false); }).join('') + '</div>' : '<span class="bt-prs">kein Prüfbefund abgelegt</span>') +
+        (can ? '<button type="button" class="linkbtn inl" data-act="pr-edit" data-id="' + esc(id) + '" data-pid="' + esc(p.id) + '">Bearbeiten</button>' : '') + '</li>';
+    }).join('') + '</ul>';
+    h += '<p class="help">Prüfbefunde aufheben, bis das Gerät ausscheidet.</p></div>';
+    return h + '<div class="sh-foot">' + (can ? '<button type="button" class="btn ghost" data-act="gr-edit" data-id="' + esc(id) + '">Bearbeiten</button>' : '') + '<button type="button" class="btn ghost" data-act="bt-open">Zum Betrieb</button></div>';
+  }
+  function openPrForm(gid, pid) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var g = grOf(gid);
+    if (!g) return;
+    var p = pid ? arr(g.pruefungen).filter(function (x) { return x && x.id === pid; })[0] || null : null, durch = [];
+    S.gr.forEach(function (x) { grPr(x).forEach(function (q) { if (q.durch && durch.indexOf(q.durch) < 0) durch.push(q.durch); }); });
+    var art = p && PR_ART[p.art] ? p.art : 'wiederkehrend', erg = p && PR_ERG[p.ergebnis] ? p.ergebnis : 'ok';
+    openSheet('prform', { id: gid, pid: p ? p.id : null, bl: BL ? { keep: blList(p && p.befund), pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Prüfbuch · ' + grName(g)) + '</p><h2 class="sh-title" id="sheet-title">' + (p ? 'Prüfung bearbeiten' : 'Prüfung eintragen') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="prform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Geprüft am</span><input type="date" id="pr-d" value="' + esc(p ? p.datum : dayKey(new Date())) + '" max="' + dayKey(new Date()) + '"></label>' +
+      '<label class="f"><span>Art</span><select id="pr-art">' + Object.keys(PR_ART).map(function (k) { return '<option value="' + k + '"' + (k === art ? ' selected' : '') + '>' + esc(PR_ART[k]) + '</option>'; }).join('') + '</select></label></div>' +
+      '<label class="f"><span>Geprüft von</span><input id="pr-durch" value="' + esc(p && p.durch || '') + '" maxlength="60" autocomplete="off" list="pr-durch-l" placeholder="Name oder Firma"><datalist id="pr-durch-l">' + durch.map(function (d) { return '<option value="' + esc(d) + '"></option>'; }).join('') + '</datalist></label>' +
+      '<div class="f"><span id="pr-erg-l">Ergebnis</span><div class="seg" role="radiogroup" aria-labelledby="pr-erg-l">' + Object.keys(PR_ERG).map(function (k) { return '<label><input type="radio" name="pr-erg" value="' + k + '"' + (k === erg ? ' checked' : '') + '><span>' + esc(PR_ERG[k]) + '</span></label>'; }).join('') + '</div></div>' +
+      '<label class="f"><span>Notiz <span class="muted">(optional)</span></span><textarea id="pr-no" rows="2" maxlength="400" placeholder="z. B. Mängel und wann sie behoben wurden">' + esc(p && p.notiz || '') + '</textarea></label>' +
+      blField(p && p.befund, 'Prüfbefund oder Prüfplakette fotografieren.') +
+      '<p class="err" id="pr-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' + (p ? '<button type="button" class="btn ghost" data-act="pr-rm">Eintrag entfernen</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="bt-geraet" data-id="' + esc(gid) + '">Zurück</button></div></form>');
+  }
+  async function savePr() {
+    var s = S.sheet;
+    if (!s || s.type !== 'prform' || S.busy) return;
+    var err = function (m) { var el = $('#pr-err'); if (el) el.textContent = m; }, gv = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    var g = grOf(s.id);
+    if (!g) { err('Dieses Gerät gibt es nicht mehr.'); return; }
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var d = gv('pr-d'), art = PR_ART[gv('pr-art')] ? gv('pr-art') : 'wiederkehrend', ergEl = $('input[name="pr-erg"]:checked'), erg = ergEl && PR_ERG[ergEl.value] ? ergEl.value : 'ok';
+    if (!isDay(d) || d > dayKey(new Date())) { err('Bitte das Datum der Prüfung eintragen, nicht in der Zukunft.'); return; }
+    var now = new Date().toISOString(), old = s.pid ? arr(g.pruefungen).filter(function (x) { return x && x.id === s.pid; })[0] || null : null;
+    setBusy(true);
+    try {
+      var fotos = BL && s.bl ? await blCommitForm('betrieb', 'Prüfung ' + grName(g)) : blList(old && old.befund);
+      g = grOf(s.id) || g;
+      var p = Object.assign({}, old || { id: rid(10), erstellt: now }, { datum: d, art: art, durch: gv('pr-durch').slice(0, 60) || null, ergebnis: erg, notiz: gv('pr-no').slice(0, 400) || null, befund: fotos || [], geaendert: now });
+      var list = arr(g.pruefungen).filter(function (x) { return x && x.id !== p.id; }).concat([p]).slice(-80), patch = { pruefungen: list, geaendert: now };
+      await write(function () { return S.db.doc('geraete/' + s.id).update(patch); });
+      S.gr.set(s.id, Object.assign({}, g, patch));
+      setBusy(false);
+      openGeraet(s.id);
+      renderAll();
+      var n = grNext(S.gr.get(s.id));
+      toast('Gespeichert: Prüfung vom ' + datum(d) + '.' + (n.due ? ' Nächste bis ' + datum(n.due) + '.' : '') + (erg !== 'ok' ? ' Mängel stehen im Prüfbuch.' : ''));
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  async function prRemove(btn) {
+    var s = S.sheet;
+    if (!s || s.type !== 'prform' || !s.pid || S.busy || !canWrite() || !btn) return;
+    if (!(btn.dataset.armed && Number(btn.dataset.armed) > Date.now())) {
+      btn.dataset.armed = String(Date.now() + 4000);
+      btn.textContent = 'Wirklich entfernen?';
+      setTimeout(function () { if (btn.isConnected && btn.dataset.armed && Number(btn.dataset.armed) <= Date.now()) { delete btn.dataset.armed; btn.textContent = 'Eintrag entfernen'; } }, 4100);
+      return;
+    }
+    var g = grOf(s.id);
+    if (!g) return;
+    var now = new Date().toISOString(), list = arr(g.pruefungen).map(function (x) { return x && x.id === s.pid ? Object.assign({}, x, { entfernt: now }) : x; }), patch = { pruefungen: list, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('geraete/' + s.id).update(patch); });
+      S.gr.set(s.id, Object.assign({}, g, patch));
+      setBusy(false);
+      openGeraet(s.id);
+      renderAll();
+      toast('Eintrag entfernt. Er bleibt im Datensatz als entfernt markiert.');
+    } catch (e) { setBusy(false); writeError(e, function (m) { toast(m); }); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Abfallbuch: Liste und Eintrag ---------- */
+  function openAbfall(y) { var yy = /^\d{4}$/.test(String(y || '')) ? String(y) : dayKey(new Date()).slice(0, 4); openSheet('abfall', { year: yy }, sheetAbfall(yy)); }
+  function sheetAbfall(y) {
+    var can = canWrite(), list = abYear(y), sum = abSum(y);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Betrieb</p><h2 class="sh-title" id="sheet-title">' + esc('Abfallbuch ' + y) + '</h2>' +
+      '<p class="buy">' + esc(sum.length ? sum.map(function (a) { return a.sn + ': ' + abKg(a.kg); }).join(' · ') : 'Keine Übergaben in diesem Jahr.') + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    var ys = abYears();
+    if (ys.length > 1) h += '<div class="kva-act bt-years" role="group" aria-label="Jahr wählen">' + ys.map(function (yy) { return '<button type="button" class="btn ghost small" data-act="ab-list" data-year="' + esc(yy) + '" aria-pressed="' + (yy === y ? 'true' : 'false') + '">' + esc(yy) + '</button>'; }).join('') + '</div>';
+    h += '<div class="sh-sec">' + (list.length ? '<ul class="works">' + list.map(function (p) {
+      var a = p[1], bl = blList(a.belege).length;
+      var sub = [datum(a.datum), abKg(a.kg), a.herkunft ? 'aus ' + a.herkunft : '', a.empfaenger ? 'an ' + a.empfaenger : '', a.bs ? 'Begleitschein ' + a.bs : '', bl ? (bl === 1 ? '1 Beleg' : bl + ' Belege') : '', a.storno ? 'storniert: ' + (a.storno.grund || '') : ''].filter(Boolean).join(' · ');
+      return '<li' + (a.storno ? ' class="bt-storno"' : '') + '><button type="button" class="wbtn" data-act="ab-edit" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(abBez(a) + ' (SN ' + a.sn + ')') + '<small>' + esc(sub) + '</small></span><span class="i-p">' +
+        (a.storno ? '<span class="wst plan">storniert</span>' : a.gef ? '<span class="wst bald">gefährlich</span>' : '') + '</span></button></li>';
+    }).join('') + '</ul>' : '<p class="note">Keine Übergaben in diesem Jahr.</p>') + '</div>';
+    return h + '<div class="sh-foot">' + (can ? '<button type="button" class="btn" data-act="ab-new">Übergabe eintragen</button>' : '') + (list.length && S.dl ? '<button type="button" class="btn ghost" data-act="ab-pdf" data-year="' + esc(y) + '">Als PDF</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="bt-open">Zum Betrieb</button></div>';
+  }
+  function openAbForm(id) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var a = id ? abOf(id) : null;
+    if (id && !a) return;
+    var all = abAll().map(function (p) { return p[1]; }), today = dayKey(new Date()), sn = a ? String(a.sn || '') : (all[0] ? String(all[0].sn || '') : '54917'), known = !!ABF_M[sn];
+    var uniq = function (k) { var o = []; all.forEach(function (x) { var v = String(x[k] || '').trim(); if (v && o.indexOf(v) < 0) o.push(v); }); return o.slice(0, 20); };
+    var dl = function (lid, vals) { return '<datalist id="' + lid + '">' + vals.map(function (v) { return '<option value="' + esc(v) + '"></option>'; }).join('') + '</datalist>'; };
+    var gef = a ? !!a.gef : known ? ABF_M[sn][2] : true;
+    openSheet('abform', { id: id || null, year: a ? a.datum.slice(0, 4) : today.slice(0, 4), bl: BL ? { keep: blList(a && a.belege), pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Betrieb · Abfallbuch</p><h2 class="sh-title" id="sheet-title">' + (a ? 'Übergabe bearbeiten' : 'Übergabe eintragen') + '</h2>' +
+      (a && a.storno ? '<p class="buy">' + esc('Storniert am ' + datum(String(a.storno.am || '').slice(0, 10)) + (a.storno.grund ? ': ' + a.storno.grund : '')) + '</p>' : '') + '</div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="abform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Übergeben am</span><input type="date" id="ab-d" value="' + esc(a ? a.datum : today) + '" max="' + today + '"></label>' +
+      '<label class="f"><span>Menge (kg)</span><input id="ab-kg" inputmode="decimal" value="' + esc(a && numOrNull(a.kg) !== null ? nfIn.format(a.kg).replace('.', ',') : '') + '" autocomplete="off" placeholder="z. B. 12,5"></label></div>' +
+      '<label class="f"><span>Abfallart</span><select id="ab-sn">' + ABF.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === sn ? ' selected' : '') + '>' + esc(x[0] + ' · ' + x[1]) + '</option>'; }).join('') +
+      '<option value="andere"' + (known ? '' : ' selected') + '>Andere Abfallart</option></select></label>' +
+      '<div id="ab-andere"' + (known ? ' hidden' : '') + '><div class="row2"><label class="f"><span>Schlüsselnummer</span><input id="ab-sn2" value="' + esc(known ? '' : sn) + '" maxlength="8" inputmode="numeric" autocomplete="off" placeholder="z. B. 54928"></label>' +
+      '<label class="check bt-gef"><input type="checkbox" id="ab-gef"' + (gef ? ' checked' : '') + '><span>gefährlicher Abfall</span></label></div>' +
+      '<label class="f"><span>Bezeichnung</span><input id="ab-bez" value="' + esc(known ? '' : (a && a.bez || '')) + '" maxlength="120" autocomplete="off"></label></div>' +
+      '<label class="f"><span>Herkunft (Anfallstelle)</span><input id="ab-her" value="' + esc(a && a.herkunft || '') + '" maxlength="80" autocomplete="off" list="ab-her-l" placeholder="z. B. Entfernen alter Beschichtungen">' + dl('ab-her-l', uniq('herkunft')) + '</label>' +
+      '<label class="f"><span>Gesammelt in <span class="muted">(optional)</span></span><input id="ab-sam" value="' + esc(a && a.sammlung || '') + '" maxlength="80" autocomplete="off" list="ab-sam-l" placeholder="z. B. Deckelfass im Lager">' + dl('ab-sam-l', uniq('sammlung')) + '</label>' +
+      '<label class="f"><span>Empfänger (Entsorger)</span><input id="ab-emp" value="' + esc(a && a.empfaenger || '') + '" maxlength="80" autocomplete="off" list="ab-emp-l">' + dl('ab-emp-l', uniq('empfaenger')) + '</label>' +
+      '<label class="f" id="ab-bs-w"' + (gef ? '' : ' hidden') + '><span>Begleitschein-Nummer</span><input id="ab-bs" value="' + esc(a && a.bs || '') + '" maxlength="40" autocomplete="off" spellcheck="false"><small>Bei gefährlichen Abfällen genügt es, die Begleitscheine zu sammeln: fotografieren und unten ablegen.</small></label>' +
+      blField(a && a.belege, 'z. B. Begleitschein oder Übernahmebestätigung.') +
+      '<label class="f"><span>Notiz <span class="muted">(optional)</span></span><textarea id="ab-no" rows="2" maxlength="400">' + esc(a && a.notiz || '') + '</textarea></label>' +
+      (a && !a.storno ? '<details class="wp-more" data-k="ab-storno"><summary>Eintrag stornieren</summary><p class="help">Der Eintrag bleibt sichtbar und zählt nicht mehr mit.</p><label class="f"><span>Grund</span><input id="ab-sg" maxlength="120" autocomplete="off" placeholder="z. B. doppelt eingetragen"></label><div class="kva-act"><button type="button" class="btn ghost small" data-act="ab-storno">Stornieren</button></div></details>' : '') +
+      '<p class="err" id="ab-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="ab-back">Zurück</button></div></form>');
+  }
+  function abGefSync() {
+    var sel = $('#ab-sn'), andere = sel && sel.value === 'andere', box = $('#ab-andere'), gb = $('#ab-gef'), bw = $('#ab-bs-w');
+    if (box) box.hidden = !andere;
+    var gef = andere ? !!(gb && gb.checked) : !!(sel && ABF_M[sel.value] && ABF_M[sel.value][2]);
+    if (bw) bw.hidden = !gef;
+  }
+  function abBack() { var s = S.sheet; openAbfall(s && s.year); }
+  async function saveAb() {
+    var s = S.sheet;
+    if (!s || s.type !== 'abform' || S.busy) return;
+    var err = function (m) { var el = $('#ab-err'); if (el) el.textContent = m; }, g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var old = s.id ? abOf(s.id) : null;
+    if (s.id && !old) { err('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var d = g('ab-d'), kg = parseNum(g('ab-kg')), sel = g('ab-sn'), andere = sel === 'andere', sn = andere ? g('ab-sn2').replace(/\s/g, '') : sel;
+    if (!isDay(d) || d > dayKey(new Date())) { err('Bitte das Datum der Übergabe eintragen, nicht in der Zukunft.'); return; }
+    if (kg === null || isNaN(kg) || kg <= 0 || kg > 1000000) { err('Die Menge bitte in kg als Zahl eintragen, z. B. 12,5.'); return; }
+    if (andere && !/^\d{5}(-\d{2})?$/.test(sn)) { err('Die Schlüsselnummer hat fünf Ziffern, z. B. 54928.'); return; }
+    if (andere && !g('ab-bez')) { err('Bitte die Bezeichnung der Abfallart eintragen.'); return; }
+    if (!andere && !ABF_M[sn]) { err('Bitte eine Abfallart wählen.'); return; }
+    if (!g('ab-her')) { err('Bitte die Herkunft eintragen, z. B. Entfernen alter Beschichtungen.'); return; }
+    if (!g('ab-emp')) { err('Bitte den Empfänger eintragen: Wer hat den Abfall übernommen?'); return; }
+    var gef = andere ? !!(($('#ab-gef') || {}).checked) : ABF_M[sn][2], now = new Date().toISOString();
+    setBusy(true);
+    try {
+      var bl = BL && s.bl ? await blCommitForm('betrieb', 'Abfall ' + sn) : blList(old && old.belege);
+      var data = Object.assign({}, old || { erstellt: now }, { datum: d, sn: sn, bez: andere ? g('ab-bez').slice(0, 120) : ABF_M[sn][1], gef: gef, kg: round3(kg), herkunft: g('ab-her').slice(0, 80),
+        sammlung: g('ab-sam').slice(0, 80) || null, empfaenger: g('ab-emp').slice(0, 80), bs: gef ? g('ab-bs').slice(0, 40) || null : null, belege: bl || [], notiz: g('ab-no').slice(0, 400) || null, geaendert: now });
+      var id = s.id;
+      if (id) await write(function () { return S.db.doc('abfall/' + id).update(data); });
+      else { var ref = S.db.collection('abfall').doc(); id = ref.id; await write(function () { return ref.set(data); }); }
+      S.abf.set(id, data);
+      setBusy(false);
+      openAbfall(d.slice(0, 4));
+      renderAll();
+      toast('Gespeichert: ' + abKg(kg) + ' ' + data.bez + '.' + (gef && !blList(data.belege).length ? ' Begleitschein noch fotografieren.' : ''));
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  async function abStorno() {
+    var s = S.sheet;
+    if (!s || s.type !== 'abform' || !s.id || S.busy || !canWrite()) return;
+    var a = abOf(s.id), grund = (($('#ab-sg') || {}).value || '').trim().slice(0, 120), err = function (m) { var el = $('#ab-err'); if (el) el.textContent = m; };
+    if (!a) return;
+    if (!grund) { err('Bitte einen Grund für das Stornieren eintragen.'); var f = $('#ab-sg'); if (f) { try { f.focus(); } catch (_) {} } return; }
+    var now = new Date().toISOString(), patch = { storno: { am: now, grund: grund }, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('abfall/' + s.id).update(patch); });
+      S.abf.set(s.id, Object.assign({}, a, patch));
+      setBusy(false);
+      openAbfall(a.datum.slice(0, 4));
+      renderAll();
+      toast('Storniert. Der Eintrag bleibt sichtbar und zählt nicht mehr mit.');
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Eingaben ---------- */
+  function btChange(t) {
+    if (!t || !S.sheet) return false;
+    if (S.sheet.type === 'abform' && (t.id === 'ab-sn' || t.id === 'ab-gef')) { abGefSync(); return true; }
+    if (S.sheet.type === 'grform' && t.id === 'gr-art') { grArtChange(t); return true; }
+    if (S.sheet.type === 'stform' && (t.id === 'st-agg' || t.id === 'st-kat')) { stKatInfo(); return true; }
+    return false;
+  }
+  function btInput(t) {
+    if (!t || !S.sheet || S.sheet.type !== 'stform' || t.id !== 'st-h') return false;
+    stKatInfo();
+    return true;
+  }
+  function btCtxList(ctx) {
+    var p = String(ctx || '').split(':');
+    if (p[0] === 'bs') { var it = S.items.get(p[1]); return it && it.stoff ? blList(it.stoff.sdb) : []; }
+    if (p[0] === 'bg') { var g = grOf(p[1]), q = g ? arr(g.pruefungen).filter(function (x) { return x && x.id === p[2]; })[0] : null; return q ? blList(q.befund) : []; }
+    if (p[0] === 'ba') { var a = abOf(p[1]); return a ? blList(a.belege) : []; }
+    return null;
+  }
+  function btRefresh(sh, top) {
+    var s = S.sheet;
+    if (!s) return false;
+    var html = s.type === 'betrieb' ? sheetBetrieb() : s.type === 'geraet' && grOf(s.id) ? sheetGeraet(s.id) : s.type === 'abfall' ? sheetAbfall(s.year) : null;
+    if (html === null) return false;
+    var ae = document.activeElement;
+    if (ae && sh.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
+    var od = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; });
+    setHTML(sh, html);
+    $$('details[data-k]', sh).forEach(function (d) { if (od.indexOf(d.dataset.k) >= 0) d.open = true; });
+    sh.scrollTop = top;
+    return true;
+  }
+  /* ---------- PDF ---------- */
+  function btPdfT(v) { return String(v == null ? '' : v).replace(/[    ]/g, ' ').replace(/−/g, '-').replace(/×/g, 'x').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/→/g, '->').replace(/[^\u0000-ÿ€„“”‘’–—…•]/g, '?'); }
+  function btPdf(lib, title, sub) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true }), W = 210, H = 297, M = 16, X1 = W - M, BOT = H - 18, PT = 0.3528, conf = kvaConf();
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], bad: [176, 42, 26] };
+    var P = { doc: doc, y: M, W: X1 - M, M: M, X1: X1, BOT: BOT };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var lh = function (sz) { return sz * PT * 1.3; };
+    var split = function (t, w) { return doc.splitTextToSize(btPdfT(t), w); };
+    var need = function (hh) { if (P.y + hh > BOT) { doc.addPage(); P.y = M; return true; } return false; };
+    P.need = need;
+    doc.setLineHeightFactor(1.3);
+    doc.setProperties({ title: btPdfT(title), creator: 'Werkstatt-Inventar' });
+    f('bold', 16); tc(C.ink);
+    var tl = split(title, X1 - M - 72);
+    doc.text(tl, M, P.y + 6);
+    var ly = P.y + 6 + (tl.length - 1) * lh(16) + 3, ry = P.y;
+    if (conf.name) { f('bold', 10); tc(C.ink); doc.text(split(conf.name, 70)[0], X1, ry + 4, { align: 'right' }); ry += 5; }
+    f('normal', 8.5); tc(C.mut);
+    String(conf.adresse || '').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean).forEach(function (l) { doc.text(split(l, 70)[0], X1, ry + 3.5, { align: 'right' }); ry += lh(8.5); });
+    if (sub) { f('normal', 9); tc(C.mut); var sl = split(sub, X1 - M - 72); doc.text(sl, M, ly + 3); ly += sl.length * lh(9) + 1; }
+    P.y = Math.max(ly, ry) + 6;
+    P.h2 = function (t) { need(16); f('bold', 12); tc(C.ink); var l = split(t, X1 - M); doc.text(l, M, P.y + 4.5); P.y += 4.5 + l.length * lh(12) + 1; };
+    P.h3 = function (t) { need(12); f('bold', 9.5); tc(C.ink); doc.text(split(t, X1 - M), M, P.y + 3.6); P.y += 6; };
+    P.p = function (t, sz, bad) { sz = sz || 8.8; f('normal', sz); tc(bad ? C.bad : C.mut); var l = split(t, X1 - M); need(l.length * lh(sz) + 1); doc.text(l, M, P.y + 3.2); P.y += l.length * lh(sz) + 2.2; };
+    P.table = function (cols, rows) {
+      var pad = 1.3, sz = 8.3;
+      var head = function () {
+        f('bold', 7.6); tc(C.mut);
+        var ls = cols.map(function (c) { return split(c.t, c.w - 2 * pad); }), hh = Math.max.apply(null, ls.map(function (l) { return l.length; })) * lh(7.6) + 2.2, x = M;
+        need(hh + 8);
+        ls.forEach(function (l, i) { var c = cols[i]; doc.text(l, c.r ? x + c.w - pad : x + pad, P.y + 3.2, c.r ? { align: 'right' } : undefined); x += c.w; });
+        P.y += hh; doc.setDrawColor(C.ink[0], C.ink[1], C.ink[2]); doc.setLineWidth(0.35); doc.line(M, P.y, X1, P.y); P.y += 0.5;
+      };
+      head();
+      rows.forEach(function (row) {
+        var cells = Array.isArray(row) ? row : row.cells, bad = !Array.isArray(row) && !!row.bad;
+        f('normal', sz);
+        var ls = cells.map(function (c, i) { return split(c === null || c === undefined || c === '' ? '–' : String(c), cols[i].w - 2 * pad); });
+        var hh = Math.max.apply(null, ls.map(function (l) { return l.length; })) * lh(sz) + 2.4;
+        if (need(hh)) head();
+        f('normal', sz); tc(bad ? C.bad : C.ink);
+        var x = M;
+        ls.forEach(function (l, i) { var c = cols[i]; doc.text(l, c.r ? x + c.w - pad : x + pad, P.y + 3.4, c.r ? { align: 'right' } : undefined); x += c.w; });
+        P.y += hh; doc.setDrawColor(C.line[0], C.line[1], C.line[2]); doc.setLineWidth(0.2); doc.line(M, P.y, X1, P.y);
+      });
+      P.y += 4;
+    };
+    P.finish = function (foot) {
+      var n = doc.getNumberOfPages();
+      for (var i = 1; i <= n; i++) {
+        doc.setPage(i); f('normal', 7.5); tc(C.mut); doc.setDrawColor(C.line[0], C.line[1], C.line[2]); doc.setLineWidth(0.2); doc.line(M, H - 12, X1, H - 12);
+        doc.text(split(foot, X1 - M - 30)[0], M, H - 8); doc.text('Seite ' + i + ' von ' + n, X1, H - 8, { align: 'right' });
+      }
+      return doc;
+    };
+    return P;
+  }
+  function btUnterlagenDoc(lib) {
+    var today = dayKey(new Date()), y = today.slice(0, 4), name = kvaConf().name || 'Werkstatt';
+    var P = btPdf(lib, 'Betriebsanlage: Beilagen', 'Stand ' + datum(today) + '. Zusammengestellt aus der Werkstatt-App; vor der Einreichung prüfen und mit Formular, Plänen und Betriebsbeschreibung ergänzen.');
+    P.h2('1. Arbeitsstoffe');
+    var st = stItems();
+    if (st.length) P.table([{ t: 'Bezeichnung', w: 44 }, { t: 'Einstufung (Gefahrenhinweise)', w: 44 }, { t: 'Aggregat- zustand', w: 22 }, { t: 'Menge', w: 28, r: true }, { t: 'Lagerort', w: 22 }, { t: 'Sicherheits- datenblatt', w: 18 }],
+      st.map(function (p) {
+        var it = p[1], s = stOf(it), k = stKat(s), sdb = stSdb(s);
+        return { cells: [itemName(it) + (s.hersteller ? ' (' + s.hersteller + ')' : ''), (stHList(s).join(' ') || 'keine Gefahrenhinweise') + (k ? '; brennbare Flüssigkeit ' + ST_KAT[k].n : ''), ST_AGG[s.aggregat] || '', stMengeTxt(it), stOrte(it).join(', ') + (s.schrank ? ', Sicherheitsschrank' : ''), sdb ? (isDay(s.sdbStand) ? 'vom ' + datum(s.sdbStand) : 'vorhanden') : 'fehlt'], bad: !sdb };
+      }));
+    else P.p('Noch keine Arbeitsstoffe eingetragen.');
+    P.h2('2. Lagerung brennbarer Flüssigkeiten');
+    if (!st.length) P.p('Noch keine Arbeitsstoffe eingetragen.');
+    else stLagerung().forEach(function (r) {
+      P.h3(r.raum + (r.mit1 ? ' (mit Kategorie 1)' : ''));
+      P.table([{ t: 'Kategorie nach § 3 VbF 2023', w: 58 }, { t: 'im Raum, außerhalb von Sicherheitsschränken', w: 40, r: true }, { t: 'Höchst- menge', w: 20, r: true }, { t: 'in Sicherheitsschränken', w: 40, r: true }, { t: 'Höchst- menge', w: 20, r: true }],
+        ['1', '2', '3', '4'].map(function (k) { return { cells: [ST_KAT[k].n + ' (' + ST_KAT[k].z + ')', stLTxt(r.out[k]), nf.format(k === '1' ? ST_MAX.mit1['1'] : r.max[k]) + ' l', stLTxt(r.sch[k]), nf.format(ST_MAX.schrank[k]) + ' l'], bad: r.ueber.some(function (u) { return u.k === k; }) }; }));
+      if (Object.keys(r.spray).length) P.p('Spraydosen (Aerosole, nicht von der VbF erfasst): ' + stSprayTxt(r) + '.');
+      if (r.offen.length) P.p('Ohne Literangabe, nicht mitgezählt: ' + stNames(r.offen) + '.', 8.8, true);
+      if (r.geb.length) P.p('Gebinde über der zulässigen Größe außerhalb von Sicherheitsschränken: ' + stNames(r.geb) + '.', 8.8, true);
+    });
+    if (st.length) P.p('Höchstmengen nach § 33 Abs. 1 VbF 2023 für Arbeitsräume bis 500 Quadratmeter Grundfläche je Brandabschnitt und für Sicherheitsschränke; Kategorien nach § 3 VbF 2023.');
+    P.h2('3. Maschinen und Geräte');
+    var gl = grList(false);
+    if (gl.length) P.table([{ t: 'Bezeichnung', w: 38 }, { t: 'Hersteller, Typ', w: 36 }, { t: 'Baujahr', w: 15, r: true }, { t: 'Leistung', w: 17, r: true }, { t: 'Schallpegel', w: 32 }, { t: 'Raum', w: 20 }, { t: 'Letzte Prüfung', w: 20 }],
+      gl.map(function (p) { var g = p[1], n = grNext(g); return [grName(g), [g.hersteller, g.typ].filter(Boolean).join(' '), numOrNull(g.baujahr) !== null ? String(g.baujahr) : '', numOrNull(g.kw) !== null ? nf.format(g.kw) + ' kW' : '', g.schall || '', g.raum || '', n.last ? datum(n.last.datum) : ''].map(function (c) { return c || ''; }); }));
+    else P.p('Noch keine Geräte eingetragen.');
+    P.h2('4. Abfälle');
+    var yPrev = String(Number(y) - 1), useY = abSum(yPrev).length ? yPrev : y, sum = abSum(useY);
+    if (sum.length) {
+      P.table([{ t: 'Abfallart', w: 50 }, { t: 'Schlüssel- nummer', w: 16 }, { t: 'gefähr- lich', w: 12 }, { t: 'Anfallstelle', w: 30 }, { t: 'Sammlung', w: 26 }, { t: 'Entsorger', w: 24 }, { t: 'Menge ' + useY + (useY === y ? ' bisher' : ''), w: 20, r: true }],
+        sum.map(function (a) { return [a.bez, a.sn, a.gef ? 'ja' : 'nein', a.herkunft, a.sammlung, a.empf, abKg(a.kg)]; }));
+    } else P.p('Noch keine Übergaben im Abfallbuch.');
+    return P.finish('Betriebsanlage, Beilagen · ' + name + ' · ' + datum(today));
+  }
+  function abPdfDoc(lib, y) {
+    var name = kvaConf().name || 'Werkstatt', list = abYear(y).slice().reverse(), sum = abSum(y);
+    var P = btPdf(lib, 'Abfallaufzeichnungen ' + y, 'Abfallart, Menge, Herkunft und Verbleib je Übergabe, fortlaufend für das Kalenderjahr ' + y + '. Aufzubewahren 7 Jahre.');
+    if (!list.length) P.p('Keine Übergaben in diesem Jahr.');
+    sum.forEach(function (s) {
+      P.h3(s.bez + ' (SN ' + s.sn + (s.gef ? ', gefährlich' : '') + ')');
+      P.table([{ t: 'Übergeben am', w: 22 }, { t: 'Menge', w: 20, r: true }, { t: 'Herkunft', w: 42 }, { t: 'Empfänger', w: 46 }, { t: 'Begleitschein', w: 48 }],
+        list.filter(function (p) { return !p[1].storno && String(p[1].sn) === s.sn; }).map(function (p) { var a = p[1]; return [datum(a.datum), abKg(a.kg), a.herkunft || '', a.empfaenger || '', a.bs || (blList(a.belege).length ? 'als Foto abgelegt' : '')]; }));
+      P.p('Summe ' + y + ': ' + abKg(s.kg) + '.');
+    });
+    var st = list.filter(function (p) { return p[1].storno; });
+    if (st.length) {
+      P.h3('Stornierte Einträge');
+      P.table([{ t: 'Übergeben am', w: 22 }, { t: 'Abfallart', w: 60 }, { t: 'Menge', w: 20, r: true }, { t: 'Storniert, Grund', w: 76 }],
+        st.map(function (p) { var a = p[1]; return [datum(a.datum), abBez(a) + ' (SN ' + a.sn + ')', abKg(a.kg), datum(String(a.storno.am || '').slice(0, 10)) + (a.storno.grund ? ': ' + a.storno.grund : '')]; }));
+    }
+    return P.finish('Abfallaufzeichnungen ' + y + ' · ' + name);
+  }
+  function grPdfDoc(lib, imgs) {
+    var today = dayKey(new Date()), name = kvaConf().name || 'Werkstatt';
+    var P = btPdf(lib, 'Prüfbuch', 'Maschinen und Geräte mit allen eingetragenen Prüfungen. Stand ' + datum(today) + '.');
+    grList(false).concat(grList(true)).forEach(function (p) {
+      var g = p[1], n = grNext(g), pr = grPr(g);
+      P.h2(grName(g) + (g.archiviert ? ' (außer Betrieb)' : ''));
+      P.p([grArt(g).n, [g.hersteller, g.typ].filter(Boolean).join(' '), numOrNull(g.baujahr) !== null ? 'Baujahr ' + g.baujahr : '', g.seriennr ? 'Seriennummer ' + g.seriennr : '', n.iv ? 'Prüfung alle ' + n.iv + ' Monate' : 'ohne Prüfintervall', n.due && !g.archiviert ? 'nächste bis ' + datum(n.due) : ''].filter(Boolean).join(' · '));
+      if (pr.length) P.table([{ t: 'Datum', w: 22 }, { t: 'Art', w: 46 }, { t: 'Geprüft von', w: 40 }, { t: 'Ergebnis', w: 22 }, { t: 'Notiz', w: 48 }],
+        pr.map(function (q) { return { cells: [datum(q.datum), PR_ART[q.art] || PR_ART.wiederkehrend, q.durch || '', PR_ERG[q.ergebnis] || 'in Ordnung', q.notiz || ''], bad: q.ergebnis === 'maengel' || q.ergebnis === 'gesperrt' }; }));
+      else P.p('Noch keine Prüfung eingetragen.');
+    });
+    (imgs || []).forEach(function (x, i) {
+      if (i % 2 === 0) { P.doc.addPage(); P.y = P.M; P.h2(i === 0 ? 'Anhang: Prüfbefunde' : 'Anhang: Prüfbefunde (Fortsetzung)'); }
+      var bh = 112, sc = Math.min(P.W / x.im.w, bh / x.im.h), w2 = x.im.w * sc, h2 = x.im.h * sc;
+      P.h3(x.cap);
+      try { P.doc.addImage(x.im.data, x.im.fmt, P.M + (P.W - w2) / 2, P.y, w2, h2, undefined, 'FAST'); } catch (_) {}
+      P.y += bh + 6;
+    });
+    return P.finish('Prüfbuch · ' + name);
+  }
+  async function btSavePdf(name, build, prep) {
+    if (!S.dl) { toast('Speichern geht in dieser Ansicht nicht.'); return; }
+    if (S.busy) return;
+    var lib;
+    setBusy(true);
+    try {
+      try { lib = await loadJsPdf(); } catch (e) { toast('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+      var extra = prep ? await prep() : null, blob;
+      try { blob = build(lib, extra).output('blob'); } catch (e) { toast('Das PDF konnte nicht erstellt werden.'); return; }
+      setBusy(false);
+      try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name); }
+      catch (e) { if (!e || e.code !== 'declined') toast('Speichern ging in dieser Ansicht nicht.'); }
+    } finally { if (S.busy) setBusy(false); }
+  }
+  function grSavePdf() {
+    btSavePdf('Prüfbuch ' + dayKey(new Date()) + '.pdf', grPdfDoc, async function () {
+      var out = [];
+      if (!BL) return out;
+      for (var a = 0, gl = grList(false).concat(grList(true)); a < gl.length && out.length < 12; a++) {
+        var g = gl[a][1];
+        var pr = grPr(g);
+        for (var b = 0; b < pr.length && out.length < 12; b++) {
+          var fl = blList(pr[b].befund).filter(function (r) { return r.typ !== 'pdf'; });
+          for (var c = 0; c < fl.length && out.length < 12; c++) { try { out.push({ cap: grName(g) + ', Prüfung vom ' + datum(pr[b].datum), im: await vmImg(fl[c]) }); } catch (_) {} }
+        }
+      }
+      return out;
+    });
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -16474,6 +17369,27 @@ input.fs-mono { text-transform: uppercase; }
       case 'rl-et': openRlEt(t.dataset.id, t.dataset.set); break;
       case 'rl-et-pdf': rlEtPdf(); break;
       case 'odb-req': odbRequest(t.dataset.id); break;
+      case 'bt-open': openBetrieb(); break;
+      case 'bt-pdf': btSavePdf('Betriebsanlage Beilagen ' + dayKey(new Date()) + '.pdf', btUnterlagenDoc); break;
+      case 'bt-raum-save': btRaumSave(); break;
+      case 'st-pick': openStPick(); break;
+      case 'st-edit': openStForm(t.dataset.id, 'betrieb'); break;
+      case 'st-edit-item': openStForm(t.dataset.id, 'item'); break;
+      case 'st-off': stOff(); break;
+      case 'st-back': stBack(); break;
+      case 'gr-new': openGrForm(null); break;
+      case 'gr-edit': openGrForm(t.dataset.id); break;
+      case 'bt-geraet': openGeraet(t.dataset.id); break;
+      case 'gr-pdf': grSavePdf(); break;
+      case 'pr-new': openPrForm(t.dataset.id, null); break;
+      case 'pr-edit': openPrForm(t.dataset.id, t.dataset.pid); break;
+      case 'pr-rm': prRemove(t); break;
+      case 'ab-new': openAbForm(null); break;
+      case 'ab-edit': openAbForm(t.dataset.id); break;
+      case 'ab-list': openAbfall(t.dataset.year); break;
+      case 'ab-pdf': (function (yy) { btSavePdf('Abfallaufzeichnungen ' + yy + '.pdf', function (lib) { return abPdfDoc(lib, yy); }); })(t.dataset.year || dayKey(new Date()).slice(0, 4)); break;
+      case 'ab-storno': abStorno(); break;
+      case 'ab-back': abBack(); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
@@ -16581,6 +17497,7 @@ input.fs-mono { text-transform: uppercase; }
     if (gaAnxChange(t)) return;
     if (rlChange(t)) return;
     if (rlEtChange(t)) return;
+    if (btChange(t)) return;
     if (brChange(t)) return;
     if (pvChange(t)) return;
     if (gaChange(t)) return;
@@ -16651,6 +17568,10 @@ input.fs-mono { text-transform: uppercase; }
       else if (e.target.id === 'avform') { e.preventDefault(); saveAv(); }
       else if (e.target.id === 'fsform') { e.preventDefault(); saveFs(); }
       else if (e.target.id === 'rlform') { e.preventDefault(); saveRl(false); }
+      else if (e.target.id === 'stform') { e.preventDefault(); saveSt(); }
+      else if (e.target.id === 'grform') { e.preventDefault(); saveGr(); }
+      else if (e.target.id === 'prform') { e.preventDefault(); savePr(); }
+      else if (e.target.id === 'abform') { e.preventDefault(); saveAb(); }
       else if (e.target.id === 'keein') { e.preventDefault(); saveKeEin(); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
@@ -16672,6 +17593,7 @@ input.fs-mono { text-transform: uppercase; }
       if (rkInput(e.target)) return;
       if (avInput(e.target)) return;
       if (fsInput(e.target)) return;
+      if (btInput(e.target)) return;
       if (wpTippsInput(e.target)) return;
       if (gaInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
