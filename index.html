@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "42", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "43", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -2129,6 +2129,32 @@ input.fs-mono { text-transform: uppercase; }
 .bt-storno .i-n { text-decoration: line-through; text-decoration-thickness: 1px; }
 .bt-years .btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
 .bt-gef { align-self: end; padding-bottom: 12px; }
+/* Umsatz und Preise, Material je Auftrag (Version 43) */
+.um-g { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.um-gh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.um-gh h4 { margin: 0; font-size: 16px; }
+.um-m { margin-top: 10px; }
+.um-ml { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 14px; }
+.um-ml b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.um-bar { height: 8px; margin-top: 5px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.um-bar > span { display: block; height: 100%; border-radius: 4px; background: var(--in); }
+.um-bar.um-bald > span { background: var(--ro); }
+.um-bar.um-faellig > span { background: var(--kaufen); }
+.um-g .rstat, .um-g .help { margin: 8px 0 0; }
+.um-dl dd { font-variant-numeric: tabular-nums; }
+.re-za { margin-bottom: 2px; }
+.lp-r { padding: 10px 0 2px; border-top: 1px dashed var(--line); }
+.lp-rh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.lp-p { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.lp-mat { margin-top: 6px; }
+.lp-kva { display: flex; align-items: flex-end; gap: 8px; }
+.lp-kva .f { flex: 1; }
+.lp-kva .btn { flex: none; min-height: 46px; }
+.ubm-x { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: end; }
+.ubm-b { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--muted); }
+.ubm input[readonly] { background: var(--surface-2); color: var(--muted); }
+.ubm-cost { margin-top: 4px; }
+.ubm-cost:empty { display: none; }
 </style>
 
 <div class="wrap">
@@ -2190,7 +2216,7 @@ input.fs-mono { text-transform: uppercase; }
 
   <section class="view" id="view-autos" aria-label="Autos" hidden>
     <div class="vhead"><h2 class="sec">Autos und ihre Teile</h2><button type="button" class="linkbtn" data-act="car-new">+ Auto anlegen</button></div>
-    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="ka-open">Kosten</button><button type="button" class="btn ghost small" data-act="rk-open">Rad-Reifen-Rechner</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button><button type="button" class="btn ghost small" data-act="bt-open">Betrieb</button></div>
+    <div class="vbtns" id="autos-btns" hidden><button type="button" class="btn ghost small" data-act="zeitplan">Zeitplan 12 Monate</button><button type="button" class="btn ghost small" data-act="km-all" id="kmall-btn">km-Stände eintragen</button><button type="button" class="btn ghost small" data-act="ka-open">Kosten</button><button type="button" class="btn ghost small" data-act="rk-open">Rad-Reifen-Rechner</button><button type="button" class="btn ghost small" data-act="kunden">Kunden</button><button type="button" class="btn ghost small" data-act="bt-open">Betrieb</button><button type="button" class="btn ghost small" data-act="um-open">Umsatz und Preise</button></div>
     <ul class="cars" id="cars"></ul>
     <p class="hint">Jedes Auto bekommt ein eigenes Fach im Regal: auf der Karte das Fach antippen, „Fach einstellen“ und das Auto wählen. Im Auto trägst du Kaufpreis und erledigte Arbeiten ein, Einbauteile brauchen Kaufdatum und Preis. Der Wartungsplan im Auto zeigt, welche Wechsel fällig sind, und typische Probleme je km-Stand. Der Zeitplan sammelt die Termine aller Autos für die nächsten 12 Monate.</p>
   </section>
@@ -2290,7 +2316,7 @@ input.fs-mono { text-transform: uppercase; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), odb: new Map(), gr: new Map(), abf: new Map(), btConf: null, gaConf: null, gaArm: null, gaLastUri: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), odb: new Map(), gr: new Map(), abf: new Map(), btConf: null, um: new Map(), prConf: null, gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2680,14 +2706,14 @@ input.fs-mono { text-transform: uppercase; }
         renderAll(); refreshSheet();
       }, function () { S.repsReady = true; renderAll(); });
       S.db.collection('meta').onSnapshot(function (snap) {
-        var m = null, e = null, ri = null, kl = null, kv = null, gk = null, bt = null;
+        var m = null, e = null, ri = null, kl = null, kv = null, gk = null, bt = null, pp = null;
         snap.docs.forEach(function (d) {
           if (!d.exists) return;
           var v = d.data();
           if (!v || typeof v !== 'object') return;
-          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v; else if (d.id === 'gutachten') gk = v; else if (d.id === 'betrieb') bt = v;
+          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v; else if (d.id === 'gutachten') gk = v; else if (d.id === 'betrieb') bt = v; else if (d.id === 'preise') pp = v;
         });
-        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.gaConf = gk; S.btConf = bt; S.metaReady = true; renderAll(); refreshSheet();
+        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.gaConf = gk; S.btConf = bt; S.prConf = pp; S.metaReady = true; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('wartung').onSnapshot(function (snap) {
         var m = new Map();
@@ -2700,6 +2726,11 @@ input.fs-mono { text-transform: uppercase; }
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.rr = m;
         renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('umsatz').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.um = m; refreshSheet();
       }, function () {});
       S.db.collection('geraete').onSnapshot(function (snap) {
         var m = new Map();
@@ -3050,7 +3081,7 @@ input.fs-mono { text-transform: uppercase; }
   function bookingText(e) {
     var u = e.einheit || 'Stk', m = fmt(e.menge);
     if (e.art === 'ein') return '+' + m + ' ' + u + ' ' + e.name + ' → ' + lagerName(e.lager);
-    if (e.art === 'aus') return '−' + m + ' ' + u + ' ' + e.name + ' aus ' + lagerName(e.lager);
+    if (e.art === 'aus') return '−' + m + ' ' + u + ' ' + e.name + ' aus ' + lagerName(e.lager) + (e.auftrag && e.fahrzeugName ? ' für ' + e.fahrzeugName : '');
     if (e.art === 'um') return m + ' ' + u + ' ' + e.name + ': ' + lagerName(e.lager) + ' → ' + lagerName(e.nach);
     if (e.art === 'einbau') return m + ' ' + u + ' ' + e.name + ' in ' + (e.fahrzeugName || 'Auto') + ' eingebaut';
     if (e.art === 'leih') return e.name + ' verliehen an ' + (e.an || '?');
@@ -3598,7 +3629,7 @@ input.fs-mono { text-transform: uppercase; }
     var u = esc(e.einheit || 'Stk'), m = fmt(e.menge), sign = '', cls = '', det = '';
     var v = Array.isArray(e.vorher) ? e.vorher : [0, 0], n = Array.isArray(e.nachher) ? e.nachher : [0, 0];
     if (e.art === 'ein') { sign = '+' + m; cls = 'in'; det = '→ ' + lagerName(e.lager) + (e.neuKauf ? ' · Kauf ' + datum(e.kaufdatum) + ', ' + eur(e.preis) + ' je ' + (e.einheit || 'Stk') : ''); }
-    else if (e.art === 'aus') { sign = '−' + m; cls = 'out'; det = 'aus ' + lagerName(e.lager); }
+    else if (e.art === 'aus') { sign = '−' + m; cls = 'out'; det = 'aus ' + lagerName(e.lager) + (e.auftrag && e.fahrzeugName ? ' · für ' + (S.cars.has(e.fahrzeug) ? carName(e.fahrzeug) : e.fahrzeugName) : ''); }
     else if (e.art === 'um') { sign = '⇅' + m; cls = 'um'; det = lagerName(e.lager) + ' → ' + lagerName(e.nach); }
     else if (e.art === 'einbau') { sign = '✓' + m; cls = 'einbau'; det = 'eingebaut in ' + (S.cars.has(e.fahrzeug) ? carName(e.fahrzeug) : (e.fahrzeugName || 'Auto')) + ' · aus ' + lagerName(e.lager); }
     else if (e.art === 'leih') { sign = '↗' + m; cls = 'leih'; det = 'verliehen an ' + (e.an || '?'); }
@@ -4047,6 +4078,7 @@ input.fs-mono { text-transform: uppercase; }
       sh.scrollTop = top;
     }
     else if (S.sheet.type === 'betrieb' || S.sheet.type === 'geraet' || S.sheet.type === 'abfall') btRefresh(sh, top);
+    else if (S.sheet.type === 'umsatz') umRefresh(sh, top);
     else if (S.sheet.type === 'kosten') { setHTML(sh, sheetKosten()); sh.scrollTop = top; }
     else if (S.sheet.type === 'fs' && S.cars.has(S.sheet.id)) {
       var fod = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; }), fcl = $$('details[data-k]', sh).filter(function (d) { return !d.open; }).map(function (d) { return d.dataset.k; });
@@ -7523,7 +7555,7 @@ input.fs-mono { text-transform: uppercase; }
   }
   async function blUpload(carId, p, label) {
     var path = 'belege/' + blSafe(carId) + '/' + dayKey(new Date()) + '-' + rid(8) + '.' + p.ext;
-    var msg = ('App: ' + (p.typ === 'pdf' ? 'PDF' : 'Foto') + ' · ' + (carId === 'betrieb' ? 'Betrieb' : carName(carId)) + (label ? ' · ' + label : '')).slice(0, 180);
+    var msg = ('App: ' + (p.typ === 'pdf' ? 'PDF' : 'Foto') + ' · ' + (carId === 'betrieb' ? 'Betrieb' : carId === 'umsatz' ? 'Umsatz' : carName(carId)) + (label ? ' · ' + label : '')).slice(0, 180);
     var r = await track(function () { return BL.put(path, p.blob, msg); });
     var ref = { id: rid(8), pfad: r.pfad, sha: r.sha || null, typ: p.typ, bytes: r.bytes || p.blob.size, name: p.name, am: new Date().toISOString() };
     if (p.w) { ref.w = p.w; ref.h = p.h; }
@@ -9140,13 +9172,6 @@ input.fs-mono { text-transform: uppercase; }
       }).join('');
     }).join('');
   }
-  function ubMittelRow(m, i) {
-    m = m || {};
-    return '<div class="ubm" data-i="' + i + '"><label class="f ubm-nf"><span>Produkt</span><input class="ubm-n" id="ubm-n' + i + '" list="ubm-l" value="' + esc(m.n || '') + '" maxlength="80" autocomplete="off" placeholder="z. B. Mike Sander’s Fett"></label>' +
-      '<label class="f"><span>Art</span><select class="ubm-t" id="ubm-t' + i + '"' + (m.t ? ' data-touched="1"' : '') + '><option value="">Art wählen</option>' +
-      Object.keys(UB_MT).map(function (k) { return '<option value="' + k + '"' + (k === m.t ? ' selected' : '') + '>' + esc(UB_MT[k].n) + '</option>'; }).join('') + '</select></label>' +
-      '<label class="f"><span>Menge</span><input class="ubm-m" id="ubm-m' + i + '" value="' + esc(m.m || '') + '" maxlength="30" autocomplete="off" placeholder="z. B. 2 kg"></label></div>';
-  }
   function ubMittelNames() {
     var seen = [];
     S.items.forEach(function (it) { if (it && !it.archiviert && it.bereich === 'verbrauch' && it.name && seen.indexOf(it.name) < 0) seen.push(String(it.name)); });
@@ -9220,7 +9245,7 @@ input.fs-mono { text-transform: uppercase; }
       var v = ubZonen({ ub: u })[z.id];
       if (ubz[z.id].keep.length || (v && v.n)) open[z.id] = true;
     });
-    var data = { car: carId, work: workId || null, typ: typ, back: pre.back || null, bl: BL ? { keep: refs.filter(function (r) { return !r.zone; }), pend: [] } : null, ubz: ubz, open: open };
+    var data = { car: carId, work: workId || null, typ: typ, back: pre.back || null, bl: BL ? { keep: refs.filter(function (r) { return !r.zone; }), pend: [] } : null, ubz: ubz, open: open, ubOld: ubMittel(u).map(function (m) { return Object.assign({}, m); }) };
     S.sheet = Object.assign({ type: 'ubform' }, data);
     var cur = ubState(car, w && isDay(w.datum) ? w.datum : null), ck = curKmEst(car), today = dayKey(new Date());
     var mittel = ubMittel(u), arten = arr(u.arten), af = u.auffr && typeof u.auffr === 'object' ? u.auffr : {};
@@ -9247,7 +9272,7 @@ input.fs-mono { text-transform: uppercase; }
     } else {
       h += '<fieldset class="ub-fs"><legend>Was wurde gemacht</legend>' + ubPills('ub-art', UB_ART, arten) + '</fieldset>' +
         '<fieldset class="ub-fs"><legend>Mittel</legend><div id="ubm-box">' + (mittel.length ? mittel : [{}]).concat([{}]).map(ubMittelRow).join('') + '</div>' +
-        '<button type="button" class="linkbtn" data-act="ub-madd">+ Weiteres Mittel</button><datalist id="ubm-l">' + ubMittelNames() + '</datalist></fieldset>' +
+        '<button type="button" class="linkbtn" data-act="ub-madd">+ Weiteres Mittel</button><datalist id="ubm-l">' + ubMittelNames() + '</datalist>' + ub39CostLine() + '</fieldset>' +
         '<div class="ub-zh"><h3 class="sec">Behandelte Zonen</h3></div>' +
         '<div class="ub-q"><button type="button" class="btn ghost small" data-act="ub-quick" data-q="unten">Unterboden</button><button type="button" class="btn ghost small" data-act="ub-quick" data-q="hohl">Hohlräume</button>' +
         '<button type="button" class="btn ghost small" data-act="ub-quick" data-q="auff">Auffällige</button><button type="button" class="btn ghost small" data-act="ub-quick" data-q="keine">Keine</button></div>' +
@@ -9255,7 +9280,7 @@ input.fs-mono { text-transform: uppercase; }
         '<div class="row2" id="ub-auffr"><label class="f" id="ubaf-unterboden"><span>Unterbodenschutz auffrischen</span>' + ubAfSel('unterboden', numOrNull(af.unterboden), !!w && arten.indexOf('unterboden') >= 0) + '<small id="ubah-unterboden"></small></label>' +
         '<label class="f" id="ubaf-hohlraum"><span>Hohlräume auffrischen</span>' + ubAfSel('hohlraum', numOrNull(af.hohlraum), !!w && arten.indexOf('hohlraum') >= 0) + '<small id="ubah-hohlraum"></small></label></div>';
     }
-    h += '<label class="f"><span>Kosten (€)</span><input id="ub-k" inputmode="decimal" value="' + (w && numOrNull(w.kosten) !== null && num(w.kosten) !== 0 ? nfPrice.format(w.kosten) : '') + '" placeholder="leer = 0 €" autocomplete="off"></label>' +
+    h += (typ === 'behandlung' ? ub39Kl(car) : '') + '<label class="f"><span>Kosten (€)</span><input id="ub-k" inputmode="decimal" value="' + (w && numOrNull(w.kosten) !== null && num(w.kosten) !== 0 ? nfPrice.format(w.kosten) : '') + '" placeholder="leer = 0 €" autocomplete="off"></label>' +
       (BL ? blField(data.bl.keep, typ === 'pruefung' ? 'Übersichtsfotos, die zu keiner Zone gehören.' : 'Zum Beispiel Rechnung oder das verwendete Gebinde.').replace('>Fotos und Belege<', '>Weitere Fotos<') : '') +
       '<label class="f"><span>Notiz</span><textarea id="ub-text" rows="2" maxlength="300" placeholder="' + (typ === 'pruefung' ? 'z. B. ohne Demontage der Verkleidungen geprüft' : 'z. B. Fett auf 100 °C erhitzt, Ablauflöcher frei') + '">' + esc(u.text || '') + '</textarea></label>' +
       '<p class="err" id="ub-err" role="alert"></p>' +
@@ -9264,7 +9289,7 @@ input.fs-mono { text-transform: uppercase; }
       (w && S.dl ? '<button type="button" class="btn ghost" data-act="ub-pdf" data-id="' + esc(carId) + '" data-day="' + esc(isDay(w.datum) ? w.datum : '') + '">Protokoll (PDF)</button>' : '') +
       (w ? '<button type="button" class="btn ghost" data-act="ub-del">Entfernen</button>' : '') + '</div></form>';
     openSheet('ubform', data, h);
-    if (typ === 'behandlung') { ubArtSync(); ubAuffrUpdate(); }
+    if (typ === 'behandlung') { ubArtSync(); ubAuffrUpdate(); ub39Cost(); }
   }
   function ubBack(s) {
     var b = s && s.back;
@@ -9319,6 +9344,7 @@ input.fs-mono { text-transform: uppercase; }
     if (t.classList && t.classList.contains('ubm-n')) {
       var row = t.closest('.ubm'), sel = row && $('.ubm-t', row);
       if (sel && !sel.dataset.touched) { var g = ubGuessT(t.value); sel.value = g; }
+      ub39Sync(row);
       ubAuffrUpdate();
       return true;
     }
@@ -9359,11 +9385,13 @@ input.fs-mono { text-transform: uppercase; }
       u.mittel = $$('#ubform .ubm').map(function (row) {
         var n = ($('.ubm-n', row) || {}).value || '', t = ($('.ubm-t', row) || {}).value || '', m = ($('.ubm-m', row) || {}).value || '';
         n = n.trim().slice(0, 80);
-        return n ? { n: n, t: UB_MT[t] ? t : null, m: m.trim().slice(0, 30) || null } : null;
+        return n ? ub39Read(row, { n: n, t: UB_MT[t] ? t : null, m: m.trim().slice(0, 30) || null }) : null;
       }).filter(Boolean).slice(0, 8);
       u.bz = $$('#ubform input[data-ubb]').filter(function (c) { return c.checked && UB_ZM[c.dataset.ubb]; }).map(function (c) { return c.dataset.ubb; });
       u.auffr = {};
       ['unterboden', 'hohlraum'].forEach(function (art) { var v = numOrNull(g('uba-' + art)); u.auffr[art] = u.arten.indexOf(art) >= 0 && v && UB_AF.indexOf(v) >= 0 ? v : null; });
+      var e39 = ub39Check(s, u.mittel);
+      if (e39) { showErr(e39); return; }
     }
     u.text = g('ub-text').slice(0, 300);
     var titel = ubTitel(s.typ, u.arten), refs = [];
@@ -9374,12 +9402,15 @@ input.fs-mono { text-transform: uppercase; }
     } catch (e) { setBusy(false); showErr(blErrText(e)); return; }
     setBusy(false);
     car = S.cars.get(s.car) || car;
+    if (s.typ === 'behandlung' && !(await ub39Book(s, u, showErr))) return;
+    car = S.cars.get(s.car) || car;
     var now = new Date().toISOString();
     var rec = { titel: titel, datum: d, datumGenau: 'tag', kosten: k === null ? 0 : round2(k), km: km === null ? null : Math.round(km), kmCa: false, notiz: ubSummary(u), durch: g('ub-durch').slice(0, 60) || null, wartung: [], belege: refs, ub: u };
     var list = arr(car.arbeiten).map(function (x) { return Object.assign({}, x); });
     if (s.work) list = list.map(function (x) { return x.id === s.work ? Object.assign(x, rec, { geaendert: now }) : x; });
     else list.push(Object.assign({ id: rid(10), erstellt: now, beleg: false }, rec));
     var patch = { arbeiten: list, geaendert: now };
+    if (s.typ === 'behandlung') ub39Patch(patch, car);
     if (s.typ === 'pruefung') { var iv = numOrNull(g('ub-iv')); patch.unterboden = Object.assign({}, ubDoc(car), { intervall: UB_IV.indexOf(iv) >= 0 ? iv : 12 }); }
     if (rec.km !== null && (numOrNull(car.km) === null || rec.km > num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) { patch.km = rec.km; patch.kmDatum = d; patch.kmLog = kmLogWith(car, d, rec.km); }
     setBusy(true);
@@ -9389,7 +9420,7 @@ input.fs-mono { text-transform: uppercase; }
       setBusy(false);
       ubBack(s);
       renderAll();
-      toast((s.work ? 'Gespeichert: ' : 'Eingetragen: ') + titel + (patch.km !== undefined ? '. km-Stand auf ' + nf.format(patch.km) + ' gesetzt.' : '.'));
+      toast((s.work ? 'Gespeichert: ' : 'Eingetragen: ') + titel + (patch.km !== undefined ? '. km-Stand auf ' + nf.format(patch.km) + ' gesetzt.' : '.') + ub39Toast(s));
     } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
   }
   async function ubRemove(btn) {
@@ -9553,7 +9584,7 @@ input.fs-mono { text-transform: uppercase; }
         var ms = ubMittel(u);
         if (ms.length) {
           f('bold', 8); tc(C.mut); need(8); txt('Mittel', M, y + 3); y += 4.5;
-          ms.forEach(function (m) { para('• ' + m.n + (m.t && UB_MT[m.t] ? ' (' + UB_MT[m.t].k + ')' : '') + (m.m ? ', ' + m.m : ''), 9.5); });
+          ms.forEach(function (m) { para('• ' + m.n + (m.t && UB_MT[m.t] ? ' (' + UB_MT[m.t].k + ')' : '') + (m.m ? ', ' + m.m : '') + (m.ch ? ', Charge ' + m.ch : ''), 9.5); });
         }
         var bz = arr(u.bz).filter(function (k) { return UB_ZM[k]; });
         if (bz.length) para('Behandelte Zonen: ' + bz.map(ubZoneLabel).join(', ') + '.', 9.5);
@@ -10022,7 +10053,7 @@ input.fs-mono { text-transform: uppercase; }
       '<label class="f"><span>Datum</span><input type="date" id="kva-d" value="' + esc(k && isDay(k.datum) ? k.datum : today) + '"></label>' +
       '<label class="f"><span>Gültig bis</span><input type="date" id="kva-g" value="' + esc(k && isDay(k.gueltig) ? k.gueltig : '') + '"></label></div>' +
       '<h3 class="sec">Positionen</h3>' + (k ? '' : '<p class="help">Vorschlag aus der Recherche: Teile mit dem ersten Angebot mit Preis, Arbeitszeit mit dem oberen Wert der Schätzung. Alles lässt sich ändern.</p>') +
-      '<div id="kva-rows">' + pos.map(kvaRow).join('') + '</div>' +
+      lpKvaPick(car) + '<div id="kva-rows">' + pos.map(kvaRow).join('') + '</div>' +
       '<button type="button" class="linkbtn" data-act="kva-add">+ Position</button>' +
       '<label class="f kva-sh"><span>Stundensatz (€)</span><input id="kva-sh" inputmode="decimal" value="' + shv + '" data-prev="' + shv + '" placeholder="z. B. 50" autocomplete="off"><small>Gilt für Positionen in Stunden und wird für die nächsten Kostenvoranschläge gemerkt.</small></label>' +
       '<label class="f"><span>Umsatzsteuer</span><select id="kva-ust">' + Object.keys(KVA_UST).map(function (u) { return '<option value="' + u + '"' + (u === ust ? ' selected' : '') + '>' + esc(KVA_UST[u]) + '</option>'; }).join('') + '</select>' +
@@ -10080,6 +10111,7 @@ input.fs-mono { text-transform: uppercase; }
     try {
       await write(function () { return S.db.doc('reparaturen/' + s.id).update({ kva: k, geaendert: now }); });
       S.reps.set(s.id, Object.assign({}, S.reps.get(s.id) || r, { kva: k, geaendert: now }));
+      await lpKvaAfter(s, r);
       if (!confSame) {
         var had = !!S.kvaConf;
         try { await write(function () { var ref = S.db.doc('meta/kva'); return had ? ref.update(conf) : ref.set(conf); }); S.kvaConf = Object.assign({}, S.kvaConf || {}, conf); } catch (_) {}
@@ -12760,7 +12792,7 @@ input.fs-mono { text-transform: uppercase; }
     { titel: 'Unternehmensserviceportal: Kleinunternehmen (Regelung seit 1. Jänner 2025)', url: 'https://www.usp.gv.at/themen/steuern-finanzen/umsatzsteuer-ueberblick/weitere-informationen-zur-umsatzsteuer/weitere-steuertatbestaende-und-befreiungen/kleinunternehmen.html' },
     { titel: 'WKO: Kleinunternehmerregelung Österreich, FAQ', url: 'https://www.wko.at/sbg/steuern/kleinunternehmerregelung-oesterreich-faq' }
   ] };
-  var RE_ZIEL = [[0, 'Sofort (bar oder Karte)'], [7, 'In 7 Tagen'], [14, 'In 14 Tagen'], [30, 'In 30 Tagen']];
+  var RE_ZIEL = [[0, 'Sofort'], [7, 'In 7 Tagen'], [14, 'In 14 Tagen'], [30, 'In 30 Tagen']];
   var RE_KLEIN = 'Umsatzsteuerfrei aufgrund der Kleinunternehmerregelung.';
   function reOf(r) { var x = r && r.rechnung; return x && typeof x === 'object' && Array.isArray(x.pos) ? x : null; }
   function reConf() {
@@ -12940,7 +12972,7 @@ input.fs-mono { text-transform: uppercase; }
       '<small>Als Kleinunternehmen keine Umsatzsteuer ausweisen; wer sie trotzdem ausweist, schuldet sie dem Finanzamt.' + srcRefs(RE_Q, [3]) + '</small></label>' +
       '<div class="kva-sum" id="re-sum" aria-live="polite"></div>' +
       '<div class="re-chk" id="re-chk" aria-live="polite"></div>' +
-      '<label class="f"><span>Zahlungsziel</span><select id="re-ziel">' + RE_ZIEL.map(function (z) { return '<option value="' + z[0] + '"' + (z[0] === ziel ? ' selected' : '') + '>' + esc(z[1]) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Zahlungsziel</span><select id="re-ziel">' + RE_ZIEL.map(function (z) { return '<option value="' + z[0] + '"' + (z[0] === ziel ? ' selected' : '') + '>' + esc(z[1]) + '</option>'; }).join('') + '</select></label>' + reZaHtml(x, ziel) +
       '<label class="check"><input type="checkbox" id="re-bez"' + (bez ? ' checked' : '') + '><span>Schon bezahlt</span></label>' +
       '<label class="f" id="re-bezd-f"' + (bez ? '' : ' hidden') + '><span>Bezahlt am</span><input type="date" id="re-bezd" value="' + esc(bez ? x.bezahlt : today) + '"></label>' +
       '<label class="f"><span>Bemerkung</span><textarea id="re-bem" rows="2" maxlength="400" placeholder="z. B. Altteile wurden entsorgt">' + esc(x ? x.bem || '' : '') + '</textarea></label>' +
@@ -12992,7 +13024,7 @@ input.fs-mono { text-transform: uppercase; }
     if (bic && !/^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(bic)) { err('Der BIC hat 8 oder 11 Zeichen, z. B. BKAUATWW.'); return; }
     var zi = Number(g('re-ziel')), ust = KVA_UST[g('re-ust')] ? g('re-ust') : 'inkl', now = new Date().toISOString(), old = reOf(r), k = kvaOf(r);
     var x = { nr: nr, datum: d, leistungVon: lv, leistungBis: lb && lb !== lv ? lb : null, ust: ust, pos: pos, ziel: RE_ZIEL.some(function (z) { return z[0] === zi; }) ? zi : 14,
-      bezahlt: bez ? bd : null, bem: g('re-bem').slice(0, 400), kva: old ? old.kva || null : k ? k.nr || null : null, erstellt: old && old.erstellt ? old.erstellt : now, geaendert: now };
+      zahlung: reZaRead(), bezahlt: bez ? bd : null, bem: g('re-bem').slice(0, 400), kva: old ? old.kva || null : k ? k.nr || null : null, erstellt: old && old.erstellt ? old.erstellt : now, geaendert: now };
     var conf = { name: g('re-an').slice(0, 80) || null, adresse: g('re-aa').slice(0, 200) || null, telefon: g('re-at').slice(0, 40) || null, email: g('re-ae').slice(0, 120) || null,
       uid: uid.slice(0, 20) || null, iban: iban ? reIbanFmt(iban) : null, bic: bic || null, stundensatz: sh === null ? null : round2(sh) };
     var prev = S.kvaConf || {}, same = Object.keys(conf).every(function (q) { return (prev[q] == null ? null : prev[q]) === conf[q]; });
@@ -13132,7 +13164,7 @@ input.fs-mono { text-transform: uppercase; }
     y += 6;
     // Zahlung
     var pay = [];
-    if (paid) pay.push('Betrag am ' + datum(x.bezahlt) + ' dankend erhalten.');
+    if (paid) pay.push('Betrag am ' + datum(x.bezahlt) + reZaPaidTxt(x) + ' dankend erhalten.');
     else if (!due) pay.push('Zahlbar sofort ohne Abzug.');
     else if (!conf.iban) pay.push('Zahlbar bis ' + datum(due) + ' ohne Abzug.');
     else {
@@ -15143,7 +15175,7 @@ input.fs-mono { text-transform: uppercase; }
       '<small>Als Kleinunternehmen keine Umsatzsteuer ausweisen; wer sie trotzdem ausweist, schuldet sie dem Finanzamt.' + srcRefs(RE_Q, [3]) + '</small></label>' +
       '<div class="kva-sum" id="re-sum" aria-live="polite"></div>' +
       '<div class="re-chk" id="re-chk" aria-live="polite"></div>' +
-      '<label class="f"><span>Zahlungsziel</span><select id="re-ziel">' + RE_ZIEL.map(function (z) { return '<option value="' + z[0] + '"' + (z[0] === ziel ? ' selected' : '') + '>' + esc(z[1]) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Zahlungsziel</span><select id="re-ziel">' + RE_ZIEL.map(function (z) { return '<option value="' + z[0] + '"' + (z[0] === ziel ? ' selected' : '') + '>' + esc(z[1]) + '</option>'; }).join('') + '</select></label>' + reZaHtml(x, ziel) +
       '<label class="check"><input type="checkbox" id="re-bez"' + (bez ? ' checked' : '') + '><span>Schon bezahlt</span></label>' +
       '<label class="f" id="re-bezd-f"' + (bez ? '' : ' hidden') + '><span>Bezahlt am</span><input type="date" id="re-bezd" value="' + esc(bez ? x.bezahlt : today) + '"></label>' +
       '<label class="f"><span>Bemerkung</span><textarea id="re-bem" rows="2" maxlength="400" placeholder="z. B. Gutachten wurde per E-Mail übermittelt">' + esc(x ? x.bem || '' : '') + '</textarea></label>' +
@@ -15204,7 +15236,7 @@ input.fs-mono { text-transform: uppercase; }
     if (bic && !/^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(bic)) { err('Der BIC hat 8 oder 11 Zeichen, z. B. BKAUATWW.'); return; }
     var zi = Number(gv('re-ziel')), ust = KVA_UST[gv('re-ust')] ? gv('re-ust') : 'inkl', now = new Date().toISOString(), old = reOf(g0);
     var x = { nr: nr, datum: d, leistungVon: lv, leistungBis: lb && lb !== lv ? lb : null, ust: ust, pos: pos, ziel: RE_ZIEL.some(function (z) { return z[0] === zi; }) ? zi : 14,
-      bezahlt: bez ? bd : null, bem: gv('re-bem').slice(0, 400), an: { name: gv('re-kn').slice(0, 120) || null, adresse: gv('re-ka').slice(0, 300) || null },
+      zahlung: reZaRead(), bezahlt: bez ? bd : null, bem: gv('re-bem').slice(0, 400), an: { name: gv('re-kn').slice(0, 120) || null, adresse: gv('re-ka').slice(0, 300) || null },
       erstellt: old && old.erstellt ? old.erstellt : now, geaendert: now };
     var conf = { name: gv('re-an').slice(0, 80) || null, adresse: gv('re-aa').slice(0, 200) || null, telefon: gv('re-at').slice(0, 40) || null, email: gv('re-ae').slice(0, 120) || null,
       uid: uid.slice(0, 20) || null, iban: iban ? reIbanFmt(iban) : null, bic: bic || null };
@@ -16965,6 +16997,641 @@ input.fs-mono { text-transform: uppercase; }
       return out;
     });
   }
+  /* ---------- Umsatz und Preise (Version 43): Zahlungsart je Rechnung, Grenzen für Registrierkasse und Kleinunternehmen, Leistungspakete je Fahrzeugklasse, Material je Auftrag ---------- */
+  var UM_Q = { quellen: [
+    { titel: 'USP: Registrierkassenpflicht (Stand 1. Oktober 2026)', url: 'https://www.usp.gv.at/themen/steuern-finanzen/steuerliche-rechte-und-pflichten/registrierkassen/registrierkassenpflicht.html' },
+    { titel: 'USP-Lexikon: Barumsatz (Stand 1. Jänner 2026)', url: 'https://www.usp.gv.at/services/suchen-und-finden/lexikon/barumsatz.html' },
+    { titel: 'USP: Kassenbelege und Belegerteilungspflicht (Stand 1. Oktober 2026)', url: 'https://www.usp.gv.at/themen/steuern-finanzen/steuerliche-rechte-und-pflichten/registrierkassen/kassenbelege.html' },
+    { titel: 'USP: Kleinunternehmen (Stand 1. Jänner 2026)', url: 'https://www.usp.gv.at/themen/steuern-finanzen/umsatzsteuer-ueberblick/weitere-informationen-zur-umsatzsteuer/weitere-steuertatbestaende-und-befreiungen/kleinunternehmen.html' }
+  ] };
+  var RE_Q_BAR = RE_Q.quellen.push(UM_Q.quellen[1]);
+  var UM_ZA = { bar: 'Bar', karte: 'Karte', ueberweisung: 'Überweisung' };
+  var UM_ZT = { bar: 'bar', karte: 'mit Karte', ueberweisung: 'per Überweisung', barkarte: 'bar oder Karte' };
+  var UM_UST = { klein: 'Ohne USt (Kleinunternehmen)', inkl: 'Inklusive 20 % USt' };
+  /* Registrierkasse: Jahresumsatz 15.000 € je Betrieb und Barumsätze über 7.500 € (beide überschritten); Kleinunternehmen: 55.000 €, bis 10 % darüber gilt die Befreiung bis Jahresende */
+  var UM_RK_U = 15000, UM_RK_B = 7500, UM_KU = 55000, UM_KU_T = 60500;
+  var UM_MON = ['Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+  function umMonTxt(ym) { var p = String(ym).split('-'); return (UM_MON[Number(p[1]) - 1] || '') + ' ' + p[0]; }
+  /* ---------- Zahlungsart in der Rechnung ---------- */
+  function reZaOf(x) { return x && UM_ZA[x.zahlung] ? x.zahlung : null; }
+  /* ältere Rechnungen ohne Angabe: Zahlungsziel „sofort“ gilt als bar oder Karte */
+  function umZaOfRe(x) { return reZaOf(x) || (numOrNull(x && x.ziel) === 0 ? 'barkarte' : 'ueberweisung'); }
+  function umBarZ(z) { return z === 'bar' || z === 'karte' || z === 'barkarte'; }
+  function reZaHtml(x, ziel) {
+    var za = reZaOf(x) || (Number(ziel) === 0 ? 'bar' : 'ueberweisung');
+    return '<fieldset class="ub-fs re-za"' + (reZaOf(x) ? ' data-touched="1"' : '') + '><legend>Zahlungsart</legend><div class="seg" role="radiogroup" aria-label="Zahlungsart">' + Object.keys(UM_ZA).map(function (k) {
+      return '<label><input type="radio" name="re-za" value="' + k + '"' + (k === za ? ' checked' : '') + '><span>' + esc(UM_ZA[k]) + '</span></label>';
+    }).join('') + '</div><small class="ub-fh">Bar und Karte zählen als Barumsatz für die Registrierkassenpflicht' + srcRefs(RE_Q, [RE_Q_BAR]) + '.</small></fieldset>';
+  }
+  function reZaRead() { var r = $('#sheet input[name="re-za"]:checked'); return r && UM_ZA[r.value] ? r.value : null; }
+  function reZaPaidTxt(x) { var z = reZaOf(x); return z ? ' ' + UM_ZT[z] : ''; }
+  /* ---------- Einnahmen: Rechnungen aus der App und weitere Einnahmen ---------- */
+  function umManOf(id) { var u = S.um && S.um.get(id); return u && typeof u === 'object' ? u : null; }
+  function umMan() {
+    var out = [];
+    if (S.um) S.um.forEach(function (u, id) { if (u && typeof u === 'object' && isDay(u.datum)) out.push([id, u]); });
+    return out;
+  }
+  function umItems(y) {
+    var out = [], inY = function (d) { return isDay(d) && (!y || d.slice(0, 4) === String(y)); };
+    S.reps.forEach(function (r, id) {
+      var x = reOf(r);
+      if (!x || !inY(x.datum)) return;
+      var t = kvaTotals(kvaPos(x), x.ust), car = S.cars.get(r.fahrzeug), k = car ? kundeOf(car) : null;
+      out.push({ k: 'rep', id: id, d: x.datum, nr: String(x.nr || ''), titel: String(r.titel || 'Rechnung'), wer: k ? String(k.name || '') : '', b: t.brutto, n: t.netto === null ? t.brutto : t.netto, ust: x.ust, z: umZaOfRe(x), st: reStatus(x), e: String(x.erstellt || '') });
+    });
+    if (S.ga) S.ga.forEach(function (g, id) {
+      if (!g || g.uebung) return;
+      var x = reOf(g);
+      if (!x || !inY(x.datum)) return;
+      var t = kvaTotals(kvaPos(x), x.ust);
+      out.push({ k: 'ga', id: id, d: x.datum, nr: String(x.nr || ''), titel: gaReArtNr(g), wer: x.an && x.an.name ? String(x.an.name) : '', b: t.brutto, n: t.netto === null ? t.brutto : t.netto, ust: x.ust, z: umZaOfRe(x), st: reStatus(x), e: String(x.erstellt || '') });
+    });
+    umMan().forEach(function (p) {
+      var u = p[1];
+      if (!inY(u.datum)) return;
+      var b = round2(num(u.betrag));
+      out.push({ k: 'man', id: p[0], d: u.datum, nr: String(u.nr || ''), titel: String(u.text || 'Einnahme'), wer: '', b: b, n: u.ust === 'inkl' ? round2(b / 1.2) : b, ust: u.ust === 'inkl' ? 'inkl' : 'klein', z: UM_ZA[u.zahlung] ? u.zahlung : 'bar', st: null, e: String(u.erstellt || ''), storno: u.storno || null, bl: blList(u.belege).length });
+    });
+    return out.sort(function (a, b) { return a.d < b.d ? 1 : a.d > b.d ? -1 : b.e.localeCompare(a.e); });
+  }
+  function umYears() {
+    var ys = {};
+    ys[dayKey(new Date()).slice(0, 4)] = 1;
+    umItems(null).forEach(function (it) { ys[it.d.slice(0, 4)] = 1; });
+    return Object.keys(ys).sort().reverse();
+  }
+  function umSum(y) {
+    var o = { n: 0, b: 0, n0: 0, bar: 0, karte: 0, bk: 0, ueb: 0, offen: 0, nOffen: 0, klein: false, ust: false, first: null };
+    umItems(y).forEach(function (it) {
+      if (it.storno) return;
+      o.n++; o.b += it.b; o.n0 += it.n;
+      if (it.z === 'bar') o.bar += it.b; else if (it.z === 'karte') o.karte += it.b; else if (it.z === 'barkarte') o.bk += it.b; else o.ueb += it.b;
+      if (it.st && it.st.chip !== 'bezahlt') { o.offen += it.b; o.nOffen++; }
+      if (it.ust === 'klein') o.klein = true; else o.ust = true;
+      if (!o.first || it.d < o.first) o.first = it.d;
+    });
+    ['b', 'n0', 'bar', 'karte', 'bk', 'ueb', 'offen'].forEach(function (k) { o[k] = round2(o[k]); });
+    o.barSum = round2(o.bar + o.karte + o.bk);
+    return o;
+  }
+  /* Wann wurden die Grenzen erstmals überschritten? Aufsteigend nach Rechnungsdatum */
+  function umCross(y) {
+    var su = 0, sb = 0, o = { rk: null, ku: null, kuT: null };
+    umItems(y).filter(function (it) { return !it.storno; }).reverse().forEach(function (it) {
+      su += it.b; if (umBarZ(it.z)) sb += it.b;
+      if (!o.rk && su > UM_RK_U && sb > UM_RK_B) o.rk = it.d;
+      if (!o.ku && su > UM_KU) o.ku = it.d;
+      if (!o.kuT && su > UM_KU_T) o.kuT = it.d;
+    });
+    return o;
+  }
+  /* Registrierkasse ab Beginn des viertfolgenden Monats nach Ablauf des Voranmeldungszeitraums (Monat oder Kalendervierteljahr) */
+  function umRkAb(d) {
+    var y = d.slice(0, 4), m = Number(d.slice(5, 7)), q = Math.ceil(m / 3) * 3;
+    return { mon: ymAdd(y + '-' + pad(m), 4), q: ymAdd(y + '-' + pad(q), 4) };
+  }
+  function umMeter(label, v, max) {
+    var pc = max > 0 ? Math.max(0, Math.min(100, Math.round(v / max * 100))) : 0, lv = v > max ? 'faellig' : v >= max * 0.8 ? 'bald' : 'ok';
+    return '<div class="um-m"><div class="um-ml"><span>' + esc(label) + '</span><b>' + esc(eur(v) + ' von ' + eur(max)) + '</b></div>' +
+      '<div class="um-bar um-' + lv + '" role="img" aria-label="' + esc(pc + ' Prozent') + '"><span style="width:' + pc + '%"></span></div></div>';
+  }
+  function umHoch(o, y) {
+    var today = dayKey(new Date());
+    if (!o.first || today.slice(0, 4) !== String(y)) return '';
+    var span = dayNum(today) - dayNum(o.first) + 1, rest = dayNum(y + '-12-31') - dayNum(today);
+    if (span < 30 || rest <= 0) return '';
+    var f = function (v) { return Math.round((v + v / span * rest) / 100) * 100; };
+    return '<p class="help">' + esc('Im bisherigen Tempo bis Jahresende: ca. ' + eur(f(o.b)) + ' Umsatz, davon ' + eur(f(o.barSum)) + ' bar oder mit Karte.') + '</p>';
+  }
+  function umSec(y) {
+    var o = umSum(y), cr = umCross(y);
+    var h = '<div class="sh-sec"><h3 class="sec">' + esc('Umsatz ' + y) + '</h3>';
+    if (!o.n) h += '<p class="note">Noch keine Rechnung in diesem Jahr. Rechnungen schreibst du bei Kundenautos unter „Anstehend“ und bei Gutachten; Beträge ohne Rechnung aus der App trägst du unten als Einnahme ein.</p>';
+    else {
+      h += '<dl class="bt-dl um-dl"><dt>Gesamt</dt><dd>' + esc(eur(o.b) + ' · ' + o.n + (o.n === 1 ? ' Rechnung oder Beleg' : ' Rechnungen und Belege')) + '</dd>' +
+        '<dt>Bar</dt><dd>' + esc(eur(o.bar)) + '</dd><dt>Karte</dt><dd>' + esc(eur(o.karte)) + '</dd>' +
+        (o.bk ? '<dt>Bar oder Karte</dt><dd>' + esc(eur(o.bk) + ', ältere Rechnungen ohne Zahlungsart') + '</dd>' : '') +
+        '<dt>Überweisung</dt><dd>' + esc(eur(o.ueb)) + '</dd>' +
+        (o.nOffen ? '<dt>Noch offen</dt><dd>' + esc(eur(o.offen) + ' · ' + o.nOffen + (o.nOffen === 1 ? ' Rechnung' : ' Rechnungen')) + '</dd>' : '') +
+        (o.ust ? '<dt>Ohne USt</dt><dd>' + esc(eur(o.n0)) + '</dd>' : '') + '</dl>';
+    }
+    var rkLv = cr.rk ? 'faellig' : o.b >= UM_RK_U * 0.8 && o.barSum >= UM_RK_B * 0.8 ? 'bald' : 'ok';
+    h += '<div class="um-g"><div class="um-gh"><h4>Registrierkasse</h4><span class="wst ' + rkLv + '">' + (cr.rk ? 'Pflicht' : rkLv === 'bald' ? 'Bald' : 'Noch nicht') + '</span></div>' +
+      umMeter('Jahresumsatz', o.b, UM_RK_U) + umMeter('Bar und mit Karte', o.barSum, UM_RK_B);
+    if (cr.rk) {
+      var ab = umRkAb(cr.rk);
+      h += '<p class="rstat warn">' + esc('Beide Grenzen sind seit ' + datum(cr.rk) + ' überschritten. Registrierkasse ab 1. ' + umMonTxt(ab.mon) + ' bei monatlichem Voranmeldungszeitraum, ab 1. ' + umMonTxt(ab.q) + ' bei vierteljährlichem.') + srcRefs(UM_Q, [1]) + '</p>';
+    }
+    h += umHoch(o, y);
+    h += '<p class="help">Pflicht erst, wenn beide Grenzen überschritten sind: 15.000\u00a0€ Jahresumsatz und 7.500\u00a0€ Barumsätze, dann ab Beginn des viertfolgenden Monats nach Ablauf des Voranmeldungszeitraums' + srcRefs(UM_Q, [1]) +
+      '. Zahlungen mit Bankomat- oder Kreditkarte zählen als Barumsatz, nachträgliche Überweisungen nicht' + srcRefs(UM_Q, [2]) +
+      '. Unabhängig davon braucht jede Barzahlung ab dem ersten Euro einen Beleg; ohne Registrierkasse geht ein Kassenblock mit fortlaufender Nummer' + srcRefs(UM_Q, [3]) +
+      '. Die App zählt die Beträge laut Rechnung nach Rechnungsdatum. Sie ist keine Registrierkasse.</p></div>';
+    if (o.klein || (S.kvaConf && S.kvaConf.ust === 'klein')) {
+      var kuLv = cr.ku ? 'faellig' : o.b >= UM_KU * 0.8 ? 'bald' : 'ok';
+      h += '<div class="um-g"><div class="um-gh"><h4>Kleinunternehmergrenze</h4><span class="wst ' + kuLv + '">' + (cr.ku ? 'Überschritten' : kuLv === 'bald' ? 'Bald' : 'Darunter') + '</span></div>' + umMeter('Umsatz', o.b, UM_KU);
+      if (cr.kuT) h += '<p class="rstat warn">' + esc('Seit ' + datum(cr.kuT) + ' mehr als 10\u00a0% über der Grenze: Die Befreiung fällt für diesen Umsatz und alle weiteren weg.') + srcRefs(UM_Q, [4]) + '</p>';
+      else if (cr.ku) h += '<p class="rstat warn">' + esc('Seit ' + datum(cr.ku) + ' über der Grenze, aber höchstens 10\u00a0%: Die Befreiung gilt noch bis Jahresende, im nächsten Jahr nicht mehr.') + srcRefs(UM_Q, [4]) + '</p>';
+      h += '<p class="help">55.000\u00a0€ im Jahr. Bis 10\u00a0% darüber (60.500\u00a0€) bleibt die Befreiung bis Jahresende, im Folgejahr nicht mehr; bei mehr als 10\u00a0% entfällt sie ab dem Umsatz, mit dem die Grenze überschritten wird' + srcRefs(UM_Q, [4]) + '.</p></div>';
+    }
+    return h + '</div>';
+  }
+  function umRow(it) {
+    var act = it.k === 'rep' ? 'data-act="open-rep" data-id="' + esc(it.id) + '"' : it.k === 'ga' ? 'data-act="ga-open" data-id="' + esc(it.id) + '"' : 'data-act="um-edit" data-id="' + esc(it.id) + '"';
+    var sub = [datum(it.d), it.nr ? 'Nr. ' + it.nr : '', it.wer, it.k === 'man' ? 'weitere Einnahme' : '', UM_ZT[it.z] || '', it.bl ? (it.bl === 1 ? '1 Beleg' : it.bl + ' Belege') : '', it.storno ? 'storniert: ' + (it.storno.grund || '') : ''].filter(Boolean).join(' · ');
+    var chip = it.storno ? '<span class="wst plan">storniert</span>' : it.st && it.st.chip !== 'bezahlt' ? '<span class="wst ' + it.st.k + '">' + esc(it.st.chip) + '</span>' : '';
+    return '<li' + (it.storno ? ' class="bt-storno"' : '') + '><button type="button" class="wbtn" ' + act + '><span class="i-n">' + esc(it.titel) + '<small>' + esc(sub) + '</small></span><span class="i-p bt-chips">' + chip + '<b class="bt-kg">' + esc(eur(it.b)) + '</b></span></button></li>';
+  }
+  function umListSec(y, can) {
+    var all = umItems(y);
+    var h = '<div class="sh-sec"><div class="vhead"><h3 class="sec">' + esc('Einnahmen ' + y + (all.length ? ' · ' + all.length : '')) + '</h3>' + (can ? '<button type="button" class="linkbtn" data-act="um-new">+ Einnahme</button>' : '') + '</div>';
+    if (!all.length) h += '<p class="note">Keine in diesem Jahr.</p>';
+    else {
+      h += '<ul class="works">' + all.slice(0, 20).map(umRow).join('') + '</ul>';
+      if (all.length > 20) h += '<details class="wp-more" data-k="um-more"><summary>' + esc('Ältere · ' + (all.length - 20)) + '</summary><ul class="works">' + all.slice(20).map(umRow).join('') + '</ul></details>';
+      if (S.dl) h += '<div class="kva-act"><button type="button" class="btn ghost small" data-act="um-pdf" data-year="' + esc(y) + '">' + esc('Aufstellung ' + y + ' (PDF)') + '</button></div>';
+    }
+    h += '<p class="help">Rechnungen aus der App stehen hier von selbst, mit der Zahlungsart aus der Rechnung. „+ Einnahme“ ist für Beträge ohne Rechnung aus der App, etwa einen Beleg aus dem Kassenblock.</p>';
+    return h + '</div>';
+  }
+  function umOhneSec() {
+    var ids = [];
+    S.cars.forEach(function (c, id) { if (c && c.fremd) ids.push(id); });
+    var list = ids.length ? reBills(ids).filter(function (p) { return !p[2]; }) : [];
+    if (!list.length) return '';
+    return '<div class="sh-sec"><h3 class="sec">' + esc('Erledigt, noch ohne Rechnung · ' + list.length) + '</h3>' + reListHtml(list, true) + '<p class="help">Erledigte Arbeiten an Kundenautos und abgeschlossene Gutachten der letzten 90 Tage.</p></div>';
+  }
+  function openUmsatz(y) {
+    var cy = dayKey(new Date()).slice(0, 4);
+    y = /^\d{4}$/.test(String(y || '')) ? String(y) : cy;
+    openSheet('umsatz', { year: y }, sheetUmsatz(y));
+  }
+  function sheetUmsatz(y) {
+    var can = canWrite(), ys = umYears(), cur = y === dayKey(new Date()).slice(0, 4);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundengeschäft</p><h2 class="sh-title" id="sheet-title">Umsatz und Preise</h2>' +
+      '<p class="buy">Rechnungen mit Zahlungsart, die Grenzen für Registrierkasse und Kleinunternehmen, Leistungspakete mit Preisen je Fahrzeugklasse.</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    if (ys.length > 1) h += '<div class="kva-act bt-years" role="group" aria-label="Jahr wählen">' + ys.map(function (yy) { return '<button type="button" class="btn ghost small" data-act="um-year" data-year="' + esc(yy) + '" aria-pressed="' + (yy === y ? 'true' : 'false') + '">' + esc(yy) + '</button>'; }).join('') + '</div>';
+    h += umSec(y) + umListSec(y, can) + (cur ? umOhneSec() : '') + lpSec(can) + xQuellen(UM_Q);
+    return h + '<div class="sh-foot"><button type="button" class="btn ghost" data-act="close">Schließen</button></div>';
+  }
+  function umRefresh(sh, top) {
+    var s = S.sheet;
+    if (!s || s.type !== 'umsatz') return false;
+    var ae = document.activeElement;
+    if (ae && sh.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
+    var od = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; });
+    setHTML(sh, sheetUmsatz(s.year));
+    $$('details[data-k]', sh).forEach(function (d) { if (od.indexOf(d.dataset.k) >= 0) d.open = true; });
+    sh.scrollTop = top;
+    return true;
+  }
+  /* ---------- weitere Einnahme (ohne Rechnung aus der App) ---------- */
+  function umNextNr(y) {
+    var best = null;
+    umMan().forEach(function (p) {
+      var m = /^(.*?)(\d+)$/.exec(String(p[1].nr || '').trim());
+      if (m && p[1].datum.slice(0, 4) === y && (!best || Number(m[2]) >= best.n)) best = { pre: m[1], n: Number(m[2]), len: m[2].length };
+    });
+    return best ? best.pre + String(best.n + 1).padStart(best.len, '0') : '';
+  }
+  function openUmForm(id) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var u = id ? umManOf(id) : null;
+    if (id && !u) { toast('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var today = dayKey(new Date()), y = u ? u.datum.slice(0, 4) : (S.sheet && S.sheet.type === 'umsatz' && S.sheet.year) || today.slice(0, 4);
+    var last = umMan().sort(function (a, b) { return String(b[1].erstellt || '').localeCompare(String(a[1].erstellt || '')); })[0];
+    var ust = u ? u.ust : last ? last[1].ust : S.kvaConf && S.kvaConf.ust === 'klein' ? 'klein' : S.kvaConf && S.kvaConf.ust ? 'inkl' : '';
+    var za = u && UM_ZA[u.zahlung] ? u.zahlung : 'bar';
+    openSheet('umform', { id: id || null, year: y, bl: BL ? { keep: blList(u && u.belege), pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Umsatz und Preise</p><h2 class="sh-title" id="sheet-title">' + (u ? 'Einnahme bearbeiten' : 'Einnahme eintragen') + '</h2>' +
+      (u && u.storno ? '<p class="buy">' + esc('Storniert am ' + datum(String(u.storno.am || '').slice(0, 10)) + (u.storno.grund ? ': ' + u.storno.grund : '')) + '</p>' : '<p class="buy">Für Beträge ohne Rechnung aus der App. Rechnungen aus der App zählen von selbst.</p>') + '</div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="umform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="um-d" value="' + esc(u ? u.datum : today) + '" max="' + today + '"></label>' +
+      '<label class="f"><span>Beleg- oder Rechnungsnummer</span><input id="um-nr" value="' + esc(u ? u.nr || '' : umNextNr(y)) + '" maxlength="30" autocomplete="off" placeholder="z. B. 0042"></label></div>' +
+      '<label class="f"><span>Wofür</span><input id="um-text" value="' + esc(u ? u.text || '' : '') + '" maxlength="120" autocomplete="off" placeholder="z. B. Dose Hohlraumwachs verkauft"></label>' +
+      '<div class="row2"><label class="f"><span>Betrag (€)</span><input id="um-b" inputmode="decimal" value="' + esc(u && numOrNull(u.betrag) !== null ? nfPrice.format(u.betrag) : '') + '" autocomplete="off" placeholder="z. B. 18,90"></label>' +
+      '<label class="f"><span>Umsatzsteuer</span><select id="um-ust">' + (ust ? '' : '<option value="" selected>Bitte wählen</option>') + Object.keys(UM_UST).map(function (k) { return '<option value="' + k + '"' + (k === ust ? ' selected' : '') + '>' + esc(UM_UST[k]) + '</option>'; }).join('') + '</select></label></div>' +
+      '<fieldset class="ub-fs"><legend>Zahlungsart</legend><div class="seg" role="radiogroup" aria-label="Zahlungsart">' + Object.keys(UM_ZA).map(function (k) {
+        return '<label><input type="radio" name="um-za" value="' + k + '"' + (k === za ? ' checked' : '') + '><span>' + esc(UM_ZA[k]) + '</span></label>';
+      }).join('') + '</div></fieldset>' +
+      blField(u && u.belege, 'Foto oder PDF des Belegs.') +
+      '<label class="f"><span>Notiz <span class="muted">(optional)</span></span><textarea id="um-no" rows="2" maxlength="400">' + esc(u && u.notiz || '') + '</textarea></label>' +
+      (u && !u.storno ? '<details class="wp-more" data-k="um-storno"><summary>Eintrag stornieren</summary><p class="help">Der Eintrag bleibt sichtbar und zählt nicht mehr mit.</p><label class="f"><span>Grund</span><input id="um-sg" maxlength="120" autocomplete="off" placeholder="z. B. doppelt eingetragen"></label><div class="kva-act"><button type="button" class="btn ghost small" data-act="um-storno">Stornieren</button></div></details>' : '') +
+      '<p class="err" id="um-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="um-back">Zurück</button></div></form>');
+  }
+  function umBack() { var s = S.sheet; openUmsatz(s && s.year); }
+  async function saveUm() {
+    var s = S.sheet;
+    if (!s || s.type !== 'umform' || S.busy) return;
+    var err = function (m) { var el = $('#um-err'); if (el) el.textContent = m; }, g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var old = s.id ? umManOf(s.id) : null;
+    if (s.id && !old) { err('Diesen Eintrag gibt es nicht mehr.'); return; }
+    var d = g('um-d'), nr = g('um-nr').slice(0, 30), text = g('um-text').slice(0, 120), b = parseNum(g('um-b')), ust = g('um-ust'), zr = $('#umform input[name="um-za"]:checked'), za = zr ? zr.value : '';
+    if (!isDay(d) || d > dayKey(new Date())) { err('Bitte das Datum eintragen, nicht in der Zukunft.'); return; }
+    if (!text) { err('Bitte eintragen, wofür das Geld war, z. B. Dose Hohlraumwachs verkauft.'); return; }
+    if (b === null || isNaN(b) || b <= 0 || b > 10000000) { err('Den Betrag bitte als Zahl eintragen, z. B. 18,90.'); return; }
+    if (!UM_UST[ust]) { err('Bitte wählen, ob der Betrag Umsatzsteuer enthält.'); return; }
+    if (!UM_ZA[za]) { err('Bitte die Zahlungsart wählen.'); return; }
+    if (nr) {
+      var dup = umMan().filter(function (p) { return p[0] !== s.id && !p[1].storno && String(p[1].nr || '').trim().toLowerCase() === nr.toLowerCase(); })[0];
+      if (dup) { err('Die Nummer ' + nr + ' gibt es schon (' + datum(dup[1].datum) + '). Jede Nummer nur einmal.'); return; }
+    }
+    var before = umCross(d.slice(0, 4)), now = new Date().toISOString();
+    setBusy(true);
+    try {
+      var bl = BL && s.bl ? await blCommitForm('umsatz', 'Einnahme ' + text) : blList(old && old.belege);
+      var data = Object.assign({}, old || { erstellt: now }, { datum: d, nr: nr || null, text: text, betrag: round2(b), ust: ust, zahlung: za, belege: bl || [], notiz: g('um-no').slice(0, 400) || null, geaendert: now });
+      var id = s.id;
+      if (id) await write(function () { return S.db.doc('umsatz/' + id).update(data); });
+      else { var ref = S.db.collection('umsatz').doc(); id = ref.id; await write(function () { return ref.set(data); }); }
+      S.um.set(id, data);
+      setBusy(false);
+      openUmsatz(d.slice(0, 4));
+      var after = umCross(d.slice(0, 4));
+      toast('Gespeichert: ' + eur(data.betrag) + ' ' + UM_ZT[za] + '.' + (after.rk && !before.rk ? ' Achtung: Die Grenzen für die Registrierkasse sind jetzt überschritten.' : '') + (after.ku && !before.ku ? ' Achtung: Kleinunternehmergrenze überschritten.' : ''));
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  async function umStorno() {
+    var s = S.sheet;
+    if (!s || s.type !== 'umform' || !s.id || S.busy || !canWrite()) return;
+    var u = umManOf(s.id), grund = (($('#um-sg') || {}).value || '').trim().slice(0, 120), err = function (m) { var el = $('#um-err'); if (el) el.textContent = m; };
+    if (!u) return;
+    if (!grund) { err('Bitte einen Grund für das Stornieren eintragen.'); var f = $('#um-sg'); if (f) { try { f.focus(); } catch (_) {} } return; }
+    var now = new Date().toISOString(), patch = { storno: { am: now, grund: grund }, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('umsatz/' + s.id).update(patch); });
+      S.um.set(s.id, Object.assign({}, u, patch));
+      setBusy(false);
+      openUmsatz(u.datum.slice(0, 4));
+      toast('Storniert. Der Eintrag bleibt sichtbar und zählt nicht mehr mit.');
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  function umPdfDoc(lib, y) {
+    var today = dayKey(new Date()), conf = kvaConf(), all = umItems(y).slice().reverse(), act = all.filter(function (it) { return !it.storno; }), sto = all.filter(function (it) { return it.storno; }), o = umSum(y);
+    var P = btPdf(lib, 'Einnahmen ' + y, 'Rechnungen aus der Werkstatt-App und weitere Einnahmen, nach Rechnungsdatum. Stand ' + datum(today) + '. Die App ist keine Registrierkasse und kein Kassenbuch.');
+    if (act.length) P.table([{ t: 'Datum', w: 20 }, { t: 'Nummer', w: 22 }, { t: 'Leistung', w: 52 }, { t: 'Kunde', w: 34 }, { t: 'Zahlung', w: 24 }, { t: 'Betrag', w: 26, r: true }],
+      act.map(function (it) { return { cells: [datum(it.d), it.nr || '–', it.titel, it.wer || '–', (UM_ZT[it.z] || '') + (it.st && it.st.chip !== 'bezahlt' ? ', ' + it.st.chip : ''), eur(it.b)] }; }));
+    else P.p('Keine Einnahmen in diesem Jahr.');
+    P.p('Summe ' + eur(o.b) + ': bar ' + eur(o.bar) + ', Karte ' + eur(o.karte) + (o.bk ? ', bar oder Karte ' + eur(o.bk) : '') + ', Überweisung ' + eur(o.ueb) + (o.nOffen ? '; davon noch offen ' + eur(o.offen) : '') + '.' + (o.ust ? ' Ohne USt: ' + eur(o.n0) + '.' : ''), 9.5);
+    if (sto.length) {
+      P.h3('Stornierte Einträge');
+      P.table([{ t: 'Datum', w: 20 }, { t: 'Nummer', w: 22 }, { t: 'Leistung', w: 60 }, { t: 'Betrag', w: 26, r: true }, { t: 'Grund', w: 50 }],
+        sto.map(function (it) { return [datum(it.d), it.nr || '–', it.titel, eur(it.b), (it.storno.grund || '') + ' (' + datum(String(it.storno.am || '').slice(0, 10)) + ')']; }));
+    }
+    return P.finish('Einnahmen ' + y + ' · ' + (conf.name || 'Werkstatt'));
+  }
+  /* ---------- Leistungspakete und Preisliste ---------- */
+  var LP_KL = [['klein', 'Kleinwagen'], ['kompakt', 'Kompaktklasse'], ['mittel', 'Mittelklasse und Kombi'], ['gross', 'SUV und Van'], ['nutz', 'Transporter und Wohnmobil']];
+  var LP_KLM = {};
+  LP_KL.forEach(function (k) { LP_KLM[k[0]] = k[1]; });
+  var LP_DEF = [
+    { id: 'hohlraum', n: 'Hohlraumversiegelung', arten: ['hohlraum'] },
+    { id: 'unterboden', n: 'Unterbodenschutz', arten: ['unterboden'] },
+    { id: 'komplett', n: 'Unterboden und Hohlräume', arten: ['unterboden', 'hohlraum'] }
+  ];
+  function lpSaved() { var c = S.prConf && typeof S.prConf === 'object' ? S.prConf : {}; return arr(c.pakete).filter(function (p) { return p && typeof p === 'object' && p.id && p.n; }); }
+  function lpAll() {
+    var saved = lpSaved(), by = {};
+    saved.forEach(function (p) { by[p.id] = p; });
+    var out = LP_DEF.map(function (d) { return by[d.id] || Object.assign({ text: '', je: {}, neu: true }, d); });
+    saved.forEach(function (p) { if (!LP_DEF.some(function (d) { return d.id === p.id; })) out.push(p); });
+    return out;
+  }
+  function lpOf(id) { return lpAll().filter(function (p) { return p.id === id; })[0] || null; }
+  function lpOn(p) { return p.aktiv !== false; }
+  function lpJe(p, kl) { var j = p && p.je && typeof p.je === 'object' ? p.je[kl] : null; return j && typeof j === 'object' ? { h: numOrNull(j.h), m: numOrNull(j.m) } : { h: null, m: null }; }
+  function lpPreis(p, kl, sh) { var j = lpJe(p, kl); if (j.h === null && j.m === null) return null; if (j.h !== null && sh === null) return null; return round2((j.h || 0) * (sh || 0) + (j.m || 0)); }
+  function lpHas(p) { return LP_KL.some(function (k) { var j = lpJe(p, k[0]); return j.h !== null || j.m !== null; }); }
+  /* Materialkosten aus Konservierungen: abgebuchte Mittel zum Einkaufspreis, je Fahrzeugklasse des Autos */
+  function ubJobCost(w) {
+    var c = 0, any = false;
+    ubMittel(w.ub).forEach(function (m) { var q = numOrNull(m.q), p = numOrNull(m.p); if (ub39Booked(m) && q !== null && p !== null) { c += q * p; any = true; } });
+    return any ? round2(c) : null;
+  }
+  function lpMatch(p, w) {
+    var a = arr(w.ub.arten), pa = arr(p.arten);
+    if (!pa.length || !pa.every(function (k) { return a.indexOf(k) >= 0; })) return false;
+    return ['unterboden', 'hohlraum'].every(function (k) { return a.indexOf(k) < 0 || pa.indexOf(k) >= 0; });
+  }
+  function lpMat(p) {
+    var out = {};
+    if (!p) return out;
+    S.cars.forEach(function (c) {
+      var kl = c && LP_KLM[c.klasse] ? c.klasse : null;
+      if (!kl) return;
+      arr(c.arbeiten).forEach(function (w) {
+        if (!ubOk(w) || w.ub.typ !== 'behandlung' || !lpMatch(p, w)) return;
+        var cost = ubJobCost(w);
+        if (cost === null) return;
+        var o = out[kl] || (out[kl] = { n: 0, sum: 0 });
+        o.n++; o.sum += cost;
+      });
+    });
+    Object.keys(out).forEach(function (k) { out[k].avg = round2(out[k].sum / out[k].n); });
+    return out;
+  }
+  function lpSec(can) {
+    var sh = kvaConf().stundensatz, all = lpAll(), on = all.filter(lpOn), off = all.filter(function (p) { return !lpOn(p); });
+    var row = function (p) {
+      var pr = LP_KL.map(function (k) { return lpPreis(p, k[0], sh); }).filter(function (v) { return v !== null; });
+      var lo = pr.length ? Math.min.apply(null, pr) : null, hi = pr.length ? Math.max.apply(null, pr) : null;
+      var sub = pr.length ? (lo === hi ? eur(lo) : eur(lo) + ' bis ' + eur(hi)) + (pr.length < LP_KL.length ? ' · ' + pr.length + ' von ' + LP_KL.length + ' Fahrzeugklassen' : ' je nach Fahrzeugklasse') : lpHas(p) ? 'Stundensatz fehlt' : 'noch ohne Zeit und Material';
+      return '<li><button type="button" class="wbtn" data-act="lp-edit" data-id="' + esc(p.id) + '"><span class="i-n">' + esc(p.n) + '<small>' + esc(sub) + '</small></span><span class="i-p">' + (p.neu ? '<span class="wst plan">Vorschlag</span>' : '') + '</span></button></li>';
+    };
+    var h = '<div class="sh-sec"><div class="vhead"><h3 class="sec">Leistungen und Preise</h3>' + (can ? '<button type="button" class="linkbtn" data-act="lp-new">+ Paket</button>' : '') + '</div>';
+    h += '<ul class="works">' + on.map(row).join('') + '</ul>';
+    if (off.length) h += '<details class="wp-more" data-k="lp-off"><summary>' + esc('Nicht im Angebot · ' + off.length) + '</summary><ul class="works">' + off.map(row).join('') + '</ul></details>';
+    if (S.dl && on.some(function (p) { return LP_KL.some(function (k) { return lpPreis(p, k[0], sh) !== null; }); })) h += '<div class="kva-act"><button type="button" class="btn ghost small" data-act="lp-pdf">Preisliste (PDF)</button></div>';
+    h += '<p class="help">' + esc('Stundensatz: ' + (sh === null ? 'noch keiner' : eur(sh)) + '. Preis je Fahrzeugklasse: Arbeitszeit mal Stundensatz plus Material. Im Kostenvoranschlag für ein Kundenauto übernimmst du ein Paket mit einem Tipp. Die Materialkosten echter Aufträge zeigt das Paket, sobald bei Konservierungen Mittel aus dem Bestand abgebucht sind und die Fahrzeugklasse eingetragen ist.') + '</p>';
+    return h + '</div>';
+  }
+  function openLpForm(id) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var p = id ? lpOf(id) : null;
+    if (id && !p) { toast('Dieses Paket gibt es nicht mehr.'); return; }
+    var sh = kvaConf().stundensatz, shv = sh === null ? '' : nfPrice.format(sh), mat = lpMat(p), arten = p ? arr(p.arten) : [];
+    var nv = function (v) { return v === null ? '' : nfIn.format(v); }, pv = function (v) { return v === null ? '' : nfPrice.format(v); };
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Umsatz und Preise · Leistungspaket</p><h2 class="sh-title" id="sheet-title">' + esc(p ? p.n : 'Neues Paket') + '</h2>' +
+      (p && p.neu ? '<p class="buy">Vorschlag der App. Erst mit dem Speichern steht es in deiner Preisliste.</p>' : '') + '</div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="lpform" novalidate>' +
+      '<label class="f"><span>Name</span><input id="lp-n" value="' + esc(p ? p.n : '') + '" maxlength="60" autocomplete="off" placeholder="z. B. Steinschlagschutz"></label>' +
+      '<label class="f"><span>Leistungsbeschreibung <span class="muted">(optional)</span></span><textarea id="lp-text" rows="3" maxlength="300" placeholder="z. B. Unterboden reinigen, Rost entfernen, Schutz auftragen">' + esc(p ? p.text || '' : '') + '</textarea><small>Steht im Kostenvoranschlag als Bemerkung und in der Preisliste.</small></label>' +
+      '<fieldset class="ub-fs"><legend>Passt zu Konservierungen mit</legend>' + ubPills('lp-art', UB_ART, arten) + '<small class="ub-fh">Damit findet die App die Materialkosten aus deinen Aufträgen.</small></fieldset>' +
+      '<label class="f kva-sh"><span>Stundensatz (€)</span><input id="lp-sh" inputmode="decimal" value="' + shv + '" placeholder="z. B. 50" autocomplete="off"><small>Derselbe wie im Kostenvoranschlag und in der Rechnung.</small></label>' +
+      '<h3 class="sec">Je Fahrzeugklasse</h3><p class="help">Leer lassen, was du nicht anbietest.</p>' +
+      LP_KL.map(function (k) {
+        var j = lpJe(p, k[0]), m = mat[k[0]];
+        return '<div class="lp-r"><div class="lp-rh"><b>' + esc(k[1]) + '</b><span class="lp-p" id="lp-p-' + k[0] + '" aria-live="polite"></span></div><div class="row2">' +
+          '<label class="f"><span>Arbeitszeit (h)</span><input id="lp-h-' + k[0] + '" inputmode="decimal" value="' + nv(j.h) + '" autocomplete="off"></label>' +
+          '<label class="f"><span>Material (€)</span><input id="lp-m-' + k[0] + '" inputmode="decimal" value="' + pv(j.m) + '" autocomplete="off"></label></div>' +
+          (m ? '<p class="help lp-mat">' + esc('Material laut ' + m.n + (m.n === 1 ? ' Auftrag: ' : ' Aufträgen: ') + 'Ø ' + eur(m.avg) + ' zum Einkaufspreis. ') + '<button type="button" class="linkbtn inl" data-act="lp-mat" data-kl="' + k[0] + '" data-v="' + esc(String(m.avg)) + '">Übernehmen</button></p>' : '') + '</div>';
+      }).join('') +
+      '<label class="check"><input type="checkbox" id="lp-on"' + (!p || lpOn(p) ? ' checked' : '') + '><span>Im Angebot: im Kostenvoranschlag und in der Preisliste</span></label>' +
+      '<p class="err" id="lp-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="um-open">Zurück</button></div></form>';
+    openSheet('lpform', { id: id || null }, h);
+    lpUpdate();
+  }
+  function lpUpdate() {
+    var shi = parseNum((($('#lp-sh') || {}).value || '').trim()), sh = shi === null || isNaN(shi) ? null : shi;
+    LP_KL.forEach(function (k) {
+      var el = $('#lp-p-' + k[0]);
+      if (!el) return;
+      var hh = parseNum((($('#lp-h-' + k[0]) || {}).value || '').trim()), mm = parseNum((($('#lp-m-' + k[0]) || {}).value || '').trim());
+      var hv = hh === null || isNaN(hh) ? null : hh, mv = mm === null || isNaN(mm) ? null : mm;
+      el.textContent = hv === null && mv === null ? '' : hv !== null && sh === null ? 'Stundensatz fehlt' : eur(round2((hv || 0) * (sh || 0) + (mv || 0)));
+    });
+  }
+  function lpMatSet(t) {
+    var el = $('#lp-m-' + t.dataset.kl), v = numOrNull(t.dataset.v);
+    if (!el || v === null) return;
+    el.value = nfPrice.format(v);
+    lpUpdate();
+  }
+  async function saveLp() {
+    var s = S.sheet;
+    if (!s || s.type !== 'lpform' || S.busy) return;
+    var err = function (m) { var el = $('#lp-err'); if (el) el.textContent = m; }, g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var n = g('lp-n').slice(0, 60), sh = parseNum(g('lp-sh'));
+    if (!n) { err('Bitte einen Namen eintragen, z. B. Unterbodenschutz.'); return; }
+    if (sh !== null && (isNaN(sh) || sh < 0 || sh > 10000)) { err('Den Stundensatz bitte als Zahl eintragen, z. B. 50.'); return; }
+    if (lpAll().some(function (p) { return p.id !== s.id && String(p.n).trim().toLowerCase() === n.toLowerCase(); })) { err('Ein Paket mit diesem Namen gibt es schon.'); return; }
+    var je = {};
+    for (var i = 0; i < LP_KL.length; i++) {
+      var k = LP_KL[i][0], hh = parseNum(g('lp-h-' + k)), mm = parseNum(g('lp-m-' + k));
+      if (hh !== null && (isNaN(hh) || hh < 0 || hh > 500)) { err(LP_KL[i][1] + ': Die Arbeitszeit bitte in Stunden eintragen, z. B. 2,5.'); return; }
+      if (mm !== null && (isNaN(mm) || mm < 0 || mm > 100000)) { err(LP_KL[i][1] + ': Das Material bitte in Euro eintragen, z. B. 60.'); return; }
+      if (hh !== null || mm !== null) je[k] = { h: hh === null ? null : round2(hh), m: mm === null ? null : round2(mm) };
+    }
+    var arten = $$('#lpform input[name="lp-art"]').filter(function (c) { return c.checked && UB_ART[c.value]; }).map(function (c) { return c.value; });
+    var now = new Date().toISOString(), id = s.id || 'p' + rid(8), old = s.id ? lpOf(s.id) : null;
+    var rec = { id: id, n: n, text: g('lp-text').slice(0, 300), arten: arten, aktiv: !!(($('#lp-on') || {}).checked), je: je, erstellt: old && old.erstellt ? old.erstellt : now, geaendert: now };
+    var saved = lpSaved().map(function (p) { return p.id === id ? rec : p; });
+    if (!saved.some(function (p) { return p.id === id; })) saved.push(rec);
+    var doc = { v: 1, pakete: saved, geaendert: now }, shr = sh === null ? null : round2(sh);
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('meta/preise').set(doc); });
+      S.prConf = doc;
+      if (shr !== kvaConf().stundensatz) {
+        var had = !!S.kvaConf;
+        try { await write(function () { var ref = S.db.doc('meta/kva'); return had ? ref.update({ stundensatz: shr }) : ref.set({ stundensatz: shr }); }); S.kvaConf = Object.assign({}, S.kvaConf || {}, { stundensatz: shr }); } catch (_) {}
+      }
+      setBusy(false);
+      openUmsatz();
+      toast('Gespeichert: ' + rec.n + (rec.aktiv ? '.' : ', nicht im Angebot.'));
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Kostenvoranschlag: Paket übernehmen */
+  function lpKvaPick(car) {
+    var sh = kvaConf().stundensatz, groups = [];
+    lpAll().filter(lpOn).forEach(function (p) {
+      var ks = LP_KL.filter(function (k) { var j = lpJe(p, k[0]); return j.h !== null || j.m !== null; });
+      if (ks.length) groups.push('<optgroup label="' + esc(p.n) + '">' + ks.map(function (k) { var pr = lpPreis(p, k[0], sh); return '<option value="' + esc(p.id + '|' + k[0]) + '">' + esc(p.n + ', ' + k[1] + (pr !== null ? ' · ' + eur(pr) : '')) + '</option>'; }).join('') + '</optgroup>');
+    });
+    if (!groups.length) return '';
+    var kl = car && LP_KLM[car.klasse] ? LP_KLM[car.klasse] : '';
+    return '<div class="lp-kva"><label class="f"><span>Leistungspaket</span><select id="lp-kva-s"><option value="">Paket aus der Preisliste wählen …</option>' + groups.join('') + '</select></label>' +
+      '<button type="button" class="btn ghost small" data-act="lp-kva">Übernehmen</button></div>' +
+      '<p class="help">' + esc('Ersetzt die Positionen unten durch Arbeitszeit und Material aus der Preisliste.' + (kl ? ' Dieses Auto: ' + kl + '.' : '')) + '</p>';
+  }
+  function lpKvaApply() {
+    var s = S.sheet;
+    if (!s || s.type !== 'kva') return;
+    var v = (($('#lp-kva-s') || {}).value || ''), i = v.indexOf('|'), p = i > 0 ? lpOf(v.slice(0, i)) : null, kl = i > 0 ? v.slice(i + 1) : '';
+    if (!p || !LP_KLM[kl]) { toast('Bitte zuerst ein Paket wählen.'); return; }
+    var j = lpJe(p, kl), shi = parseNum((($('#kva-sh') || {}).value || '').trim()), sh = shi !== null && !isNaN(shi) ? shi : kvaConf().stundensatz, pos = [];
+    if (j.h !== null) pos.push({ t: (p.n + ', ' + LP_KLM[kl] + ': Arbeitszeit').slice(0, 120), m: j.h, e: 'h', p: sh });
+    if (j.m !== null) pos.push({ t: ('Material ' + p.n).slice(0, 120), m: 1, e: 'pausch.', p: j.m });
+    if (!pos.length) return;
+    kvaRows(pos);
+    var bem = $('#kva-bem');
+    if (bem && !bem.value.trim() && p.text) bem.value = String(p.text).slice(0, 400);
+    s.lpKl = kl;
+    toast('Übernommen: ' + p.n + ', ' + LP_KLM[kl] + '.');
+  }
+  /* nach dem Speichern: Fahrzeugklasse am Auto merken */
+  async function lpKvaAfter(s, r) {
+    if (!s || !s.lpKl || !r || !LP_KLM[s.lpKl]) return;
+    var car = S.cars.get(r.fahrzeug);
+    if (!car || car.klasse === s.lpKl) return;
+    var now = new Date().toISOString(), kl = s.lpKl;
+    try { await write(function () { return S.db.doc('fahrzeuge/' + r.fahrzeug).update({ klasse: kl, geaendert: now }); }); S.cars.set(r.fahrzeug, Object.assign({}, S.cars.get(r.fahrzeug) || car, { klasse: kl, geaendert: now })); } catch (_) {}
+  }
+  function lpPdfDoc(lib) {
+    var conf = kvaConf(), sh = conf.stundensatz, today = dayKey(new Date());
+    var list = lpAll().filter(function (p) { return lpOn(p) && LP_KL.some(function (k) { return lpPreis(p, k[0], sh) !== null; }); });
+    var P = btPdf(lib, 'Preisliste', 'Stand ' + datum(today) + '. ' + (KVA_UST[conf.ust] || '') + '. Preise je Fahrzeugklasse.');
+    P.table([{ t: 'Leistung', w: 48 }].concat(LP_KL.map(function (k) { return { t: k[1], w: 26, r: true }; })),
+      list.map(function (p) { return [p.n].concat(LP_KL.map(function (k) { var v = lpPreis(p, k[0], sh); return v === null ? '–' : eur(v); })); }));
+    list.forEach(function (p) { if (p.text) { P.h3(p.n); P.p(p.text, 9.5); } });
+    return P.finish('Preisliste · ' + (conf.name || 'Werkstatt') + ' · ' + datum(today));
+  }
+  /* ---------- Material je Auftrag: Mittel der Konservierung aus dem Bestand abbuchen, mit Charge ---------- */
+  function ub39Item(name) {
+    var n = String(name || '').trim().toLowerCase(), hit = null;
+    if (!n) return null;
+    S.items.forEach(function (it, id) { if (!hit && it && !it.archiviert && it.bereich === 'verbrauch' && itemName(it).trim().toLowerCase() === n) hit = [id, it]; });
+    return hit;
+  }
+  function ub39Unit(it) { var inh = numOrNull(it.inhalt), u = unitOf(it); return u + (inh !== null && u !== 'l' ? ' à ' + fmt(inh) + ' l' : ''); }
+  function ub39Booked(m) { return !!(m && m.a && m.b && typeof m.b === 'object'); }
+  function ubMittelRow(m, i) {
+    m = m || {};
+    var bk = ub39Booked(m), it = bk ? null : ub39Item(m.n), qv = bk || (it && numOrNull(m.q) !== null) ? fmtIn(m.q) : m.m || '';
+    return '<div class="ubm" data-i="' + i + '" data-art="' + esc(it ? it[0] : '') + '"' + (bk ? ' data-booked="1"' : '') + '>' +
+      '<label class="f ubm-nf"><span>Produkt</span><input class="ubm-n" id="ubm-n' + i + '" list="ubm-l" value="' + esc(m.n || '') + '" maxlength="80" autocomplete="off" placeholder="z. B. Mike Sander’s Fett"' + (bk ? ' readonly' : '') + '></label>' +
+      '<label class="f"><span>Art</span><select class="ubm-t" id="ubm-t' + i + '"' + (m.t ? ' data-touched="1"' : '') + '><option value="">Art wählen</option>' +
+      Object.keys(UB_MT).map(function (k) { return '<option value="' + k + '"' + (k === m.t ? ' selected' : '') + '>' + esc(UB_MT[k].n) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span id="ubm-ml' + i + '">' + esc(bk ? 'Menge (' + (m.b.e || '') + ')' : it ? 'Menge (' + ub39Unit(it[1]) + ')' : 'Menge') + '</span><input class="ubm-m" id="ubm-m' + i + '" value="' + esc(qv) + '" maxlength="30" autocomplete="off" placeholder="' + (it ? 'z. B. 2' : 'z. B. 2 kg') + '"' + (it ? ' inputmode="decimal"' : '') + (bk ? ' readonly' : '') + '></label>' +
+      '<div class="ubm-x" id="ubm-x' + i + '">' + ub39XHtml(m, i, it) + '</div></div>';
+  }
+  function ub39XHtml(m, i, it) {
+    var h = '<label class="f ubm-cf"><span>Charge <span class="muted">(optional)</span></span><input class="ubm-c" id="ubm-c' + i + '" value="' + esc(m.ch || '') + '" maxlength="40" autocomplete="off" spellcheck="false" placeholder="vom Gebinde"></label>';
+    if (ub39Booked(m)) return h + '<p class="ubm-b">' + esc('Abgebucht ' + (isDay(m.b.d) ? 'am ' + datum(m.b.d) + ' ' : '') + 'aus ' + lagerName(m.b.l) + (numOrNull(m.p) !== null ? ', Einkauf ' + eur(round2(num(m.q) * num(m.p))) : '') + '.') + '</p>';
+    if (!it) return h;
+    var x = it[1], u = unitOf(x), wb = num(x.wb), ro = num(x.ro), s = S.sheet;
+    var def = m.l === 'wb' || m.l === 'ro' || m.l === 'nein' ? m.l : m.n && s && s.work ? 'nein' : wb > 0 ? 'wb' : ro > 0 ? 'ro' : 'nein';
+    return h + '<label class="f ubm-lf"><span>Abbuchen aus</span><select class="ubm-l" id="ubm-l' + i + '">' +
+      ['wb', 'ro'].map(function (L) { return '<option value="' + L + '"' + (def === L ? ' selected' : '') + '>' + esc(lagerName(L) + ' (' + fmt(L === 'wb' ? wb : ro) + ' ' + u + ')') + '</option>'; }).join('') +
+      '<option value="nein"' + (def === 'nein' ? ' selected' : '') + '>nicht abbuchen</option></select></label>';
+  }
+  /* Produktname geändert: passt er zu einem Artikel im Bestand? */
+  function ub39Sync(row) {
+    if (!row || row.dataset.booked) return;
+    var i = row.dataset.i, it = ub39Item((($('.ubm-n', row) || {}).value || '')), key = it ? it[0] : '';
+    if ((row.dataset.art || '') === key) return;
+    row.dataset.art = key;
+    var lab = $('#ubm-ml' + i), mi = $('#ubm-m' + i), x = $('#ubm-x' + i);
+    if (lab) lab.textContent = it ? 'Menge (' + ub39Unit(it[1]) + ')' : 'Menge';
+    if (mi) { mi.placeholder = it ? 'z. B. 2' : 'z. B. 2 kg'; if (it) mi.setAttribute('inputmode', 'decimal'); else mi.removeAttribute('inputmode'); }
+    if (x) { var ch = (($('.ubm-c', x) || {}).value || ''); x.innerHTML = ub39XHtml({ ch: ch }, i, it); }
+    ub39Cost();
+  }
+  function ub39Cost() {
+    var el = $('#ubm-cost');
+    if (!el) return;
+    var sum = 0, n = 0, ohne = 0, s = S.sheet;
+    $$('#ubform .ubm').forEach(function (row) {
+      var i = Number(row.dataset.i), old = s && s.ubOld ? s.ubOld[i] : null;
+      if (row.dataset.booked && ub39Booked(old)) { if (numOrNull(old.p) !== null) { sum += num(old.q) * num(old.p); n++; } else ohne++; return; }
+      if (!row.dataset.art) return;
+      var it = S.items.get(row.dataset.art), L = ($('#ubm-l' + i) || {}).value, q = parseNum((($('#ubm-m' + i) || {}).value || '').trim());
+      if (!it || L === 'nein' || q === null || isNaN(q) || q <= 0) return;
+      if (numOrNull(it.preis) !== null) { sum += q * num(it.preis); n++; } else ohne++;
+    });
+    el.textContent = n || ohne ? 'Material aus dem Bestand: ' + eur(round2(sum)) + ' zum Einkaufspreis' + (ohne ? ', ' + ohne + (ohne === 1 ? ' Mittel ohne Preis im Bestand' : ' Mittel ohne Preis im Bestand') : '') + '.' : '';
+  }
+  function ub39CostLine() { return '<p class="help ubm-cost" id="ubm-cost" aria-live="polite"></p>'; }
+  function ub39Kl(car) {
+    var kl = car && LP_KLM[car.klasse] ? car.klasse : '';
+    return '<label class="f"><span>Fahrzeugklasse <span class="muted">(optional)</span></span><select id="ub-kl"><option value="">–</option>' + LP_KL.map(function (k) { return '<option value="' + k[0] + '"' + (k[0] === kl ? ' selected' : '') + '>' + esc(k[1]) + '</option>'; }).join('') + '</select>' +
+      '<small>Für die Materialkosten je Klasse in der Preisliste.</small></label>';
+  }
+  function ub39Patch(patch, car) { var el = $('#ub-kl'), v = el ? el.value : ''; if (LP_KLM[v] && (car.klasse || '') !== v) patch.klasse = v; }
+  /* beim Speichern: Zeile lesen (Charge, Artikel, Menge, Lager); schon abgebuchte Zeilen bleiben wie gespeichert */
+  function ub39Read(row, m) {
+    var i = Number(row.dataset.i), s = S.sheet, old = s && s.ubOld ? s.ubOld[i] : null, ch = (($('#ubm-c' + i) || {}).value || '').trim().slice(0, 40);
+    if (row.dataset.booked && ub39Booked(old)) {
+      var keep = Object.assign({}, old, { t: m.t });
+      if (ch) keep.ch = ch; else delete keep.ch;
+      return keep;
+    }
+    if (ch) m.ch = ch;
+    m._i = i;
+    var it = row.dataset.art ? S.items.get(row.dataset.art) : null;
+    if (!it) return m;
+    var L = (($('#ubm-l' + i) || {}).value || 'nein'), q = parseNum((($('#ubm-m' + i) || {}).value || '').trim());
+    m.a = row.dataset.art;
+    m.l = L === 'wb' || L === 'ro' ? L : 'nein';
+    if (q !== null && !isNaN(q) && q > 0) { m.q = round3(q); m.m = fmt(q) + ' ' + unitOf(it); }
+    else if (m.l !== 'nein') m.qErr = true;
+    return m;
+  }
+  function ub39Check(s, list) {
+    var need = {};
+    for (var k = 0; k < arr(list).length; k++) {
+      var m = list[k];
+      if (!m.a || ub39Booked(m) || m.l === 'nein' || (s.ubBooked && s.ubBooked[m._i])) continue;
+      var it = S.items.get(m.a);
+      if (!it) continue;
+      if (m.qErr || numOrNull(m.q) === null) return '„' + m.n + '“: Bitte die Menge als Zahl in ' + unitOf(it) + ' eintragen, z. B. 2 oder 0,5, oder „nicht abbuchen“ wählen.';
+      var key = m.a + '|' + m.l, have = num(m.l === 'wb' ? it.wb : it.ro);
+      need[key] = (need[key] || 0) + m.q;
+      if (need[key] > have + 1e-9) return '„' + m.n + '“: ' + lagerName(m.l) + ' hat laut Inventar nur ' + fmt(have) + ' ' + unitOf(it) + '. Menge anpassen, anderes Lager wählen oder „nicht abbuchen“.';
+    }
+    return '';
+  }
+  /* Abbuchen vor dem Speichern des Eintrags; bei einem zweiten Versuch wird nichts doppelt abgebucht */
+  async function ub39Book(s, u, showErr) {
+    var list = arr(u.mittel), today = dayKey(new Date());
+    s.ubBooked = s.ubBooked || {};
+    s.ubDone = [];
+    for (var k = 0; k < list.length; k++) {
+      var m = list[k], i = m._i;
+      delete m._i; delete m.qErr;
+      if (ub39Booked(m)) continue;
+      if (i !== undefined && s.ubBooked[i]) { Object.assign(m, s.ubBooked[i]); continue; }
+      if (!m.a || !(num(m.q) > 0) || (m.l !== 'wb' && m.l !== 'ro')) continue;
+      var it = S.items.get(m.a);
+      if (!it) continue;
+      var L = m.l, wb0 = num(it.wb), ro0 = num(it.ro), have = L === 'wb' ? wb0 : ro0;
+      if (m.q > have + 1e-9) { showErr('„' + m.n + '“: ' + lagerName(L) + ' hat laut Inventar nur ' + fmt(have) + ' ' + unitOf(it) + '.'); return false; }
+      var wb = L === 'wb' ? round3(wb0 - m.q) : wb0, ro = L === 'ro' ? round3(ro0 - m.q) : ro0, now = new Date();
+      var patch = { wb: wb, ro: ro, geaendert: now.toISOString() };
+      var entry = { id: rid(10), tag: dayKey(now), t: now.toISOString(), art: 'aus', artikel: m.a, name: itemName(it), code: String(it.code || ''), einheit: unitOf(it), menge: m.q, lager: L, nach: null, vorher: [wb0, ro0], nachher: [wb, ro], preis: numOrNull(it.preis), fahrzeug: s.car, fahrzeugName: carName(s.car), auftrag: 'unterboden' };
+      setBusy(true);
+      try {
+        await write(function () { return S.db.doc('artikel/' + m.a).update(patch); });
+        S.items.set(m.a, Object.assign({}, it, patch));
+        try { await appendLog(entry); } catch (_) {}
+      } catch (e) { setBusy(false); writeError(e, showErr); return false; }
+      setBusy(false);
+      var keep = { b: { d: today, l: L, e: unitOf(it), log: entry.id }, p: numOrNull(it.preis) };
+      if (i !== undefined) s.ubBooked[i] = keep;
+      Object.assign(m, keep);
+      s.ubDone.push({ a: m.a, q: m.q, e: unitOf(it), n: itemName(it) });
+    }
+    return true;
+  }
+  function ub39Toast(s) {
+    var d = s && s.ubDone || [];
+    if (!d.length) return '';
+    var t = ' Abgebucht: ' + d.map(function (x) { return fmt(x.q) + ' ' + x.e + ' ' + x.n; }).join(', ') + '.';
+    var nk = d.filter(function (x, i) { var it = S.items.get(x.a), st = it ? status(it) : null; return (st === 'kaufen' || st === 'leer') && d.map(function (y) { return y.a; }).indexOf(x.a) === i; });
+    if (nk.length) t += ' Nachkaufen: ' + nk.map(function (x) { return x.n + ' (noch ' + fmt(stockOf(S.items.get(x.a))) + ' ' + x.e + ')'; }).join(', ') + '.';
+    return t;
+  }
+  /* ---------- Eingaben ---------- */
+  function umChange(t) {
+    if (!t || !S.sheet) return false;
+    var ty = S.sheet.type;
+    if ((ty === 're' || ty === 'gare') && t.name === 're-za') { var fs = t.closest('fieldset'); if (fs) fs.dataset.touched = '1'; return true; }
+    if ((ty === 're' || ty === 'gare') && t.id === 're-ziel') {
+      var fz = $('#sheet .re-za');
+      if (fz && !fz.dataset.touched) { var rb = $('#sheet input[name="re-za"][value="' + (t.value === '0' ? 'bar' : 'ueberweisung') + '"]'); if (rb) rb.checked = true; }
+      return true;
+    }
+    if (ty === 'ubform' && t.classList && t.classList.contains('ubm-l')) { ub39Cost(); return true; }
+    return false;
+  }
+  function umInput(t) {
+    if (!t || !S.sheet) return false;
+    var ty = S.sheet.type;
+    if (ty === 'lpform' && /^lp-(h-|m-|sh$)/.test(t.id || '')) { lpUpdate(); return true; }
+    if (ty === 'ubform' && t.classList && t.classList.contains('ubm-m')) { ub39Cost(); return true; }
+    return false;
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -17370,6 +18037,18 @@ input.fs-mono { text-transform: uppercase; }
       case 'rl-et-pdf': rlEtPdf(); break;
       case 'odb-req': odbRequest(t.dataset.id); break;
       case 'bt-open': openBetrieb(); break;
+      case 'um-open': openUmsatz(); break;
+      case 'um-year': openUmsatz(t.dataset.year); break;
+      case 'um-new': openUmForm(null); break;
+      case 'um-edit': openUmForm(t.dataset.id); break;
+      case 'um-back': umBack(); break;
+      case 'um-storno': umStorno(); break;
+      case 'um-pdf': (function (yy) { btSavePdf('Einnahmen ' + yy + '.pdf', function (lib) { return umPdfDoc(lib, yy); }); })(t.dataset.year || dayKey(new Date()).slice(0, 4)); break;
+      case 'lp-new': openLpForm(null); break;
+      case 'lp-edit': openLpForm(t.dataset.id); break;
+      case 'lp-mat': lpMatSet(t); break;
+      case 'lp-pdf': btSavePdf('Preisliste ' + dayKey(new Date()) + '.pdf', lpPdfDoc); break;
+      case 'lp-kva': lpKvaApply(); break;
       case 'bt-pdf': btSavePdf('Betriebsanlage Beilagen ' + dayKey(new Date()) + '.pdf', btUnterlagenDoc); break;
       case 'bt-raum-save': btRaumSave(); break;
       case 'st-pick': openStPick(); break;
@@ -17498,6 +18177,7 @@ input.fs-mono { text-transform: uppercase; }
     if (rlChange(t)) return;
     if (rlEtChange(t)) return;
     if (btChange(t)) return;
+    if (umChange(t)) return;
     if (brChange(t)) return;
     if (pvChange(t)) return;
     if (gaChange(t)) return;
@@ -17572,6 +18252,8 @@ input.fs-mono { text-transform: uppercase; }
       else if (e.target.id === 'grform') { e.preventDefault(); saveGr(); }
       else if (e.target.id === 'prform') { e.preventDefault(); savePr(); }
       else if (e.target.id === 'abform') { e.preventDefault(); saveAb(); }
+      else if (e.target.id === 'umform') { e.preventDefault(); saveUm(); }
+      else if (e.target.id === 'lpform') { e.preventDefault(); saveLp(); }
       else if (e.target.id === 'keein') { e.preventDefault(); saveKeEin(); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
@@ -17594,6 +18276,7 @@ input.fs-mono { text-transform: uppercase; }
       if (avInput(e.target)) return;
       if (fsInput(e.target)) return;
       if (btInput(e.target)) return;
+      if (umInput(e.target)) return;
       if (wpTippsInput(e.target)) return;
       if (gaInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
