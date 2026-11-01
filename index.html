@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "40", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "41", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -2102,6 +2102,9 @@ input.fs-mono { text-transform: uppercase; }
 .rl-pg input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .rl-wf { display: flex; flex-direction: column; gap: 8px; }
 .rl-wf legend { margin-bottom: 6px; }
+/* Gutachten in die Oldtimer-Datenbank */
+.odb-sec .kva-act a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.odb-sec .rtext, .odb-sec .note, .odb-sec .help { margin: 0; }
 </style>
 
 <div class="wrap">
@@ -2263,7 +2266,7 @@ input.fs-mono { text-transform: uppercase; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), gaConf: null, gaArm: null, gaLastUri: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), odb: new Map(), gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2673,6 +2676,11 @@ input.fs-mono { text-transform: uppercase; }
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.rr = m;
         renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('odb').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.odb = m; renderAll(); refreshSheet(); gaRerender();
       }, function () {});
       S.db.collection('fehlercodes').onSnapshot(function (snap) {
         var m = new Map();
@@ -11466,6 +11474,7 @@ input.fs-mono { text-transform: uppercase; }
       (!g.uebung ? '<button type="button" class="btn ghost" data-act="ga-row">Zeile für Laufend.md</button>' : '') + '</div>' +
       (BL && gaAllFotoN(g) ? '<label class="check"><input type="checkbox" id="ga-pdf-f" checked><span>' + esc('Fotos ins PDF (' + gaAllFotoN(g) + ')') + '</span></label>' : '') +
       '<p class="help">' + esc('„In Obsidian anlegen“ kopiert die Notiz und öffnet Obsidian mit einer neuen Notiz „' + gaObsPath(g) + '“ im Vault „' + conf.vault + '“') + srcRefs(GA_Q, [4]) + '. Bestehende Notizen werden nicht überschrieben. Geht Obsidian nicht auf, eine neue Notiz anlegen und einfügen.</p></div>';
+    h += odbSec(gid, g, can);
     h += gaReSec(gid, g, can);
     h += '<details class="wp-more" data-k="ga-conf"><summary>Einstellungen für alle Gutachten</summary><form class="form" id="gaconf" novalidate>' +
       '<label class="f"><span>Sachverständiger</span><input id="gc-sv" maxlength="80" value="' + esc(conf.sv) + '" autocomplete="off"' + (can ? '' : ' disabled') + '><small>Steht auf dem Deckblatt und unter der Erklärung.</small></label>' +
@@ -15993,6 +16002,74 @@ input.fs-mono { text-transform: uppercase; }
     try { await S.dl.save({ filename: name, data: doc.output('blob') }); toast('Gespeichert: ' + name); }
     catch (er) { if (!er || er.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
   }
+  /* ---------- Gutachten in die Oldtimer-Datenbank (Version 41): Auftrag odb/<gutachten>.json, der geplante Lauf schreibt nach Notion ---------- */
+  var ODB_ARTEN = { wert: true, sammlung: true, zustand: true, sonst: true };
+  function odbDoc(gid) { var d = S.odb && S.odb.get(gid); return d && typeof d === 'object' ? d : null; }
+  function odbOk(g) { return !!g && ODB_ARTEN[g.art] === true; }
+  /* Nur Fahrzeug- und Bewertungsdaten, keine Kundendaten: kein Auftraggeber, keine Anschrift, keine FIN, kein Kennzeichen, keine Motor- oder Getriebenummer */
+  function odbData(g) {
+    var A = gaArt(g), F = gaF(g), G = gaG(g), a = gaA(g), B = gaBw(g), ges = gaObj(g.gesamt), O = gaO(g), vs = gaVglStats(g), car = S.cars.get(g.fahrzeug) || null;
+    var noten = [];
+    if (A.voll) GA_BG.forEach(function (b) { var x = gaBg(g, b[0]); if (gaNoteOk(x.note)) noten.push({ bg: b[1], note: x.note }); });
+    var km = gaNum(F.km), bj = gaNum(F.baujahr), ps = gaNum(F.ps);
+    return {
+      fahrzeug: gaName(g, car).slice(0, 120), typ: gaStr(F.typ).slice(0, 120) || null, baujahr: bj === null ? null : Math.round(bj), leistungPs: ps === null ? null : Math.round(ps),
+      hubraum: gaStr(F.hubraum).slice(0, 20) || null, kraftstoff: gaStr(F.kraftstoff).slice(0, 30) || null, km: km === null ? null : Math.round(km / 1000) * 1000,
+      art: A.n, uebung: !!g.uebung, nr: gaStr(g.nr) || null,
+      stichtag: isDay(a.stichtag) ? a.stichtag : null, besichtigt: isDay(G.datum) ? G.datum : null,
+      gesamtnote: A.voll && gaNoteOk(ges.note) ? ges.note : null, noten: noten,
+      marktwert: gaEur(B.markt), marktDef: gaStr(B.marktDef).slice(0, 300) || null, wbw: gaEur(B.wbw), wbwDef: gaStr(B.wbwDef).slice(0, 300) || null,
+      vergleich: vs.n ? { n: vs.n, min: vs.min, max: vs.max, median: vs.med } : null,
+      matching: O.matching || null
+    };
+  }
+  function odbHas(g) { var D = odbData(g); return D.gesamtnote !== null || D.marktwert !== null || D.wbw !== null; }
+  function odbUrl(d) { var u = d && d.notion && typeof d.notion === 'object' ? String(d.notion.url || '') : ''; return /^https:\/\/(www\.notion\.so|app\.notion\.com|notion\.so)\//.test(u) ? u : ''; }
+  function odbSec(gid, g, can) {
+    if (!odbOk(g)) return '';
+    var d = odbDoc(gid), url = odbUrl(d), firing = S.xFiring && S.xFiring.kind === 'odb' && S.xFiring.car === gid, pending = xPending(d), done = !!(d && d.fertig && url);
+    var changed = done && JSON.stringify(odbData(g)) !== JSON.stringify(d.daten || {});
+    var isErr = !!d && /^Fehler/.test(String(d.meldung || '')), fehler = isErr ? (String(d.meldung).replace(/^Fehler:?\s*/, '').replace(/[.\s]+$/, '') || 'unbekannter Fehler') : '';
+    var h = '<div class="sh-sec odb-sec"><h3 class="sec">Oldtimer-Datenbank</h3>';
+    if (firing) h += '<p class="rstat run" role="status">Auftrag wird abgelegt …</p>';
+    else if (pending && isErr && !d.laeuft) h += '<p class="rstat warn" role="status">' + esc('Der letzte Versuch ging nicht: ' + fehler + '. Claude versucht es beim nächsten geplanten Lauf wieder (täglich ca. 12:30 und 19:30 Uhr).') + '</p>';
+    else if (pending) h += '<p class="rstat run" role="status">' + esc(d.laeuft ? 'Wird gerade übertragen …' : 'Auftrag abgelegt ' + fmtWhen(d.anfrage) + '. Claude überträgt beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr).') + '</p>';
+    else if (d && (d.anfrage || d.laeuft) && rrStale(d)) h += '<p class="note">' + esc('Der Auftrag von ' + fmtWhen(d.anfrage || d.laeuftSeit) + ' ist noch offen. Du kannst ihn neu anfordern.') + '</p>';
+    if (done) h += '<p class="rtext">' + esc('Übertragen ' + fmtWhen(d.fertig) + (arr(d.verknuepft).length ? ', verknüpft mit ' + arr(d.verknuepft).slice(0, 2).join(', ') : ', ohne Verknüpfung mit einem Modell') + '.') + '</p>';
+    if (isErr && !pending) h += '<p class="note">' + esc('Letzter Lauf: ' + fehler + '.') + '</p>';
+    if (S.xMsg && S.xMsg.kind === 'odb' && S.xMsg.car === gid) h += '<p class="rstat warn" role="status">' + esc(S.xMsg.text) + '</p>';
+    if (!done && !pending && !firing) h += '<p class="note">Überträgt Modell, Baujahr, Zustandsnoten, Wert und Stichtag in deine Notion-Datenbank „Eigene Bewertungen“ und verknüpft den Eintrag mit dem passenden Modell der Oldtimer-Datenbank, wenn es eindeutig ist. Keine Kundendaten: kein Auftraggeber, keine FIN, kein Kennzeichen.' + (g.uebung ? ' Übungsgutachten werden als Übung markiert.' : '') + '</p>';
+    var acts = '';
+    if (url) acts += '<a class="btn ghost small" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">In Notion öffnen</a>';
+    if (can && !pending && !firing) {
+      if (!odbHas(g)) h += '<p class="help">Erst eine Gesamtnote oder einen Wert eintragen.</p>';
+      else if (!done) acts += '<button type="button" class="btn small" data-act="odb-req" data-id="' + esc(gid) + '">In die Oldtimer-Datenbank übernehmen</button>';
+      else if (changed) acts += '<button type="button" class="btn small" data-act="odb-req" data-id="' + esc(gid) + '">Änderungen übertragen</button>';
+    }
+    if (acts) h += '<div class="kva-act">' + acts + '</div>';
+    if (changed && !pending) h += '<p class="help">Noten oder Werte haben sich seit dem Übertragen geändert.</p>';
+    return h + '</div>';
+  }
+  async function odbRequest(gid) {
+    var g = gaDoc(gid);
+    if (!g || !odbOk(g) || !canWrite() || S.busy || S.xFiring) return;
+    if (!odbHas(g)) { toast('Erst eine Gesamtnote oder einen Wert eintragen.'); return; }
+    gaFlush();
+    var d = odbDoc(gid), now = new Date().toISOString(), data = odbData(g);
+    S.xFiring = { kind: 'odb', car: gid }; S.xMsg = null; gaRerender();
+    try {
+      await write(function () { var ref = S.db.doc('odb/' + gid); return d ? ref.update({ anfrage: now, daten: data, laeuft: false, meldung: null }) : ref.set({ gutachten: gid, anfrage: now, daten: data, laeuft: false }); });
+      S.odb.set(gid, Object.assign({}, d || { gutachten: gid }, { anfrage: now, daten: data, laeuft: false, meldung: null }));
+    } catch (e) {
+      S.xFiring = null;
+      writeError(e, function (m) { S.xMsg = { kind: 'odb', car: gid, text: m }; });
+      gaRerender();
+      return;
+    }
+    S.xFiring = null;
+    gaRerender();
+    toast('Auftrag abgelegt. Claude überträgt das Gutachten beim nächsten geplanten Lauf nach Notion.');
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -16396,6 +16473,7 @@ input.fs-mono { text-transform: uppercase; }
       case 'rl-save-pdf': saveRl(true); break;
       case 'rl-et': openRlEt(t.dataset.id, t.dataset.set); break;
       case 'rl-et-pdf': rlEtPdf(); break;
+      case 'odb-req': odbRequest(t.dataset.id); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
