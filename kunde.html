@@ -238,7 +238,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
   $('#to').textContent = conf.n;
   $('#privacy-txt').textContent = 'Deine Angaben gehen per WhatsApp oder E-Mail direkt von dir an ' + conf.n + '. ' + conf.n + ' verwendet sie nur für die Arbeit an deinem Auto und für Rückfragen.';
   $('#ok-txt').textContent = 'Einverstanden, dass ' + conf.n + ' meine Angaben dafür speichert.';
-  $('#eri-txt').textContent = 'Ja, ' + conf.n + ' darf mich per WhatsApp, SMS oder E-Mail an Pickerl, Service und Reifenwechsel für mein Auto erinnern. Das kann ich jederzeit mit einer kurzen Nachricht abbestellen.';
+  $('#eri-txt').textContent = 'Ja, ' + conf.n + ' darf mich per WhatsApp, SMS oder E-Mail an Pickerl, Service, Reifenwechsel und Unterbodenkontrolle für mein Auto erinnern. Das kann ich jederzeit mit einer kurzen Nachricht abbestellen.';
   $('#form').hidden = false;
 
   /* Ist das Auto schon eingetragen? Dann auswählen statt neu eintragen. */
@@ -343,7 +343,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
     if (v('rt')) o.f.rt = v('rt');
     if (v('anl')) o.a = { txt: v('anl') };
     if (v('wt')) { o.a = o.a || {}; o.a.wt = v('wt'); }
-    if ($('#eri').checked) o.eri = true;
+    if ($('#eri').checked) { o.eri = true; o.eriV = 2; }
     return o;
   }
   async function pack(obj) {
@@ -361,7 +361,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
     var f = o.f, kc = f.cid ? carById(f.cid) : null;
     var r = [['Name', o.p.n], ['Telefon', o.p.tel], ['E-Mail', o.p.mail], ['Adresse', o.p.adr], ['Auto', kc ? kc.n + (kc.kz ? ' (' + kc.kz + ')' : '') + ', schon eingetragen' : f.ma + ' ' + f.mo], ['Kennzeichen', f.kz], ['Erstzulassung', fmtYm(f.ez)], ['Fahrgestellnr.', f.fin],
       ['Kilometerstand', f.km != null ? f.km.toLocaleString('de-AT') + ' km' : ''], ['Hubraum', f.ccm != null ? f.ccm + ' cm³' : ''], ['Leistung', f.kw != null ? f.kw + ' kW' : ''], ['Kraftstoff', f.kr], ['Getriebe', f.ge], ['Nächstes Pickerl', fmtYm(f.pk)],
-      ['Reifen', [f.rg, f.rt ? { sommer: 'Sommerreifen', winter: 'Winterreifen', ganzjahr: 'Ganzjahresreifen' }[f.rt] : ''].filter(Boolean).join(', ')], ['Anliegen', o.a && o.a.txt], ['Wunschtermin', o.a && o.a.wt], ['Erinnerungen', o.eri ? 'Ja, an Pickerl, Service und Reifenwechsel' : '']];
+      ['Reifen', [f.rg, f.rt ? { sommer: 'Sommerreifen', winter: 'Winterreifen', ganzjahr: 'Ganzjahresreifen' }[f.rt] : ''].filter(Boolean).join(', ')], ['Anliegen', o.a && o.a.txt], ['Wunschtermin', o.a && o.a.wt], ['Erinnerungen', o.eri ? 'Ja, an Pickerl, Service, Reifenwechsel und Unterbodenkontrolle' : '']];
     return r.filter(function (x) { return x[1]; });
   }
   var current = null;

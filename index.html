@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "43", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "44", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -2155,6 +2155,32 @@ input.fs-mono { text-transform: uppercase; }
 .ubm input[readonly] { background: var(--surface-2); color: var(--muted); }
 .ubm-cost { margin-top: 4px; }
 .ubm-cost:empty { display: none; }
+/* Fahrzeugannahme, Rückgabe, Hallenbelegung (Version 44) */
+.an-skw { display: flex; justify-content: center; }
+.ansk { width: min(100%, 230px); height: auto; touch-action: manipulation; cursor: crosshair; }
+.ansk-w { fill: var(--surface-2); stroke: var(--muted); stroke-width: 1; }
+.ansk-g { fill: var(--wb-soft); stroke: var(--muted); stroke-width: 1; }
+.ansk-r { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.ansk-m { cursor: pointer; }
+.ansk-m circle { fill: var(--kaufen); stroke: var(--bg); stroke-width: 2; }
+.ansk-m text { fill: var(--bg); font-family: var(--f-body); font-size: 12px; font-weight: 700; pointer-events: none; }
+.an-sch { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.an-s { display: grid; grid-template-columns: 28px minmax(0, 1fr) 40px; gap: 8px; align-items: end; }
+.an-n { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin-bottom: 10px; border-radius: 50%; background: var(--kaufen); color: var(--bg); font-weight: 700; font-size: 13px; }
+.an-s .kvp-x { margin-bottom: 4px; }
+.sig { display: flex; flex-direction: column; gap: 6px; }
+.sig-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.sig-pad { display: block; width: 100%; height: 160px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; touch-action: none; }
+.sig-img { padding: 6px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; }
+.sig-img img { display: block; width: 100%; height: auto; max-height: 160px; object-fit: contain; }
+.an-rg { margin-top: 4px; }
+.an-rg[open] > :not(summary) + * { margin-top: 12px; }
+.pill-tr { background: var(--wb-soft); color: var(--wb); }
+.tm-day { margin: 14px 0 4px; font-size: 14px; color: var(--muted); }
+.tm-day:first-of-type { margin-top: 6px; }
+.tm-mit { display: flex; flex-direction: column; gap: 8px; }
+.tm-sum .rstat + .rstat { margin-top: 4px; }
+.tm-sum:empty { display: none; }
 </style>
 
 <div class="wrap">
@@ -2316,7 +2342,7 @@ input.fs-mono { text-transform: uppercase; }
     conn: 'laden', readOnly: false, canWriteFlag: null, writing: 0,
     itemsReady: false, items: new Map(), byCode: new Map(),
     carsReady: false, cars: new Map(), kundenReady: false, kunden: new Map(), kundenLink: null, kdPending: null,
-    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), odb: new Map(), gr: new Map(), abf: new Map(), btConf: null, um: new Map(), prConf: null, gaConf: null, gaArm: null, gaLastUri: null,
+    rr: new Map(), rrFiring: null, rrMsg: null, kvaConf: null, ga: new Map(), gaReady: false, sb: new Map(), mw: new Map(), xFiring: null, xMsg: null, fb: new Map(), ka: null, fbY: null, ad: new Map(), fc: new Map(), odb: new Map(), gr: new Map(), abf: new Map(), btConf: null, um: new Map(), prConf: null, an: new Map(), tm: new Map(), anConf: null, gaConf: null, gaArm: null, gaLastUri: null,
     repsReady: false, reps: new Map(), repDoneOpen: false,
     mcp: null, metaRecherche: null, firing: false, rMsg: null,
     wartReady: false, wart: new Map(), wMsg: null, wFiring: null, einst: null,
@@ -2706,14 +2732,14 @@ input.fs-mono { text-transform: uppercase; }
         renderAll(); refreshSheet();
       }, function () { S.repsReady = true; renderAll(); });
       S.db.collection('meta').onSnapshot(function (snap) {
-        var m = null, e = null, ri = null, kl = null, kv = null, gk = null, bt = null, pp = null;
+        var m = null, e = null, ri = null, kl = null, kv = null, gk = null, bt = null, pp = null, ac = null;
         snap.docs.forEach(function (d) {
           if (!d.exists) return;
           var v = d.data();
           if (!v || typeof v !== 'object') return;
-          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v; else if (d.id === 'gutachten') gk = v; else if (d.id === 'betrieb') bt = v; else if (d.id === 'preise') pp = v;
+          if (d.id === 'recherche') m = v; else if (d.id === 'einstellungen') e = v; else if (d.id === 'erinnerungen') ri = v; else if (d.id === 'kundenlink') kl = v; else if (d.id === 'kva') kv = v; else if (d.id === 'gutachten') gk = v; else if (d.id === 'betrieb') bt = v; else if (d.id === 'preise') pp = v; else if (d.id === 'annahme') ac = v;
         });
-        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.gaConf = gk; S.btConf = bt; S.prConf = pp; S.metaReady = true; renderAll(); refreshSheet();
+        S.metaRecherche = m; S.einst = e; S.metaErinnerungen = ri; S.kundenLink = kl; S.kvaConf = kv; S.gaConf = gk; S.btConf = bt; S.prConf = pp; S.anConf = ac; S.metaReady = true; renderAll(); refreshSheet();
       }, function () {});
       S.db.collection('wartung').onSnapshot(function (snap) {
         var m = new Map();
@@ -2726,6 +2752,16 @@ input.fs-mono { text-transform: uppercase; }
         snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
         S.rr = m;
         renderAll(); refreshSheet();
+      }, function () {});
+      S.db.collection('annahme').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.an = m; refreshSheet();
+      }, function () {});
+      S.db.collection('termine').onSnapshot(function (snap) {
+        var m = new Map();
+        snap.docs.forEach(function (d) { if (d.exists) { var v = d.data(); if (v && typeof v === 'object') m.set(d.id, v); } });
+        S.tm = m; refreshSheet();
       }, function () {});
       S.db.collection('umsatz').onSnapshot(function (snap) {
         var m = new Map();
@@ -4079,6 +4115,7 @@ input.fs-mono { text-transform: uppercase; }
     }
     else if (S.sheet.type === 'betrieb' || S.sheet.type === 'geraet' || S.sheet.type === 'abfall') btRefresh(sh, top);
     else if (S.sheet.type === 'umsatz') umRefresh(sh, top);
+    else if (S.sheet.type === 'halle') anRefresh(sh, top);
     else if (S.sheet.type === 'kosten') { setHTML(sh, sheetKosten()); sh.scrollTop = top; }
     else if (S.sheet.type === 'fs' && S.cars.has(S.sheet.id)) {
       var fod = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; }), fcl = $$('details[data-k]', sh).filter(function (d) { return !d.open; }).map(function (d) { return d.dataset.k; });
@@ -4285,7 +4322,7 @@ input.fs-mono { text-transform: uppercase; }
       pvBanner(id, car) +
       hzSec(id, car) +
       gaSec(id, car) +
-      reCarSec(id, car) +
+      reCarSec(id, car) + anCarSec(id, car) +
       carWartSec(id, car) +
       reifenSec(id, car) +
       avSec(id, car) +
@@ -4667,6 +4704,7 @@ input.fs-mono { text-transform: uppercase; }
     h += swRepSec(id, r);
     h += kvaSec(id, r);
     h += reSec(id, r);
+    h += tmRepSec(id, r);
     var st = open && (r.anfrage || !x) ? researchStatus() : null;
     h += (S.rMsg && open ? '<p class="rstat ' + S.rMsg.kind + '" role="status">' + esc(S.rMsg.text) + '</p>' : st ? '<p class="rstat ' + st.kind + '">' + esc(st.text) + '</p>' : '') +
       '<p class="err" id="rep-err" role="alert"></p><div class="sh-foot">' +
@@ -5667,6 +5705,7 @@ input.fs-mono { text-transform: uppercase; }
     if (fl) h += '<div class="xrow"><span class="pill pill-fluid">Betriebsstoff</span><span>' + esc(fl) + '</span></div>';
     h += useExtra(id, it);
     h += stItemExtra(id, it);
+    h += trItemExtra(id, it);
     return h;
   }
   /* Verleihen */
@@ -7993,9 +8032,11 @@ input.fs-mono { text-transform: uppercase; }
     if (can) {
       h += '<div class="sh-btns">' + (KL_ON ? '<button type="button" class="btn" data-act="kl-share">Link an neuen Kunden</button>' : '') +
         '<button type="button" class="btn ghost" data-act="kunde-new">Kunde anlegen</button>' +
+        '<button type="button" class="btn ghost" data-act="tm-halle">Hallenbelegung</button>' +
         (KL_ON ? '<button type="button" class="btn ghost" data-act="kd-paste">Daten aus Nachricht</button>' : '') + '</div>';
       if (KL_ON) h += '<p class="help">Mit dem Link trägt der Kunde seine Daten und die seines Autos selbst ein und schickt sie dir per WhatsApp oder E-Mail. Tippst du in seiner Nachricht auf den Link, übernimmt die App alles nach deiner Kontrolle.</p>';
     }
+    h += tmKundenSec();
     h += keListSec();
     h += rlListSec(null);
     h += '<div class="sh-sec"><h3 class="sec">Kunden · ' + list.length + '</h3>' + (list.length ? '<ul class="works kl">' + list.map(function (p) {
@@ -8298,6 +8339,7 @@ input.fs-mono { text-transform: uppercase; }
       k: kOne(o.k, 40).replace(/[^A-Za-z0-9_-]/g, ''),
       ok: o.ok === true,
       eri: o.eri === true,
+      eriV: numOrNull(o.eriV) || 1,
       p: { n: kOne(o.p.n, 80), tel: kOne(o.p.tel, 30), mail: kOne(o.p.mail, 120), adr: kOne(o.p.adr, 160) },
       f: { ma: kOne(f.ma, 40), mo: kOne(f.mo, 60), kz: kOne(f.kz, 15).toUpperCase(), fin: kOne(f.fin, 20).toUpperCase().replace(/[^A-Z0-9]/g, ''),
         ez: /^\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?$/.test(f.ez || '') ? f.ez : '', km: int(f.km, 3000000), ccm: int(f.ccm, 20000), kw: int(f.kw, 2000),
@@ -8435,7 +8477,7 @@ input.fs-mono { text-transform: uppercase; }
         (d.a.txt ? '<label class="check"><input type="checkbox" id="ki-rep" checked><span>Unter „Anstehend“ beim Auto eintragen</span></label>' : '') + '</div>';
     }
     h += (d.ok ? '<p class="help">Der Kunde hat im Formular der Speicherung seiner Angaben zugestimmt.</p>' : '') +
-      (d.eri ? '<p class="help">Im Formular angehakt: Erinnerungen an Pickerl, Service und Reifenwechsel.</p>' : '') +
+      (d.eri ? '<p class="help">Im Formular angehakt: Erinnerungen an ' + (d.eriV >= 2 ? 'Pickerl, Service, Reifenwechsel und Unterbodenkontrolle' : 'Pickerl, Service und Reifenwechsel') + '.</p>' : '') +
       '<p class="err" id="ki-err" role="alert"></p><div class="sh-foot"><button type="submit" class="btn">Übernehmen</button><button type="button" class="btn ghost" data-act="close">Verwerfen</button></div></form>';
     return h;
   }
@@ -8470,11 +8512,11 @@ input.fs-mono { text-transform: uppercase; }
         var kp = { geaendert: now, letztesFormular: d.t || now };
         KD_K.forEach(function (x) { if (on['k.' + x.k] && x.v(d)) kp[x.f] = x.v(d); });
         if (einw) kp.einwilligung = einw;
-        if (d.eri) kp.erinnerung = { ja: true, am: d.t || now, ueber: 'formular' };
+        if (d.eri) kp.erinnerung = { ja: true, am: d.t || now, ueber: 'formular', umfang: d.eriV >= 2 ? 2 : 1 };
         await write(function () { return S.db.doc('kunden/' + kid).update(kp); });
         S.kunden.set(kid, Object.assign({}, S.kunden.get(kid), kp));
       } else {
-        var kref = S.db.collection('kunden').doc(), kd = { name: d.p.n, telefon: on['k.tel'] ? d.p.tel || null : null, email: on['k.mail'] ? d.p.mail || null : null, adresse: on['k.adr'] ? d.p.adr || null : null, notiz: '', quelle: 'formular', erstellt: now, geaendert: now, letztesFormular: d.t || now, einwilligung: einw, erinnerung: d.eri ? { ja: true, am: d.t || now, ueber: 'formular' } : null };
+        var kref = S.db.collection('kunden').doc(), kd = { name: d.p.n, telefon: on['k.tel'] ? d.p.tel || null : null, email: on['k.mail'] ? d.p.mail || null : null, adresse: on['k.adr'] ? d.p.adr || null : null, notiz: '', quelle: 'formular', erstellt: now, geaendert: now, letztesFormular: d.t || now, einwilligung: einw, erinnerung: d.eri ? { ja: true, am: d.t || now, ueber: 'formular', umfang: d.eriV >= 2 ? 2 : 1 } : null };
         kid = kref.id;
         await write(function () { return kref.set(kd); });
         if (!S.kunden.has(kid)) S.kunden.set(kid, kd);
@@ -9492,7 +9534,7 @@ input.fs-mono { text-transform: uppercase; }
     if (meta) { var ml = split(meta, X1 - M); txt(ml, M, y + 5.5); y += 2 + ml.length * lh(9.5); }
     y += 5;
     var nx0 = ubNext(car);
-    var facts = [['Datum', datum(day) || '–'], ['Kilometerstand', kmE !== undefined && kmE !== null ? nf.format(kmE) + ' km' : '–'], ['Durchgeführt von', who || '–'], kunde ? ['Kunde', kunde.name] : ['Nächste Prüfung', nx0 ? ymTxt(nx0.ym) : '–']];
+    var facts = [['Datum', datum(day) || '–'], ['Kilometerstand', kmE !== undefined && kmE !== null ? nf.format(kmE) + ' km' : '–'], kunde ? ['Kunde', kunde.name] : ['Durchgeführt von', who || '–'], [car.fremd ? 'Nächste Kontrolle' : 'Nächste Prüfung', nx0 ? ymTxt(nx0.ym) : '–']];
     var cw = (X1 - M) / 4;
     fc(C.soft); doc.roundedRect(M, y, X1 - M, 15, 2, 2, 'F');
     facts.forEach(function (p, i) { f('normal', 7.5); tc(C.mut); txt(p[0], M + 4 + i * cw, y + 5.5); f('bold', 9.5); tc(C.ink); txt(split(p[1], cw - 6)[0], M + 4 + i * cw, y + 11); });
@@ -9603,6 +9645,7 @@ input.fs-mono { text-transform: uppercase; }
     if (UB_Z.some(function (z) { return (state[z.id] || {}).st === 'rost' && !(state[z.id] || {}).tr; })) rec.push('Stellen mit Rost entrosten, grundieren und schützen.');
     if (!rec.length) rec.push('Keine.');
     rec.forEach(function (t) { para(t, 10); });
+    if (car.fremd && beh.length) { var pfl = ubPflegeList(beh).concat(ubPflegeEigene()); head('Pflegehinweise'); pfl.forEach(function (t) { para('• ' + t, 9.5); }); }
     if (car.fremd) {
       need(26); y += 10; dc(C.ink); doc.setLineWidth(0.3);
       doc.line(M, y, M + 75, y); doc.line(X1 - 75, y, X1, y);
@@ -13231,6 +13274,7 @@ input.fs-mono { text-transform: uppercase; }
       var rs = reifenSaison(car);
       if (rs && rs.now) out.push({ key: 'rf-' + cid + '-' + rs.auf + '-' + today.slice(0, 4), car: cid, s: rs.title,
         t: rs.title + (rs.auf === 'winter' ? ' (Winterreifenpflicht bei Schnee, Schneematsch oder Eis vom 1.11. bis 15.4.)' : '') + rlKeTxt(car, rs.auf) });
+      if (keUmfang(k) >= 2) ubKeItems(cid, car).forEach(function (x) { out.push(x); });
     });
     var done = k.erinnert && typeof k.erinnert === 'object' ? k.erinnert : {};
     return out.map(function (it) { var d = done[it.key]; it.am = isDay(d) ? d : null; it.ruhe = !!(it.am && dayNum(today) - dayNum(it.am) < KE_RUHE); return it; });
@@ -13264,12 +13308,13 @@ input.fs-mono { text-transform: uppercase; }
     var h = '<div class="sh-sec ke-sec"><h3 class="sec">Erinnerungen</h3>';
     if (!e) {
       h += '<p class="note">' + esc(w && w.ja === false && isDay(w.widerrufen) ? 'Erinnerungen am ' + datum(w.widerrufen) + ' abbestellt.'
-        : 'An Pickerl, Service und Reifenwechsel erinnern geht nur mit Einverständnis: per Häkchen im Formular oder hier eingetragen, wenn die Zustimmung mündlich oder schriftlich kam.') + srcRefs(KE_Q, [1]) + '</p>';
+        : 'An Pickerl, Service, Reifenwechsel und Unterbodenkontrolle erinnern geht nur mit Einverständnis: per Häkchen im Formular oder hier eingetragen, wenn die Zustimmung mündlich oder schriftlich kam.') + srcRefs(KE_Q, [1]) + '</p>';
       if (can) h += '<div class="kva-act"><button type="button" class="btn ghost small" data-act="ke-ein" data-id="' + esc(kid) + '">Einverständnis eintragen</button></div>';
       return h + '</div>';
     }
     var am = String(e.am || '').slice(0, 10), items = keItems(kid), open = items.filter(function (it) { return !it.ruhe; });
     h += '<p class="help">' + esc('Einverstanden ' + (KE_WIE[e.ueber] || '') + (isDay(am) ? ' am ' + datum(am) : '') + '.') + '</p>';
+    h += keUbHint(kid, k);
     if (!items.length) h += '<p class="note">Gerade ist nichts fällig.</p>';
     else {
       h += '<ul class="ke-l">' + items.map(function (it) {
@@ -13346,6 +13391,7 @@ input.fs-mono { text-transform: uppercase; }
       '<form class="form" id="keein" novalidate><fieldset class="kva-v"><legend>Wie hat der Kunde zugestimmt?</legend>' +
       ['muendlich', 'schriftlich', 'nachricht'].map(function (v, i) { return '<label class="check"><input type="radio" name="ke-wie" value="' + v + '"' + (i ? '' : ' checked') + '><span>' + esc(KE_WIE[v].charAt(0).toUpperCase() + KE_WIE[v].slice(1)) + '</span></label>'; }).join('') + '</fieldset>' +
       '<label class="f"><span>Wann</span><input type="date" id="ke-d" value="' + today + '" max="' + today + '"></label>' +
+      '<p class="help">Erinnert wird an Pickerl, Service, Reifenwechsel und Unterbodenkontrolle der Autos dieses Kunden.</p>' +
       '<label class="check"><input type="checkbox" id="ke-hw"><span>Ich habe darauf hingewiesen, dass die Erinnerungen jederzeit abbestellt werden können.</span></label>' +
       '<p class="help">' + esc('Persönliche Werbung per WhatsApp, SMS oder E-Mail an Verbraucher braucht in der Regel ein vorheriges Einverständnis, und auf das Widerrufsrecht ist hinzuweisen. Ob eine reine Service-Erinnerung schon Werbung ist, sagt die Quelle nicht eindeutig; mit Einverständnis bist du auf der sicheren Seite.') + srcRefs(KE_Q, [1]) + '</p>' +
       '<p class="err" id="ke-err" role="alert"></p>' +
@@ -13361,7 +13407,7 @@ input.fs-mono { text-transform: uppercase; }
     if (!KE_WIE[wie]) { err('Bitte wählen, wie der Kunde zugestimmt hat.'); return; }
     if (!isDay(d) || d > today) { err('Bitte das Datum eintragen, an dem er zugestimmt hat.'); return; }
     if (!(($('#ke-hw') || {}).checked)) { err('Bitte bestätige, dass du auf das Abbestellen hingewiesen hast.'); return; }
-    var now = new Date().toISOString(), patch = { erinnerung: { ja: true, am: d, ueber: wie, hinweis: true, eingetragen: now }, geaendert: now };
+    var now = new Date().toISOString(), patch = { erinnerung: { ja: true, am: d, ueber: wie, hinweis: true, eingetragen: now, umfang: 2 }, geaendert: now };
     setBusy(true);
     try {
       await write(function () { return S.db.doc('kunden/' + s.id).update(patch); });
@@ -17632,6 +17678,626 @@ input.fs-mono { text-transform: uppercase; }
     if (ty === 'ubform' && t.classList && t.classList.contains('ubm-m')) { ub39Cost(); return true; }
     return false;
   }
+  /* ---------- Kunden (Version 44): Fahrzeugannahme und Rückgabe, Unterboden-Nachkontrolle für Kunden, Hallenbelegung ---------- */
+  var WTAG = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+  var WTAG_L = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+  function isHm(s) { return typeof s === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s); }
+  function nowHm() { var d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  /* ---------- Unterboden-Nachkontrolle in den Kunden-Erinnerungen ---------- */
+  function keUmfang(k) { var e = keEin(k); return e ? (numOrNull(e.umfang) || 1) : 0; }
+  function ubKeItems(cid, car) {
+    var out = [], soon = ymAdd(dayKey(new Date()).slice(0, 7), 1), nx = ubNext(car);
+    if (nx && nx.ym <= soon) out.push({ key: 'ub-' + cid + '-' + nx.ym, car: cid, s: 'Unterboden prüfen', t: 'Unterboden prüfen: ' + (nx.now ? 'fällig' : 'fällig ' + ymTxt(nx.ym)) + ' (zuletzt ' + (nx.p ? 'geprüft' : 'behandelt') + ' am ' + datum(nx.base) + ')' });
+    ubRefresh(car).forEach(function (r) {
+      if (r.ym > soon) return;
+      var mt = ubMittelTxt(r.w.ub, true);
+      out.push({ key: 'uba-' + cid + '-' + r.art + '-' + r.ym, car: cid, s: UB_RF[r.art], t: UB_RF[r.art] + ': ' + (r.now ? 'fällig' : 'ab ' + ymTxt(r.ym)) + (mt ? ' (zuletzt ' + mt + ')' : '') });
+    });
+    return out;
+  }
+  function keUbHint(kid, k) {
+    if (keUmfang(k) >= 2) return '';
+    var any = kundeCars(kid).some(function (p) { return !p[1].archiviert && ubKeItems(p[0], p[1]).length > 0; });
+    if (!any) return '';
+    return '<p class="note">Die Unterbodenkontrolle ist bald fällig, das Einverständnis nennt aber nur Pickerl, Service und Reifenwechsel. Stimmt der Kunde auch Erinnerungen an die Unterbodenkontrolle zu, trag das Einverständnis neu ein.</p>' +
+      (canWrite() ? '<div class="kva-act"><button type="button" class="btn ghost small" data-act="ke-ein" data-id="' + esc(kid) + '">Einverständnis neu eintragen</button></div>' : '');
+  }
+  /* ---------- Pflegehinweise für Kunden (Rückgabe und Unterboden-Protokoll) ---------- */
+  function anConf() { var c = S.anConf && typeof S.anConf === 'object' ? S.anConf : {}; return { pflege: kStr(c.pflege, 1200) }; }
+  /* belegte Hinweise je nach verwendetem Mittel; Quellen in UB_Q */
+  function ubPflegeList(beh) {
+    var types = [];
+    arr(beh).forEach(function (w) { ubMittel(w.ub).forEach(function (m) { if (m.t && types.indexOf(m.t) < 0) types.push(m.t); }); });
+    var out = ['Nach dem Winter den Unterboden waschen lassen. Laut ÖAMTC können Salz und Schmutz sonst zu Rost führen.'];
+    if (types.indexOf('fett') >= 0) out.push('Je nach Menge kann bei sommerlichen Temperaturen Fett aus den Wasserlöchern austreten, besonders an den Türen. Laut Hersteller einfach mit einem Papiertuch abwischen und fachgerecht entsorgen.');
+    return out;
+  }
+  function ubPflegeQ(beh) {
+    var fett = arr(beh).some(function (w) { return ubMittel(w.ub).some(function (m) { return m.t === 'fett'; }); });
+    return srcRefs(UB_Q, fett ? [9, 10] : [9]);
+  }
+  function ubPflegeEigene() { return anConf().pflege.split(/\n+/).map(function (l) { return l.replace(/^[•\-–]\s*/, '').trim(); }).filter(Boolean); }
+  /* Konservierungen der letzten 30 Tage an diesem Auto */
+  function anBeh(car) { var cut = addDays(dayKey(new Date()), -30); return ubEntries(car).filter(function (w) { return w.ub.typ === 'behandlung' && isDay(w.datum) && w.datum >= cut; }); }
+  function anPflegeDefault(car) {
+    var beh = anBeh(car), lines = beh.length ? ubPflegeList(beh) : [];
+    var nx = ubNext(car);
+    if (beh.length && nx && !nx.now) lines.push('Nächste Kontrolle des Unterbodens: ' + ymTxt(nx.ym) + '.');
+    ubRefresh(car).forEach(function (r) { if (beh.indexOf(r.w) >= 0) lines.push((r.art === 'unterboden' ? 'Unterbodenschutz' : 'Hohlräume') + ' auffrischen ab ' + ymTxt(r.ym) + '.'); });
+    return lines.concat(ubPflegeEigene()).map(function (l) { return '• ' + l; }).join('\n');
+  }
+  /* ---------- Fahrzeugannahme und Rückgabe ---------- */
+  var AN_ART = { kratzer: 'Kratzer', delle: 'Delle', steinschlag: 'Steinschlag', rost: 'Rost', riss: 'Riss oder Bruch', sonst: 'Sonstiges' };
+  function anOf(id) { var a = S.an && S.an.get(id); return a && typeof a === 'object' ? a : null; }
+  function anKey(a) { return String(a.datum || '') + 'T' + String(a.zeit || ''); }
+  function anList(cid) {
+    var out = [];
+    if (S.an) S.an.forEach(function (a, id) { if (a && typeof a === 'object' && a.auto === cid && isDay(a.datum)) out.push([id, a]); });
+    return out.sort(function (x, y) { return anKey(y[1]).localeCompare(anKey(x[1])); });
+  }
+  function anOffen(cid) { return anList(cid).filter(function (p) { return !p[1].rueck; })[0] || null; }
+  /* Skizze von oben: vorne ist oben, Maße in Skizzen-Einheiten wie beim Unterboden */
+  function anSvg(list, interactive) {
+    var h = '<svg class="ansk" viewBox="0 0 230 446" focusable="false"' + (interactive ? ' data-act="an-sk" role="img" aria-label="Skizze des Autos von oben, vorne ist oben. Antippen setzt eine Markierung für einen Vorschaden."' : ' aria-hidden="true"') + '>' +
+      '<text class="ubd-l" x="115" y="11" text-anchor="middle">vorne</text><text class="ubd-l" x="115" y="443" text-anchor="middle">hinten</text>' +
+      '<text class="ubd-l" x="12" y="224" text-anchor="middle" transform="rotate(-90 12 224)">links</text><text class="ubd-l" x="218" y="224" text-anchor="middle" transform="rotate(90 218 224)">rechts</text>' +
+      '<g transform="translate(5 16)">' +
+      [[16, 52], [182, 52], [16, 276], [182, 276]].map(function (w) { return '<rect class="ansk-w" x="' + w[0] + '" y="' + w[1] + '" width="22" height="54" rx="6"></rect>'; }).join('') +
+      '<path class="ubd-b" d="' + UB_BODY + '"></path>' +
+      '<rect class="ansk-w" x="20" y="136" width="12" height="14" rx="3"></rect><rect class="ansk-w" x="188" y="136" width="12" height="14" rx="3"></rect>' +
+      '<path class="ansk-g" d="M56 132 L164 132 L152 176 L68 176 Z"></path><rect class="ansk-r" x="68" y="176" width="84" height="122" rx="10"></rect><path class="ansk-g" d="M68 298 L152 298 L162 330 L58 330 Z"></path>' +
+      '</g>';
+    arr(list).forEach(function (s, i) {
+      h += '<g class="ansk-m"' + (interactive ? ' data-act="an-mk" data-i="' + i + '"' : '') + '><circle cx="' + s.x + '" cy="' + s.y + '" r="10"></circle><text x="' + s.x + '" y="' + (s.y + 4) + '" text-anchor="middle">' + (i + 1) + '</text></g>';
+    });
+    return h + '</svg>';
+  }
+  function anSchList(list) {
+    if (!list.length) return '<p class="note" id="an-sch0">Keine Vorschäden eingetragen.</p>';
+    return '<ol class="an-sch">' + list.map(function (s, i) {
+      return '<li class="an-s" id="an-s' + i + '"><span class="an-n">' + (i + 1) + '</span><div class="row2"><label class="f"><span>Art</span><select id="an-a' + i + '">' + Object.keys(AN_ART).map(function (k) { return '<option value="' + k + '"' + (k === s.a ? ' selected' : '') + '>' + esc(AN_ART[k]) + '</option>'; }).join('') + '</select></label>' +
+        '<label class="f"><span>Notiz</span><input id="an-n' + i + '" value="' + esc(s.n || '') + '" maxlength="120" autocomplete="off" placeholder="z. B. 5 cm, Tür hinten"></label></div>' +
+        '<button type="button" class="kvp-x" data-act="an-rm" data-i="' + i + '" aria-label="' + esc('Vorschaden ' + (i + 1) + ' entfernen') + '">×</button></li>';
+    }).join('') + '</ol>';
+  }
+  function anSchRead() {
+    var s = S.sheet;
+    if (!s || !s.sch) return [];
+    s.sch.forEach(function (x, i) { var a = $('#an-a' + i), n = $('#an-n' + i); if (a) x.a = AN_ART[a.value] ? a.value : 'sonst'; if (n) x.n = n.value.trim().slice(0, 120); });
+    return s.sch;
+  }
+  function anSchRender(focusI) {
+    var s = S.sheet, w = $('#an-skw'), l = $('#an-sl-l');
+    if (!s || !s.sch) return;
+    if (w) w.innerHTML = anSvg(s.sch, true);
+    if (l) l.innerHTML = anSchList(s.sch);
+    if (focusI !== undefined) { var f = $('#an-n' + focusI); if (f) { try { f.focus({ preventScroll: true }); } catch (_) {} } }
+  }
+  function anSkClick(e) {
+    var s = S.sheet, svg = $('#sheet svg.ansk[data-act="an-sk"]');
+    if (!s || s.type !== 'anform' || !svg || !e) return;
+    anSchRead();
+    if (s.sch.length >= 20) { toast('Mehr als 20 Markierungen gehen nicht.'); return; }
+    var r = svg.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var x = Math.round(Math.max(10, Math.min(220, (e.clientX - r.left) / r.width * 230))), y = Math.round(Math.max(18, Math.min(436, (e.clientY - r.top) / r.height * 446)));
+    s.sch.push({ x: x, y: y, a: 'kratzer', n: '' });
+    anSchRender(s.sch.length - 1);
+  }
+  function anMk(t) { var row = $('#an-s' + t.dataset.i); if (row) { try { row.scrollIntoView({ block: 'center' }); } catch (_) {} var f = $('#an-n' + t.dataset.i); if (f) { try { f.focus({ preventScroll: true }); } catch (_) {} } } }
+  function anRm(i) { var s = S.sheet; if (!s || !s.sch) return; anSchRead(); s.sch.splice(Number(i), 1); anSchRender(); }
+  /* Unterschrift mit dem Finger */
+  function sigHtml(id, ref, label) {
+    var has = !!(ref && ref.pfad);
+    return '<div class="sig" id="' + id + '-w"><div class="sig-h"><span>' + esc(label) + '</span>' +
+      (has ? '<button type="button" class="linkbtn inl" data-act="sig-new" data-id="' + id + '">Neu unterschreiben</button>' : '<button type="button" class="linkbtn inl" data-act="sig-clear" data-id="' + id + '">Löschen</button>') + '</div>' +
+      (has ? '<div class="sig-img">' + blImg(ref) + '</div>' : '<canvas class="sig-pad" id="' + id + '" aria-label="' + esc(label + ': mit dem Finger unterschreiben') + '"></canvas>') + '</div>';
+  }
+  function sigInit(id) {
+    var cv = $('#' + id);
+    if (!cv || cv._sig) return;
+    var ratio = Math.max(1, Math.min(3, window.devicePixelRatio || 1)), cx = cv.getContext('2d'), st = { down: false, n: 0, last: null, w: 0, h: 0 };
+    /* Größe erst setzen, wenn die Fläche sichtbar ist (z. B. in einem zugeklappten Abschnitt) */
+    var size = function () {
+      var w = cv.clientWidth || 320, h = cv.clientHeight || 160;
+      if (w === st.w && h === st.h) return;
+      st.w = w; st.h = h; cv.width = Math.round(w * ratio); cv.height = Math.round(h * ratio);
+      cx.setTransform(ratio, 0, 0, ratio, 0, 0); cx.lineWidth = 2.2; cx.lineCap = 'round'; cx.lineJoin = 'round'; cx.strokeStyle = '#10181c'; cx.fillStyle = '#10181c';
+    };
+    size();
+    cv._sig = st;
+    var pos = function (e) { var r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+    cv.addEventListener('pointerdown', function (e) { e.preventDefault(); if (!st.n) size(); st.down = true; st.last = pos(e); try { cv.setPointerCapture(e.pointerId); } catch (_) {} cx.beginPath(); cx.arc(st.last.x, st.last.y, 1.1, 0, Math.PI * 2); cx.fill(); st.n++; });
+    cv.addEventListener('pointermove', function (e) { if (!st.down) return; e.preventDefault(); var p = pos(e); cx.beginPath(); cx.moveTo(st.last.x, st.last.y); cx.lineTo(p.x, p.y); cx.stroke(); st.last = p; st.n++; });
+    var up = function () { st.down = false; };
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('lostpointercapture', up);
+  }
+  function sigClear(id) { var cv = $('#' + id); if (!cv || !cv._sig) return; var cx = cv.getContext('2d'); cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); cx.restore(); cv._sig.n = 0; }
+  function sigNew(id) { var w = $('#' + id + '-w'), s = S.sheet; if (!w || !s) return; s.sigNeu = s.sigNeu || {}; s.sigNeu[id] = true; w.outerHTML = sigHtml(id, null, w.querySelector('.sig-h span').textContent); sigInit(id); }
+  function sigHas(id) { var cv = $('#' + id); return !!(cv && cv._sig && cv._sig.n > 3); }
+  async function sigUpload(id, carId, label) {
+    var cv = $('#' + id);
+    if (!cv || !BL) return null;
+    var out = document.createElement('canvas');
+    out.width = cv.width; out.height = cv.height;
+    var cx = out.getContext('2d');
+    cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, out.width, out.height); cx.drawImage(cv, 0, 0);
+    var blob = await new Promise(function (res) { out.toBlob(res, 'image/png'); });
+    if (!blob) throw blErr('Die Unterschrift ließ sich nicht speichern.');
+    return blUpload(carId, { blob: blob, typ: 'bild', ext: 'png', name: label + '.png', w: out.width, h: out.height }, label);
+  }
+  function anCarSec(cid, car) {
+    if (!car.fremd || car.archiviert) return '';
+    var list = anList(cid), can = canWrite();
+    var h = '<div class="sh-sec"><div class="vhead"><h3 class="sec">Annahme und Rückgabe</h3>' + (can ? '<button type="button" class="linkbtn" data-act="an-new" data-car="' + esc(cid) + '">+ Annahme</button>' : '') + '</div>';
+    if (!list.length) return h + '<p class="note">Beim Bringen: Rundum-Fotos, km-Stand, Vorschäden in der Skizze, Schlüssel und Wertsachen, Unterschrift des Kunden. Bei der Rückgabe Pflegehinweise und Unterschrift. Hilft, wenn später ein Kratzer strittig ist.</p></div>';
+    h += '<ul class="works">' + list.slice(0, 5).map(function (p) {
+      var a = p[1], n = arr(a.schaeden).length;
+      var sub = [numOrNull(a.km) !== null ? nf.format(a.km) + ' km' : '', n ? (n === 1 ? '1 Vorschaden' : n + ' Vorschäden') : 'keine Vorschäden', a.sig ? 'unterschrieben' : 'ohne Unterschrift', a.rueck ? 'zurück am ' + datum(a.rueck.datum) : ''].filter(Boolean).join(' · ');
+      return '<li><button type="button" class="wbtn" data-act="an-edit" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc('Annahme ' + datum(a.datum) + (a.zeit ? ', ' + a.zeit : '')) + '<small>' + esc(sub) + '</small></span><span class="i-p">' +
+        (a.rueck ? '<span class="wst ok">zurück</span>' : '<span class="wst plan">in der Werkstatt</span>') + '</span></button></li>';
+    }).join('') + '</ul>';
+    var op = anOffen(cid);
+    if (op && can) h += '<div class="kva-act"><button type="button" class="btn ghost small" data-act="an-rg" data-id="' + esc(op[0]) + '">Rückgabe eintragen</button></div>';
+    return h + '</div>';
+  }
+  function openAnForm(id, pre) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    pre = pre || {};
+    var a = id ? anOf(id) : null;
+    if (id && !a) { toast('Diese Annahme gibt es nicht mehr.'); return; }
+    var cid = a ? a.auto : pre.car, car = cid ? S.cars.get(cid) : null;
+    if (!car) { toast('Dieses Auto gibt es nicht mehr.'); return; }
+    var k = kundeOf(car), today = dayKey(new Date()), ck = curKmEst(car), r0 = a && a.rueck ? a.rueck : null, tm = pre.tm ? tmOf(pre.tm) : null;
+    var auf = a ? a.auftrag || '' : tm ? tm.titel || '' : pre.rep && S.reps.get(pre.rep) ? S.reps.get(pre.rep).titel || '' : '';
+    var data = { id: id || null, car: cid, rep: a ? a.rep || null : pre.rep || null, tm: a ? a.termin || null : pre.tm || null, back: pre.back || null,
+      sch: arr(a && a.schaeden).filter(function (s) { return s && typeof s === 'object'; }).map(function (s) { return { x: num(s.x), y: num(s.y), a: AN_ART[s.a] ? s.a : 'sonst', n: String(s.n || '') }; }),
+      bl: BL ? { keep: blList(a && a.fotos), pend: [] } : null };
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Fahrzeugannahme · ' + (car.name || 'Auto') + (car.kennzeichen ? ' · ' + car.kennzeichen : '')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + esc(a ? 'Annahme vom ' + datum(a.datum) : 'Fahrzeug annehmen') + '</h2>' +
+      '<p class="buy">' + esc(k ? 'Kunde: ' + k.name : 'Noch kein Kunde zugeordnet. Im Auto unter „Bearbeiten“ einen Kunden wählen, dann steht er im Protokoll.') + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="anform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="an-d" value="' + esc(a ? a.datum : today) + '" max="' + today + '"></label>' +
+      '<label class="f"><span>Uhrzeit</span><input type="time" id="an-z" value="' + esc(a && isHm(a.zeit) ? a.zeit : nowHm()) + '"></label></div>' +
+      '<div class="row2"><label class="f"><span>Kilometerstand</span><input id="an-km" inputmode="numeric" value="' + esc(a && numOrNull(a.km) !== null ? String(a.km) : '') + '" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'vom Tacho') + '" autocomplete="off"></label>' +
+      '<label class="f"><span>Schlüssel</span><select id="an-sl"><option value="">–</option>' + [1, 2, 3, 4].map(function (n) { return '<option value="' + n + '"' + (a && num(a.schluessel) === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label></div>' +
+      '<label class="f"><span>Wertsachen im Auto</span><input id="an-ws" value="' + esc(a ? a.wertsachen || '' : '') + '" maxlength="160" autocomplete="off" placeholder="z. B. keine, oder Navi im Handschuhfach"></label>' +
+      '<label class="f"><span>Auftrag</span><textarea id="an-auf" rows="2" maxlength="400" placeholder="z. B. Unterbodenschutz und Hohlräume">' + esc(auf) + '</textarea></label>' +
+      (BL ? blField(a && a.fotos, 'Rundum: vorne, hinten, beide Seiten, innen und der Tacho mit dem km-Stand.').replace('>Fotos und Belege<', '>Rundum-Fotos<') : '') +
+      '<h3 class="sec">Vorschäden</h3><p class="help">Auf die Skizze tippen, wo ein Schaden ist, dann Art und Notiz eintragen. Fotos davon kommen oben dazu.</p>' +
+      '<div class="an-skw" id="an-skw">' + anSvg(data.sch, true) + '</div><div id="an-sl-l">' + anSchList(data.sch) + '</div>' +
+      '<label class="check"><input type="checkbox" id="an-fr"' + (a && a.freigabe ? ' checked' : '') + '><span>Der Kunde ist einverstanden, dass Vorher-nachher-Fotos ohne Kennzeichen gezeigt werden, zum Beispiel auf der Website oder in sozialen Medien.</span></label>' +
+      '<h3 class="sec">Unterschrift bei der Annahme</h3>' +
+      '<label class="f"><span>Name</span><input id="an-sn" value="' + esc(a ? a.sigName || '' : k ? k.name : '') + '" maxlength="80" autocomplete="off"></label>' +
+      (BL ? sigHtml('an-sig', a && a.sig, 'Unterschrift Kunde') : '<p class="note">Unterschreiben geht nur mit der Ablage für Fotos und Belege.</p>') +
+      '<p class="help">Damit bestätigt der Kunde km-Stand, Vorschäden, Schlüssel und Wertsachen wie oben.</p>';
+    if (a) {
+      var pf = r0 ? r0.pflege || '' : anPflegeDefault(car);
+      h += '<details class="wp-more an-rg" data-k="an-rg"' + (r0 || pre.rueck ? ' open' : '') + '><summary>' + esc(r0 ? 'Rückgabe am ' + datum(r0.datum) : 'Rückgabe') + '</summary>' +
+        '<label class="check"><input type="checkbox" id="rg-on"' + (r0 || pre.rueck ? ' checked' : '') + '><span>Das Auto ist zurückgegeben</span></label>' +
+        '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="rg-d" value="' + esc(r0 ? r0.datum : today) + '" max="' + today + '"></label>' +
+        '<label class="f"><span>Uhrzeit</span><input type="time" id="rg-z" value="' + esc(r0 && isHm(r0.zeit) ? r0.zeit : nowHm()) + '"></label></div>' +
+        '<label class="f"><span>Kilometerstand</span><input id="rg-km" inputmode="numeric" value="' + esc(r0 && numOrNull(r0.km) !== null ? String(r0.km) : '') + '" autocomplete="off" placeholder="optional"></label>' +
+        '<label class="f"><span>Pflegehinweise</span><textarea id="rg-pf" rows="5" maxlength="1200">' + esc(pf) + '</textarea>' +
+        '<small>Vorschlag aus den Konservierungen der letzten 30 Tage' + ubPflegeQ(anBeh(car)) + ' und deinen eigenen Hinweisen. Alles lässt sich ändern.</small></label>' +
+        '<label class="check"><input type="checkbox" id="rg-merk"><span>Eigene Zeilen als Vorlage merken (ohne die Zeilen mit Datum)</span></label>' +
+        '<label class="f"><span>Name</span><input id="rg-sn" value="' + esc(r0 ? r0.sigName || '' : a.sigName || (k ? k.name : '')) + '" maxlength="80" autocomplete="off"></label>' +
+        (BL ? sigHtml('rg-sig', r0 && r0.sig, 'Unterschrift Kunde bei der Rückgabe') : '') +
+        '<label class="f"><span>Notiz <span class="muted">(optional)</span></span><textarea id="rg-no" rows="2" maxlength="400">' + esc(r0 ? r0.notiz || '' : '') + '</textarea></label></details>';
+    }
+    h += '<p class="err" id="an-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
+      (a && S.dl ? '<button type="button" class="btn ghost" data-act="an-pdf" data-id="' + esc(id) + '">Protokoll (PDF)</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="an-back">Zurück</button></div></form>';
+    openSheet('anform', data, h);
+    sigInit('an-sig'); sigInit('rg-sig');
+  }
+  function anBack() {
+    var s = S.sheet;
+    if (s && s.back === 'halle') openHalle();
+    else if (s && s.tm && tmOf(s.tm) && s.back === 'tm') openTmForm(s.tm);
+    else if (s && s.car && S.cars.has(s.car)) openCar(s.car);
+    else closeSheet();
+  }
+  async function saveAn() {
+    var s = S.sheet;
+    if (!s || s.type !== 'anform' || S.busy) return;
+    var err = function (m) { var el = $('#an-err'); if (el) el.textContent = m; }, g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var car = S.cars.get(s.car), old = s.id ? anOf(s.id) : null, today = dayKey(new Date());
+    if (!car) { err('Dieses Auto gibt es nicht mehr.'); return; }
+    if (s.id && !old) { err('Diese Annahme gibt es nicht mehr.'); return; }
+    var d = g('an-d'), z = g('an-z'), km = parseNum(g('an-km')), sl = numOrNull(g('an-sl'));
+    if (!isDay(d) || d > today) { err('Bitte das Datum der Annahme eintragen, nicht in der Zukunft.'); return; }
+    if (!isHm(z)) { err('Bitte die Uhrzeit eintragen, z. B. 08:30.'); return; }
+    if (km !== null && (isNaN(km) || km < 0 || km > 3000000)) { err('Den Kilometerstand bitte als Zahl eintragen.'); return; }
+    var sch = anSchRead().map(function (x) { return { x: Math.round(x.x), y: Math.round(x.y), a: AN_ART[x.a] ? x.a : 'sonst', n: String(x.n || '').slice(0, 120) }; });
+    var rgOn = !!(($('#rg-on') || {}).checked), rd = g('rg-d'), rz = g('rg-z'), rkm = parseNum(g('rg-km'));
+    if (rgOn) {
+      if (!isDay(rd) || rd > today || rd < d) { err('Rückgabe: Bitte ein Datum zwischen Annahme und heute eintragen.'); return; }
+      if (!isHm(rz)) { err('Rückgabe: Bitte die Uhrzeit eintragen.'); return; }
+      if (rd === d && rz < z) { err('Rückgabe: Die Uhrzeit liegt vor der Annahme.'); return; }
+      if (rkm !== null && (isNaN(rkm) || rkm < 0)) { err('Rückgabe: Den Kilometerstand bitte als Zahl eintragen.'); return; }
+      if (rkm !== null && km !== null && rkm < km) { err('Rückgabe: Der Kilometerstand ist kleiner als bei der Annahme.'); return; }
+    }
+    var now = new Date().toISOString(), sig = old ? old.sig || null : null, rsig = old && old.rueck ? old.rueck.sig || null : null, fotos;
+    setBusy(true);
+    try {
+      fotos = BL && s.bl ? await blCommitForm(s.car, 'Annahme') : blList(old && old.fotos);
+      if (sigHas('an-sig')) sig = await sigUpload('an-sig', s.car, 'Unterschrift Annahme');
+      if (rgOn && sigHas('rg-sig')) rsig = await sigUpload('rg-sig', s.car, 'Unterschrift Rückgabe');
+    } catch (e) { setBusy(false); err(blErrText(e)); return; }
+    var rueck = old && old.rueck ? old.rueck : null;
+    if (rgOn) rueck = { datum: rd, zeit: rz, km: rkm === null ? null : Math.round(rkm), pflege: g('rg-pf').slice(0, 1200), sig: rsig, sigName: g('rg-sn').slice(0, 80) || null, sigAm: rsig && (!old || !old.rueck || old.rueck.sig !== rsig) ? now : old && old.rueck ? old.rueck.sigAm || null : null, notiz: g('rg-no').slice(0, 400) || null };
+    var data = Object.assign({}, old || { erstellt: now }, { auto: s.car, kunde: car.kunde || null, rep: s.rep || null, termin: s.tm || null, datum: d, zeit: z, km: km === null ? null : Math.round(km), schluessel: sl, wertsachen: g('an-ws').slice(0, 160) || null,
+      auftrag: g('an-auf').slice(0, 400) || null, fotos: fotos || [], schaeden: sch, freigabe: !!(($('#an-fr') || {}).checked), sig: sig, sigName: g('an-sn').slice(0, 80) || null,
+      sigAm: sig && (!old || old.sig !== sig) ? now : old ? old.sigAm || null : null, rueck: rueck, geaendert: now });
+    var merk = rgOn && !!(($('#rg-merk') || {}).checked), id = s.id;
+    try {
+      if (id) await write(function () { return S.db.doc('annahme/' + id).update(data); });
+      else { var ref = S.db.collection('annahme').doc(); id = ref.id; await write(function () { return ref.set(data); }); }
+      S.an.set(id, data);
+      if (merk) {
+        var eig = g('rg-pf').split(/\n+/).map(function (l) { return l.replace(/^[•\-–]\s*/, '').trim(); }).filter(function (l) { return l && !/\d{2}\/\d{4}|\d{2}\.\d{2}\.\d{4}/.test(l) && ubPflegeList([{ ub: { mittel: [{ n: 'x', t: 'fett' }] } }]).indexOf(l) < 0; });
+        var pc = { pflege: eig.join('\n').slice(0, 1200), geaendert: now };
+        try { await write(function () { return S.db.doc('meta/annahme').set(pc); }); S.anConf = pc; } catch (_) {}
+      }
+      if (data.km !== null && (numOrNull(car.km) === null || data.km > num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) {
+        var kp = { km: data.km, kmDatum: d, kmLog: kmLogWith(car, d, data.km), geaendert: now };
+        try { await write(function () { return S.db.doc('fahrzeuge/' + s.car).update(kp); }); S.cars.set(s.car, Object.assign({}, S.cars.get(s.car) || car, kp)); } catch (_) {}
+      }
+      setBusy(false);
+      openAnForm(id, { back: s.back });
+      renderAll();
+      toast((rgOn && !(old && old.rueck) ? 'Rückgabe gespeichert.' : 'Annahme gespeichert.') + (sig ? '' : ' Noch ohne Unterschrift.') + (S.dl ? ' Das Protokoll gibt es unten als PDF.' : ''));
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Protokoll als PDF */
+  async function anImg(r, max) { var b = await blBlob(r), p = await blPrepare(b, max || 1100); return { data: await blDataUrl(p.blob), fmt: 'JPEG', w: p.w, h: p.h }; }
+  function anSavePdf(id) {
+    var a = anOf(id), car = a ? S.cars.get(a.auto) : null;
+    if (!a || !car) { toast('Erst die Annahme speichern.'); return; }
+    btSavePdf('Fahrzeugannahme ' + fileSafe(car.name || 'Auto') + ' ' + a.datum + '.pdf', function (lib, x) { return anPdfDoc(lib, id, x); }, async function () {
+      var out = { fotos: [], sig: null, rsig: null, failed: 0 };
+      if (!BL) return out;
+      var fl = blList(a.fotos).filter(function (r) { return r.typ !== 'pdf'; }).slice(0, 8);
+      for (var i = 0; i < fl.length; i++) { try { out.fotos.push(await anImg(fl[i], 1000)); } catch (_) { out.failed++; } }
+      try { if (a.sig) out.sig = await anImg(a.sig, 900); } catch (_) {}
+      try { if (a.rueck && a.rueck.sig) out.rsig = await anImg(a.rueck.sig, 900); } catch (_) {}
+      return out;
+    });
+  }
+  function anPdfSketch(P, list) {
+    var doc = P.doc, sc = 0.17, w = 230 * sc, h = 446 * sc, x0 = P.M, y0 = P.y, tx = function (v) { return x0 + v * sc; }, ty = function (v) { return y0 + v * sc; };
+    doc.setDrawColor(86, 99, 108); doc.setLineWidth(0.3); doc.setFillColor(255, 255, 255);
+    doc.roundedRect(tx(35), ty(28), 160 * sc, 396 * sc, 26 * sc, 26 * sc, 'S');
+    doc.setFillColor(205, 212, 216);
+    [[21, 68], [187, 68], [21, 292], [187, 292]].forEach(function (q) { doc.roundedRect(tx(q[0]), ty(q[1]), 22 * sc, 54 * sc, 6 * sc, 6 * sc, 'F'); });
+    doc.setDrawColor(150, 160, 166);
+    doc.lines([[108 * sc, 0], [-12 * sc, 44 * sc], [-84 * sc, 0], [-12 * sc, -44 * sc]], tx(61), ty(148), [1, 1], 'S', true);
+    doc.roundedRect(tx(73), ty(192), 84 * sc, 122 * sc, 10 * sc, 10 * sc, 'S');
+    doc.lines([[84 * sc, 0], [10 * sc, 32 * sc], [-104 * sc, 0], [10 * sc, -32 * sc]], tx(73), ty(314), [1, 1], 'S', true);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); doc.setTextColor(86, 99, 108);
+    doc.text('vorne', tx(115), ty(11), { align: 'center' }); doc.text('hinten', tx(115), ty(443), { align: 'center' });
+    doc.text('links', tx(14), ty(224), { angle: 90 }); doc.text('rechts', tx(216), ty(224), { angle: -90 });
+    list.forEach(function (s, i) {
+      doc.setFillColor(176, 42, 26); doc.circle(tx(s.x), ty(s.y), 1.9, 'F');
+      doc.setTextColor(255, 255, 255); doc.setFontSize(6.5); doc.text(String(i + 1), tx(s.x), ty(s.y) + 0.8, { align: 'center' });
+    });
+    return { w: w, h: h };
+  }
+  function anPdfDoc(lib, id, x) {
+    var a = anOf(id), car = S.cars.get(a.auto) || {}, k = car.kunde && S.kunden.has(car.kunde) ? S.kunden.get(car.kunde) : null, r = a.rueck, conf = kvaConf();
+    x = x || { fotos: [], sig: null, rsig: null, failed: 0 };
+    var P = btPdf(lib, r ? 'Fahrzeugannahme und Rückgabe' : 'Fahrzeugannahme', [car.name || 'Auto', car.kennzeichen ? 'Kennzeichen ' + car.kennzeichen : '', k ? 'Kunde: ' + k.name : ''].filter(Boolean).join(' · '));
+    P.table([{ t: 'Angenommen am', w: 40 }, { t: 'Kilometerstand', w: 36 }, { t: 'Schlüssel', w: 24 }, { t: 'Wertsachen im Auto', w: 78 }],
+      [[datum(a.datum) + (a.zeit ? ', ' + a.zeit + ' Uhr' : ''), numOrNull(a.km) !== null ? nf.format(a.km) + ' km' : '–', numOrNull(a.schluessel) !== null ? String(a.schluessel) : '–', a.wertsachen || '–']]);
+    if (a.auftrag) { P.h3('Auftrag'); P.p(a.auftrag, 9.5); }
+    var sch = arr(a.schaeden);
+    P.h2('Vorschäden');
+    P.need(80);
+    var top = P.y, sk = anPdfSketch(P, sch), y1 = top + sk.h + 4, sx = P.M + sk.w + 8, sw = P.W - sk.w - 8, sy = top + 3, D = P.doc;
+    D.setFontSize(9.5);
+    (sch.length ? sch : [null]).forEach(function (q, i) {
+      var t = q ? (i + 1) + '  ' + (AN_ART[q.a] || 'Sonstiges') + (q.n ? ': ' + q.n : '') : 'Keine Vorschäden eingetragen.', l = D.splitTextToSize(btPdfT(t), sw);
+      if (sy + l.length * 4.4 > P.BOT) return;
+      D.setFont('helvetica', 'normal'); D.setTextColor(q ? 23 : 86, q ? 32 : 99, q ? 36 : 108); D.text(l, sx, sy + 1); sy += l.length * 4.4 + 1.6;
+    });
+    P.y = Math.max(sy, y1);
+    P.p(a.freigabe ? 'Der Kunde ist einverstanden, dass Vorher-nachher-Fotos ohne Kennzeichen gezeigt werden.' : 'Vorher-nachher-Fotos werden nicht gezeigt.', 9);
+    var sigBlock = function (img, name, am, label) {
+      P.need(34);
+      if (img) { var sh = 18, sw = Math.min(70, img.w / img.h * sh); try { P.doc.addImage(img.data, img.fmt, P.M, P.y, sw, sh, undefined, 'FAST'); } catch (_) {} }
+      P.y += 19; P.doc.setDrawColor(23, 32, 36); P.doc.setLineWidth(0.3); P.doc.line(P.M, P.y, P.M + 80, P.y);
+      P.doc.setFont('helvetica', 'normal'); P.doc.setFontSize(8); P.doc.setTextColor(86, 99, 108);
+      P.doc.text(btPdfT(label + (name ? ': ' + name : '') + (am ? ', ' + datum(String(am).slice(0, 10)) : '')), P.M, P.y + 4); P.y += 9;
+    };
+    P.h3('Unterschrift bei der Annahme');
+    P.p('Der Kunde bestätigt km-Stand, Vorschäden, Schlüssel und Wertsachen wie oben.', 8.8);
+    sigBlock(x.sig, a.sigName, a.sigAm || (a.sig ? a.geaendert : null), 'Kunde');
+    if (r) {
+      P.h2('Rückgabe');
+      P.table([{ t: 'Zurückgegeben am', w: 44 }, { t: 'Kilometerstand', w: 36 }, { t: 'Notiz', w: 98 }], [[datum(r.datum) + (r.zeit ? ', ' + r.zeit + ' Uhr' : ''), numOrNull(r.km) !== null ? nf.format(r.km) + ' km' : '–', r.notiz || '–']]);
+      if (r.pflege) { P.h3('Pflegehinweise'); String(r.pflege).split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean).forEach(function (l) { P.p(l, 9.5); }); }
+      P.h3('Unterschrift bei der Rückgabe');
+      sigBlock(x.rsig, r.sigName, r.sigAm, 'Kunde');
+    }
+    if (x.fotos.length) {
+      P.doc.addPage(); P.y = P.M; P.h2('Fotos bei der Annahme');
+      var colW = (P.W - 6) / 2, maxH = 62;
+      for (var i = 0; i < x.fotos.length; i += 2) {
+        var pair = x.fotos.slice(i, i + 2), hh = Math.max.apply(null, pair.map(function (p) { return Math.min(maxH, colW * p.h / p.w); }));
+        P.need(hh + 6);
+        pair.forEach(function (p, j) { var s2 = Math.min(colW / p.w, maxH / p.h); try { P.doc.addImage(p.data, p.fmt, P.M + j * (colW + 6), P.y, p.w * s2, p.h * s2, undefined, 'FAST'); } catch (_) {} });
+        P.y += hh + 5;
+      }
+      if (x.failed) P.p(x.failed === 1 ? 'Ein Foto ließ sich nicht laden und fehlt hier.' : x.failed + ' Fotos ließen sich nicht laden und fehlen hier.', 8.5);
+    }
+    return P.finish((r ? 'Fahrzeugannahme und Rückgabe' : 'Fahrzeugannahme') + ' · ' + (car.name || 'Auto') + ' · ' + datum(a.datum) + (conf.name ? ' · ' + conf.name : ''));
+  }
+  /* ---------- Trocknungszeit laut technischem Datenblatt (Artikel) ---------- */
+  function trOf(it) { var x = it && it.trocknung; return x && typeof x === 'object' && numOrNull(x.h) !== null ? x : null; }
+  function trItemExtra(id, it) {
+    if (!it || it.bereich !== 'verbrauch') return '';
+    var t = trOf(it), can = canWrite();
+    if (!t) return can && !it.archiviert && (stOf(it) || stLikely(it)) ? '<div class="xrow"><button type="button" class="linkbtn inl" data-act="tr-edit" data-id="' + esc(id) + '">Trocknungszeit eintragen</button><span>Aus dem technischen Datenblatt, für die Hallenbelegung.</span></div>' : '';
+    return '<div class="xrow"><span class="pill pill-tr">Trocknung</span><span>' + esc(fmt(t.h) + ' h' + (t.stufe ? ' bis ' + t.stufe : '') + ' laut technischem Datenblatt' + (isDay(t.stand) ? ' vom ' + datum(t.stand) : '')) + '</span>' +
+      (can ? '<button type="button" class="linkbtn inl" data-act="tr-edit" data-id="' + esc(id) + '">Ändern</button>' : '') + '</div>';
+  }
+  function openTrForm(id) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var it = S.items.get(id);
+    if (!it) return;
+    var t = trOf(it) || {}, today = dayKey(new Date());
+    openSheet('trform', { id: id, bl: BL ? { keep: blList(t.tds), pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Trocknungszeit · ' + itemName(it)) + '</p><h2 class="sh-title" id="sheet-title">Laut technischem Datenblatt</h2>' +
+      '<p class="buy">Die Hallenbelegung rechnet damit aus, wann ein Auto abholbereit ist.</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="trform" novalidate>' +
+      '<div class="row2"><label class="f"><span>Trocknungszeit (h)</span><input id="tr-h" inputmode="decimal" value="' + esc(numOrNull(t.h) !== null ? nfIn.format(t.h) : '') + '" autocomplete="off" placeholder="z. B. 24"></label>' +
+      '<label class="f"><span>Bis</span><input id="tr-st" value="' + esc(t.stufe || '') + '" maxlength="60" autocomplete="off" placeholder="z. B. durchgetrocknet"></label></div>' +
+      '<p class="help">Die Stufe genau so, wie sie im Datenblatt steht, etwa staubtrocken, grifffest oder durchgetrocknet, mit der Temperatur dazu. Welche Stufe fürs Abholen reicht, entscheidest du.</p>' +
+      '<label class="f"><span>Datenblatt vom</span><input type="date" id="tr-sd" value="' + esc(isDay(t.stand) ? t.stand : '') + '" max="' + today + '"></label>' +
+      blField(t.tds, 'Technisches Datenblatt als PDF oder Foto.') +
+      '<p class="err" id="tr-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button><button type="button" class="btn ghost" data-act="open" data-id="' + esc(id) + '">Zurück</button></div></form>');
+  }
+  async function saveTr() {
+    var s = S.sheet;
+    if (!s || s.type !== 'trform' || S.busy) return;
+    var it = S.items.get(s.id), err = function (m) { var el = $('#tr-err'); if (el) el.textContent = m; }, g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!it) { err('Diesen Artikel gibt es nicht mehr.'); return; }
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var h = parseNum(g('tr-h')), sd = g('tr-sd');
+    if (h === null || isNaN(h) || h < 0 || h > 720) { err('Bitte die Trocknungszeit in Stunden eintragen, z. B. 24 oder 0,5.'); return; }
+    if (sd && (!isDay(sd) || sd > dayKey(new Date()))) { err('Das Datum des Datenblatts ist ungültig.'); return; }
+    var now = new Date().toISOString(), old = trOf(it) || {};
+    setBusy(true);
+    try {
+      var tds = BL && s.bl ? await blCommitForm('betrieb', 'Technisches Datenblatt ' + itemName(it)) : blList(old.tds);
+      var tr = { h: round2(h), stufe: g('tr-st').slice(0, 60) || null, stand: isDay(sd) ? sd : null, tds: tds || [], erstellt: old.erstellt || now, geaendert: now };
+      await write(function () { return S.db.doc('artikel/' + s.id).update({ trocknung: tr, geaendert: now }); });
+      S.items.set(s.id, Object.assign({}, S.items.get(s.id) || it, { trocknung: tr, geaendert: now }));
+      setBusy(false);
+      openItem(s.id);
+      toast('Trocknungszeit gespeichert: ' + fmt(tr.h) + ' h.');
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Hallenbelegung: Kundentermine mit Arbeitszeit und Trocknung ---------- */
+  var TM_ST = { geplant: 'Geplant', erledigt: 'Erledigt', abgesagt: 'Abgesagt' };
+  function tmOf(id) { var t = S.tm && S.tm.get(id); return t && typeof t === 'object' ? t : null; }
+  function tmOk(t) { return !!t && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(t.start || '')) && num(t.dauer) > 0; }
+  function tmAll() {
+    var out = [];
+    if (S.tm) S.tm.forEach(function (t, id) { if (tmOk(t)) out.push([id, t]); });
+    return out.sort(function (a, b) { return a[1].start < b[1].start ? -1 : a[1].start > b[1].start ? 1 : 0; });
+  }
+  function tmDate(s) { var p = String(s).split(/[-T:]/).map(Number); return new Date(p[0], p[1] - 1, p[2], p[3], p[4]); }
+  function tmEnde(t) { return new Date(tmDate(t.start).getTime() + num(t.dauer) * 3600000); }
+  function tmAb(t) { return new Date(tmEnde(t).getTime() + Math.max(0, num(t.trocknung)) * 3600000); }
+  function tmBis(t) { return t.aufBuehne ? tmAb(t) : tmEnde(t); }
+  function tmFmt(d) { return WTAG[d.getDay()] + ' ' + pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '. ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function tmHm(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function tmSameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+  function tmSpan(a, b) { return tmFmt(a) + ' bis ' + (tmSameDay(a, b) ? tmHm(b) : tmFmt(b)); }
+  function tmBuehnen() { return grList(false).filter(function (p) { return p[1].art === 'hebebuehne'; }); }
+  function tmBKey(t) { return tmBuehnen().length > 1 ? String(t.buehne || '') : ''; }
+  function tmKonflikte(id, t) {
+    if (!tmOk(t) || t.status === 'abgesagt') return [];
+    var a0 = tmDate(t.start).getTime(), a1 = tmBis(t).getTime(), b = tmBKey(t);
+    return tmAll().filter(function (p) {
+      var u = p[1];
+      if (p[0] === id || u.status === 'abgesagt' || tmBKey(u) !== b) return false;
+      return tmDate(u.start).getTime() < a1 && tmBis(u).getTime() > a0;
+    });
+  }
+  function tmCarTxt(t) { var c = S.cars.get(t.auto); return c ? String(c.name || 'Auto') + (c.kennzeichen ? ' (' + c.kennzeichen + ')' : '') : 'Auto gelöscht'; }
+  function tmRow(p, back) {
+    var t = p[1], s = tmDate(t.start), e = tmEnde(t), ab = tmAb(t), now = Date.now(), kf = tmKonflikte(p[0], t), chip = '';
+    if (t.status === 'abgesagt') chip = '<span class="wst plan">abgesagt</span>';
+    else if (t.status === 'erledigt') chip = '<span class="wst ok">erledigt</span>';
+    else if (kf.length) chip = '<span class="wst faellig">Überschneidung</span>';
+    else if (now >= s.getTime() && now < e.getTime()) chip = '<span class="wst bald">in Arbeit</span>';
+    else if (now >= e.getTime() && now < ab.getTime()) chip = '<span class="wst plan">trocknet</span>';
+    else if (now >= ab.getTime()) chip = '<span class="wst ok">abholbereit</span>';
+    var sub = [t.titel || '', 'Hebebühne ' + tmSpan(s, t.aufBuehne ? ab : e), num(t.trocknung) > 0 ? 'abholbereit ab ' + tmFmt(ab) : ''].filter(Boolean).join(' · ');
+    return '<li' + (t.status === 'abgesagt' ? ' class="bt-storno"' : '') + '><button type="button" class="wbtn" data-act="tm-edit" data-id="' + esc(p[0]) + '"' + (back ? ' data-back="' + esc(back) + '"' : '') + '><span class="i-n">' + esc(tmHm(s) + ' · ' + tmCarTxt(t)) + '<small>' + esc(sub) + '</small></span><span class="i-p">' + chip + '</span></button></li>';
+  }
+  function openHalle() { openSheet('halle', {}, sheetHalle()); }
+  function sheetHalle() {
+    var can = canWrite(), all = tmAll(), now = Date.now(), cut = now - 30 * 86400000;
+    var up = all.filter(function (p) { return p[1].status !== 'abgesagt' && p[1].status !== 'erledigt' && tmAb(p[1]).getTime() >= now - 12 * 3600000; });
+    var past = all.filter(function (p) { return up.indexOf(p) < 0 && tmDate(p[1].start).getTime() >= cut; }).reverse();
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Kundengeschäft</p><h2 class="sh-title" id="sheet-title">Hallenbelegung</h2>' +
+      '<p class="buy">Kundentermine: wann die Hebebühne belegt ist und wann das Auto abholbereit ist.</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>';
+    if (can) h += '<div class="sh-btns"><button type="button" class="btn" data-act="tm-new" data-back="halle">Termin eintragen</button></div>';
+    h += '<div class="sh-sec"><h3 class="sec">' + esc('Geplant' + (up.length ? ' · ' + up.length : '')) + '</h3>';
+    if (!up.length) h += '<p class="note">Keine Termine geplant.</p>';
+    else {
+      var day = '';
+      h += up.map(function (p) {
+        var d = tmDate(p[1].start), k = dayKey(d), hd = '';
+        if (k !== day) { hd = (day ? '</ul>' : '') + '<h4 class="tm-day">' + esc(WTAG_L[d.getDay()] + ', ' + datum(k)) + '</h4><ul class="works">'; day = k; }
+        return hd + tmRow(p, 'halle');
+      }).join('') + '</ul>';
+    }
+    h += '</div>';
+    if (past.length) h += '<details class="wp-more" data-k="tm-past"><summary>' + esc('Erledigt, abgesagt oder vorbei · ' + past.length) + '</summary><ul class="works">' + past.map(function (p) { return tmRow(p, 'halle'); }).join('') + '</ul></details>';
+    h += '<p class="help">Die Trocknungszeit kommt aus dem technischen Datenblatt der Mittel; trag sie beim Artikel im Bestand ein. Die App rechnet in Uhrzeit, Nächte und Wochenenden zählen mit.</p>';
+    return h + '<div class="sh-foot"><button type="button" class="btn ghost" data-act="close">Schließen</button></div>';
+  }
+  function tmKundenSec() {
+    var now = Date.now(), up = tmAll().filter(function (p) { return p[1].status !== 'abgesagt' && p[1].status !== 'erledigt' && tmAb(p[1]).getTime() >= now - 12 * 3600000; });
+    var h = '<div class="sh-sec"><div class="vhead"><h3 class="sec">' + esc('Termine' + (up.length ? ' · ' + up.length : '')) + '</h3><button type="button" class="linkbtn" data-act="tm-halle">Hallenbelegung</button></div>';
+    if (!up.length) return h + '<p class="note">Keine Termine geplant.</p></div>';
+    return h + '<ul class="works">' + up.slice(0, 3).map(function (p) { return tmRow(p, 'kunden'); }).join('') + '</ul></div>';
+  }
+  function tmRepSec(id, r) {
+    var car = S.cars.get(r.fahrzeug);
+    if (!car || !car.fremd || r.status === 'verworfen') return '';
+    var list = tmAll().filter(function (p) { return p[1].rep === id; }), can = canWrite();
+    var h = '<div class="sh-sec"><div class="vhead"><h3 class="sec">Termin</h3>' + (can ? '<button type="button" class="linkbtn" data-act="tm-new" data-rep="' + esc(id) + '" data-back="rep">+ Termin</button>' : '') + '</div>';
+    if (!list.length) return h + '<p class="note">Noch kein Termin. Mit Arbeitszeit und Trocknung sieht die Hallenbelegung, wann die Hebebühne belegt und das Auto abholbereit ist.</p></div>';
+    return h + '<ul class="works">' + list.map(function (p) { return tmRow(p, 'rep'); }).join('') + '</ul></div>';
+  }
+  function tmMittel() {
+    var out = [];
+    S.items.forEach(function (it, id) { if (it && !it.archiviert && it.bereich === 'verbrauch' && trOf(it)) out.push([id, it]); });
+    return out.sort(function (a, b) { return coll.compare(itemName(a[1]), itemName(b[1])); });
+  }
+  function tmRepH(r) { var k = kvaOf(r); if (!k) return null; var h = 0; kvaPos(k).forEach(function (p) { if (p.e === 'h' && numOrNull(p.m) !== null) h += num(p.m); }); return h > 0 ? round2(h) : null; }
+  function openTmForm(id, pre) {
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    pre = pre || {};
+    var t = id ? tmOf(id) : null;
+    if (id && !t) { toast('Diesen Termin gibt es nicht mehr.'); return; }
+    var r = !t && pre.rep ? S.reps.get(pre.rep) : null;
+    var carId = t ? t.auto : r ? r.fahrzeug : pre.car || '', today = dayKey(new Date());
+    var cars = activeCars().slice().sort(function (a, b) { return (b[1].fremd ? 1 : 0) - (a[1].fremd ? 1 : 0) || coll.compare(String(a[1].name || ''), String(b[1].name || '')); });
+    if (carId && S.cars.has(carId) && !cars.some(function (p) { return p[0] === carId; })) cars.push([carId, S.cars.get(carId)]);
+    var mit = tmMittel(), sel = t ? arr(t.mittel) : [], bs = tmBuehnen(), st = t ? String(t.start) : '';
+    var lps = lpAll().filter(lpOn).filter(lpHas);
+    var h = '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">Hallenbelegung</p><h2 class="sh-title" id="sheet-title">' + (t ? 'Termin bearbeiten' : 'Termin eintragen') + '</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="tmform" novalidate>' +
+      '<label class="f"><span>Auto</span><select id="tm-auto">' + (carId ? '' : '<option value="" selected disabled>Auto wählen …</option>') + carOptList(cars, carId, function (p) { return String(p[1].name || 'Auto') + (p[1].kennzeichen ? ' (' + p[1].kennzeichen + ')' : ''); }) + '</select></label>' +
+      (lps.length ? '<label class="f"><span>Leistungspaket <span class="muted">(optional)</span></span><select id="tm-lp"><option value="">–</option>' + lps.map(function (p) { return '<option value="' + esc(p.id) + '"' + (t && t.paket === p.id ? ' selected' : '') + '>' + esc(p.n) + '</option>'; }).join('') + '</select><small>Übernimmt Leistung und Arbeitszeit für die Fahrzeugklasse des Autos.</small></label>' : '') +
+      '<label class="f"><span>Leistung</span><input id="tm-ti" value="' + esc(t ? t.titel || '' : r ? r.titel || '' : '') + '" maxlength="80" autocomplete="off" placeholder="z. B. Unterbodenschutz"></label>' +
+      '<div class="row2"><label class="f"><span>Datum</span><input type="date" id="tm-d" value="' + esc(st ? st.slice(0, 10) : '') + '" min="' + esc(t ? '' : today) + '"></label>' +
+      '<label class="f"><span>Beginn</span><input type="time" id="tm-z" value="' + esc(st ? st.slice(11, 16) : '08:00') + '"></label></div>' +
+      '<div class="row2"><label class="f"><span>Arbeitszeit (h)</span><input id="tm-h" inputmode="decimal" value="' + esc(t ? nfIn.format(num(t.dauer)) : r && tmRepH(r) !== null ? nfIn.format(tmRepH(r)) : '') + '" autocomplete="off" placeholder="z. B. 4"></label>' +
+      '<label class="f"><span>Trocknung (h)</span><input id="tm-tr" inputmode="decimal" value="' + esc(t && t.trManuell && numOrNull(t.trocknung) !== null ? nfIn.format(t.trocknung) : '') + '" autocomplete="off" placeholder="aus den Mitteln"' + (t && t.trManuell ? ' data-touched="1"' : '') + '></label></div>';
+    h += '<fieldset class="ub-fs"><legend>Mittel mit Trocknungszeit</legend>';
+    if (mit.length) h += '<div class="tm-mit">' + mit.map(function (p) { var tr = trOf(p[1]); return '<label class="check"><input type="checkbox" name="tm-m" value="' + esc(p[0]) + '"' + (sel.indexOf(p[0]) >= 0 ? ' checked' : '') + '><span>' + esc(itemName(p[1]) + ' · ' + fmt(tr.h) + ' h' + (tr.stufe ? ' bis ' + tr.stufe : '')) + '</span></label>'; }).join('') + '</div><small class="ub-fh">Die längste Trocknungszeit zählt. Eine eigene Zahl oben geht vor.</small>';
+    else h += '<p class="note">Noch kein Mittel mit Trocknungszeit. Trag sie beim Artikel im Bestand aus dem technischen Datenblatt ein.</p>';
+    h += '</fieldset>' +
+      '<label class="check"><input type="checkbox" id="tm-ab"' + (t && t.aufBuehne ? ' checked' : '') + '><span>Trocknet auf der Hebebühne</span></label>' +
+      (bs.length > 1 ? '<label class="f"><span>Hebebühne</span><select id="tm-b">' + bs.map(function (p) { return '<option value="' + esc(p[0]) + '"' + (t && t.buehne === p[0] ? ' selected' : '') + '>' + esc(grName(p[1])) + '</option>'; }).join('') + '</select></label>' : '') +
+      '<div class="tm-sum" id="tm-sum" aria-live="polite"></div>' +
+      (t ? '<label class="f"><span>Status</span><select id="tm-st">' + Object.keys(TM_ST).map(function (k) { return '<option value="' + k + '"' + ((t.status || 'geplant') === k ? ' selected' : '') + '>' + esc(TM_ST[k]) + '</option>'; }).join('') + '</select></label>' : '') +
+      '<label class="f"><span>Notiz <span class="muted">(optional)</span></span><textarea id="tm-no" rows="2" maxlength="400">' + esc(t ? t.notiz || '' : '') + '</textarea></label>' +
+      '<p class="err" id="tm-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' +
+      (t && t.status !== 'abgesagt' && S.cars.has(t.auto) ? '<button type="button" class="btn ghost" data-act="an-new" data-car="' + esc(t.auto) + '" data-tm="' + esc(id) + '">Annehmen</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="tm-back">Zurück</button></div></form>';
+    openSheet('tmform', { id: id || null, rep: t ? t.rep || null : pre.rep || null, back: pre.back || 'halle' }, h);
+    tmUpdate();
+  }
+  function tmRead() {
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    var d = g('tm-d'), z = g('tm-z'), dauer = parseNum(g('tm-h')), trIn = $('#tm-tr'), man = trIn && trIn.value.trim() !== '' ? parseNum(trIn.value.trim()) : null;
+    var mittel = $$('#tmform input[name="tm-m"]').filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+    var auto = 0, autoN = '';
+    mittel.forEach(function (iid) { var it = S.items.get(iid), tr = trOf(it); if (tr && num(tr.h) > auto) { auto = num(tr.h); autoN = itemName(it); } });
+    var bsel = $('#tm-b'), bs = tmBuehnen();
+    return { auto: g('tm-auto'), titel: g('tm-ti'), d: d, z: z, start: isDay(d) && isHm(z) ? d + 'T' + z : '', dauer: dauer, man: man, trAuto: auto, trAutoN: autoN, trocknung: man !== null && !isNaN(man) ? man : auto, mittel: mittel,
+      aufBuehne: !!(($('#tm-ab') || {}).checked), buehne: bsel ? bsel.value : bs.length === 1 ? bs[0][0] : null, status: ($('#tm-st') || {}).value || 'geplant', paket: ($('#tm-lp') || {}).value || null };
+  }
+  function tmUpdate() {
+    var s = S.sheet, el = $('#tm-sum'), trIn = $('#tm-tr');
+    if (!s || s.type !== 'tmform' || !el) return;
+    var v = tmRead();
+    if (trIn) trIn.placeholder = v.trAuto > 0 ? fmt(v.trAuto) + ' aus den Mitteln' : 'aus den Mitteln';
+    if (!v.start || v.dauer === null || isNaN(v.dauer) || v.dauer <= 0) { el.innerHTML = '<p class="help">Datum, Beginn und Arbeitszeit eintragen, dann rechnet die App die Belegung aus.</p>'; return; }
+    var t = { start: v.start, dauer: v.dauer, trocknung: isNaN(v.trocknung) ? 0 : v.trocknung, aufBuehne: v.aufBuehne, buehne: v.buehne, status: v.status };
+    var s0 = tmDate(t.start), e = tmEnde(t), ab = tmAb(t), kf = tmKonflikte(s.id, t);
+    el.innerHTML = '<p class="rstat">' + esc('Hebebühne belegt: ' + tmSpan(s0, v.aufBuehne ? ab : e) + '.') + '</p>' +
+      '<p class="rstat">' + esc(t.trocknung > 0 ? 'Abholbereit ab ' + tmFmt(ab) + ' (' + fmt(t.trocknung) + ' h Trocknung' + (v.man === null && v.trAutoN ? ', ' + v.trAutoN : '') + ').' : 'Abholbereit nach der Arbeit, ohne Trocknungszeit.') + '</p>' +
+      (kf.length ? '<p class="rstat warn">' + esc('Überschneidung mit ' + kf.map(function (p) { return tmCarTxt(p[1]) + ', ' + tmSpan(tmDate(p[1].start), tmBis(p[1])); }).join('; ') + '.') + '</p>' : '');
+  }
+  function tmLpChange() {
+    var sel = $('#tm-lp'), p = sel && sel.value ? lpOf(sel.value) : null, ti = $('#tm-ti'), hh = $('#tm-h'), car = S.cars.get((($('#tm-auto') || {}).value || ''));
+    if (!p) return;
+    if (ti && (!ti.value.trim() || ti.dataset.auto === '1')) { ti.value = p.n; ti.dataset.auto = '1'; }
+    var kl = car && LP_KLM[car.klasse] ? car.klasse : null, j = kl ? lpJe(p, kl) : null;
+    if (hh && j && j.h !== null) hh.value = nfIn.format(j.h);
+    else if (!kl) toast('Für dieses Auto ist noch keine Fahrzeugklasse eingetragen; die Arbeitszeit bitte selbst eintragen.');
+    tmUpdate();
+  }
+  function tmBack() {
+    var s = S.sheet;
+    if (s && s.back === 'rep' && s.rep && S.reps.has(s.rep)) openRep(s.rep);
+    else if (s && s.back === 'kunden') openKunden();
+    else openHalle();
+  }
+  async function saveTm() {
+    var s = S.sheet;
+    if (!s || s.type !== 'tmform' || S.busy) return;
+    var err = function (m) { var el = $('#tm-err'); if (el) el.textContent = m; };
+    err('');
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var old = s.id ? tmOf(s.id) : null, v = tmRead();
+    if (s.id && !old) { err('Diesen Termin gibt es nicht mehr.'); return; }
+    if (!v.auto || !S.cars.has(v.auto)) { err('Bitte ein Auto wählen.'); return; }
+    if (!v.titel) { err('Bitte eintragen, was gemacht wird, z. B. Unterbodenschutz.'); return; }
+    if (!isDay(v.d)) { err('Bitte das Datum eintragen.'); return; }
+    if (!isHm(v.z)) { err('Bitte den Beginn eintragen, z. B. 08:00.'); return; }
+    if (v.dauer === null || isNaN(v.dauer) || v.dauer <= 0 || v.dauer > 72) { err('Die Arbeitszeit bitte in Stunden eintragen, z. B. 4 oder 1,5.'); return; }
+    if (v.man !== null && (isNaN(v.man) || v.man < 0 || v.man > 720)) { err('Die Trocknung bitte in Stunden eintragen, z. B. 24.'); return; }
+    var now = new Date().toISOString();
+    var data = Object.assign({}, old || { erstellt: now }, { auto: v.auto, rep: s.rep || (old ? old.rep || null : null), titel: v.titel.slice(0, 80), paket: v.paket || null, start: v.start, dauer: round2(v.dauer),
+      trocknung: round2(isNaN(v.trocknung) ? 0 : v.trocknung), trManuell: v.man !== null, mittel: v.mittel, aufBuehne: v.aufBuehne, buehne: v.buehne || null, status: TM_ST[v.status] ? v.status : 'geplant', notiz: (($('#tm-no') || {}).value || '').trim().slice(0, 400) || null, geaendert: now });
+    var kf = tmKonflikte(s.id, data);
+    setBusy(true);
+    try {
+      var id = s.id;
+      if (id) await write(function () { return S.db.doc('termine/' + id).update(data); });
+      else { var ref = S.db.collection('termine').doc(); id = ref.id; await write(function () { return ref.set(data); }); }
+      S.tm.set(id, data);
+      setBusy(false);
+      tmBack();
+      toast('Termin gespeichert: ' + tmFmt(tmDate(data.start)) + '.' + (kf.length && data.status !== 'abgesagt' ? ' Achtung: Überschneidung auf der Hebebühne.' : ''));
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Eingaben und Ansichten ---------- */
+  function anChange(t) {
+    if (!t || !S.sheet) return false;
+    var ty = S.sheet.type;
+    if (ty === 'tmform') {
+      if (t.id === 'tm-lp') { tmLpChange(); return true; }
+      if (t.id === 'tm-auto' || t.id === 'tm-ab' || t.id === 'tm-b' || t.id === 'tm-st' || t.id === 'tm-d' || t.id === 'tm-z' || t.name === 'tm-m') { tmUpdate(); return true; }
+    }
+    return false;
+  }
+  function anInput(t) {
+    if (!t || !S.sheet) return false;
+    if (S.sheet.type === 'tmform' && /^tm-(h|tr|d|z)$/.test(t.id || '')) { if (t.id === 'tm-tr') t.dataset.touched = '1'; tmUpdate(); return true; }
+    if (S.sheet.type === 'tmform' && t.id === 'tm-ti') { delete t.dataset.auto; return true; }
+    return false;
+  }
+  function anRefresh(sh, top) {
+    var s = S.sheet;
+    if (!s || s.type !== 'halle') return false;
+    var od = $$('details[open][data-k]', sh).map(function (d) { return d.dataset.k; });
+    setHTML(sh, sheetHalle());
+    $$('details[data-k]', sh).forEach(function (d) { if (od.indexOf(d.dataset.k) >= 0) d.open = true; });
+    sh.scrollTop = top;
+    return true;
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -18037,6 +18703,21 @@ input.fs-mono { text-transform: uppercase; }
       case 'rl-et-pdf': rlEtPdf(); break;
       case 'odb-req': odbRequest(t.dataset.id); break;
       case 'bt-open': openBetrieb(); break;
+      case 'an-new': (function () { var tq = t.dataset.tm ? tmOf(t.dataset.tm) : null; openAnForm(null, { car: t.dataset.car, tm: tq ? t.dataset.tm : null, rep: tq ? tq.rep || null : null, back: tq ? 'tm' : null }); })(); break;
+      case 'an-edit': openAnForm(t.dataset.id); break;
+      case 'an-rg': openAnForm(t.dataset.id, { rueck: true }); break;
+      case 'an-back': anBack(); break;
+      case 'an-sk': anSkClick(e); break;
+      case 'an-mk': anMk(t); break;
+      case 'an-rm': anRm(t.dataset.i); break;
+      case 'an-pdf': anSavePdf(t.dataset.id); break;
+      case 'sig-clear': sigClear(t.dataset.id); break;
+      case 'sig-new': sigNew(t.dataset.id); break;
+      case 'tr-edit': openTrForm(t.dataset.id); break;
+      case 'tm-halle': openHalle(); break;
+      case 'tm-new': openTmForm(null, { rep: t.dataset.rep || null, car: t.dataset.car || null, back: t.dataset.back || null }); break;
+      case 'tm-edit': openTmForm(t.dataset.id, { back: t.dataset.back || null }); break;
+      case 'tm-back': tmBack(); break;
       case 'um-open': openUmsatz(); break;
       case 'um-year': openUmsatz(t.dataset.year); break;
       case 'um-new': openUmForm(null); break;
@@ -18178,6 +18859,7 @@ input.fs-mono { text-transform: uppercase; }
     if (rlEtChange(t)) return;
     if (btChange(t)) return;
     if (umChange(t)) return;
+    if (anChange(t)) return;
     if (brChange(t)) return;
     if (pvChange(t)) return;
     if (gaChange(t)) return;
@@ -18254,6 +18936,9 @@ input.fs-mono { text-transform: uppercase; }
       else if (e.target.id === 'abform') { e.preventDefault(); saveAb(); }
       else if (e.target.id === 'umform') { e.preventDefault(); saveUm(); }
       else if (e.target.id === 'lpform') { e.preventDefault(); saveLp(); }
+      else if (e.target.id === 'anform') { e.preventDefault(); saveAn(); }
+      else if (e.target.id === 'trform') { e.preventDefault(); saveTr(); }
+      else if (e.target.id === 'tmform') { e.preventDefault(); saveTm(); }
       else if (e.target.id === 'keein') { e.preventDefault(); saveKeEin(); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
@@ -18277,6 +18962,7 @@ input.fs-mono { text-transform: uppercase; }
       if (fsInput(e.target)) return;
       if (btInput(e.target)) return;
       if (umInput(e.target)) return;
+      if (anInput(e.target)) return;
       if (wpTippsInput(e.target)) return;
       if (gaInput(e.target)) return;
       if (e.target && e.target.id === 'w-titel') wboxSync(true);
