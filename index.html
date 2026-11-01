@@ -14,7 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "39", "jspdf": "./jspdf.umd.min.js"};</script>
+<script>window.WERKSTATT_CONF = {"owner": "JohannesPichler-bit", "repo": "werkstatt-daten", "branch": "main", "laeufe": "beim nächsten geplanten Lauf (täglich ca. 12:30 und 19:30 Uhr)", "version": "40", "jspdf": "./jspdf.umd.min.js"};</script>
 <script>
 /* Werkstatt – eigenständige Version.
    Stellt der App dieselben Funktionen bereit wie claude.ai (Datenbank, Rechte, Dateien speichern, Recherche-Auftrag),
@@ -2087,6 +2087,21 @@ input.fs-mono { text-transform: uppercase; }
 .fs-rg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; }
 .fs-kind { font-size: 12.5px; font-weight: 700; color: var(--muted); }
 .fs-kind.err { color: var(--kaufen); }
+/* Reifeneinlagerung */
+.rl-sec { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 10px; }
+.rl-box { align-self: stretch; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.rl-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rl-h b { font-size: 15.5px; }
+.rl-s { font-size: 13.5px; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.rl-sec .help { margin: 0; }
+.rl-pg { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 6px 8px; align-items: center; }
+.rl-pg > b { font-size: 12.5px; color: var(--muted); }
+.rl-pn { font-size: 14px; line-height: 1.25; }
+.rl-pg label { display: block; min-width: 0; }
+.rl-pg input { width: 100%; min-width: 0; min-height: 44px; padding: 8px 9px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 16px; text-align: center; font-variant-numeric: tabular-nums; }
+.rl-pg input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.rl-wf { display: flex; flex-direction: column; gap: 8px; }
+.rl-wf legend { margin-bottom: 6px; }
 </style>
 
 <div class="wrap">
@@ -7226,6 +7241,7 @@ input.fs-mono { text-transform: uppercase; }
     var last = log.length ? log[log.length - 1] : null;
     var h = '<div class="sh-sec rf-sec"><div class="vhead"><h3 class="sec">Reifen</h3>' + (can ? '<button type="button" class="linkbtn" data-act="reifen-wechsel" data-id="' + esc(id) + '">Reifenwechsel eintragen</button>' : '') + '</div>' +
       '<div class="rf-g">' + reifenCard(id, car, 'sommer') + reifenCard(id, car, 'winter') + '</div>';
+    h += rlSec(id, car);
     var info = [];
     if (last) info.push('Zuletzt gewechselt ' + datum(last.d) + (numOrNull(last.km) !== null ? ' bei ' + nf.format(num(last.km)) + ' km' : '') + ' auf ' + (last.auf === 'winter' ? 'Winterreifen' : 'Sommerreifen') + '.');
     if (sz && sz.now) info.push(sz.auf === 'winter' ? 'Sommerreifen drauf: Bei Schnee, Schneematsch oder Eis gilt vom 1.11. bis 15.4. die Winterreifenpflicht.' : 'Winterreifen drauf: Die Winterreifenpflicht endet am 15.4.');
@@ -7326,6 +7342,7 @@ input.fs-mono { text-transform: uppercase; }
       '<fieldset class="f rf-pf"><legend id="rw-pl">' + esc('Profil der abmontierten ' + RSET[ab].n + ' (optional)') + '</legend><div class="rf-pg">' + RPOS.map(function (x) {
         return '<label><span>' + x[1] + '</span><input id="rw-p-' + x[0] + '" inputmode="decimal" placeholder="–" autocomplete="off"></label>';
       }).join('') + '</div><small>Gleich beim Abnehmen messen, dann ist der Satz fürs Einlagern dokumentiert.</small></fieldset>' +
+      rlWechselHtml(car) +
       '<label class="f"><span>Kosten (€)</span><input id="rw-k" inputmode="decimal" placeholder="leer = selbst gemacht, 0 €" autocomplete="off"></label>' +
       '<label class="check"><input type="checkbox" id="rw-ab"' + (r.winterAbgestellt ? ' checked' : '') + '><span>Auto steht im Winter (keine Erinnerung zum Reifenwechsel)</span></label>' +
       '<p class="help">Wird als Arbeit im Serviceheft eingetragen.</p>' +
@@ -7358,6 +7375,7 @@ input.fs-mono { text-transform: uppercase; }
     rd.winterAbgestellt = !!(($('#rw-ab') || {}).checked);
     rd.log = arr(rd.log).concat([{ d: d, km: km === null ? null : Math.round(km), auf: auf }]).slice(-40);
     if (any) { prof.am = d; rd[ab] = Object.assign({}, reifenSet(car, ab) || {}, { profil: prof }); }
+    var rlMsg = rlWechsel(car, rd, auf, ab, d, km === null ? null : Math.round(km));
     var work = { id: rid(10), erstellt: now, titel: 'Reifenwechsel auf ' + RSET[auf].n, datum: d, datumGenau: 'tag', kosten: k === null ? 0 : round2(k), km: km === null ? null : Math.round(km), kmCa: false, notiz: any ? 'Profil ' + RSET[ab].n + ': ' + RPOS.filter(function (x) { return prof[x[0]] !== null; }).map(function (x) { return x[0].toUpperCase() + ' ' + mmTxt(prof[x[0]]); }).join(', ') : '', wartung: [], reifen: auf };
     var patch = { reifen: rd, arbeiten: arr(car.arbeiten).concat([work]), geaendert: now };
     if (work.km !== null && (numOrNull(car.km) === null || work.km > num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) { patch.km = work.km; patch.kmDatum = d; patch.kmLog = kmLogWith(car, d, work.km); }
@@ -7368,7 +7386,7 @@ input.fs-mono { text-transform: uppercase; }
       setBusy(false);
       if (s.back === 'zeitplan') openZeitplan(); else openCar(s.id);
       renderAll();
-      toast(RSET[auf].n + ' montiert, im Serviceheft eingetragen.');
+      toast(RSET[auf].n + ' montiert, im Serviceheft eingetragen.' + rlMsg);
     } catch (e) { writeError(e, showErr); } finally { if (S.busy) setBusy(false); }
   }
   /* ---------- Fotos und Belege: Dateien im privaten Daten-Repository (nur in der eigenständigen Version) ---------- */
@@ -7897,6 +7915,7 @@ input.fs-mono { text-transform: uppercase; }
       if (KL_ON) h += '<p class="help">Mit dem Link trägt der Kunde seine Daten und die seines Autos selbst ein und schickt sie dir per WhatsApp oder E-Mail. Tippst du in seiner Nachricht auf den Link, übernimmt die App alles nach deiner Kontrolle.</p>';
     }
     h += keListSec();
+    h += rlListSec(null);
     h += '<div class="sh-sec"><h3 class="sec">Kunden · ' + list.length + '</h3>' + (list.length ? '<ul class="works kl">' + list.map(function (p) {
       var k = p[1], cars = kundeCars(p[0]).filter(function (c) { return !c[1].archiviert; });
       var sub = cars.map(function (c) { return String(c[1].name || 'Auto') + (c[1].kennzeichen ? ' (' + c[1].kennzeichen + ')' : ''); }).join(', ');
@@ -7946,7 +7965,7 @@ input.fs-mono { text-transform: uppercase; }
       var r = p[1], due = repDue(r);
       return '<li><button type="button" class="wbtn" data-act="open-rep" data-id="' + esc(p[0]) + '"><span class="i-n">' + esc(r.titel) + '<small>' + esc(carName(r.fahrzeug) + (due ? ' · fällig bis ' + due : '')) + '</small></span></button></li>';
     }).join('') + '</ul>' : '<p class="note">Nichts offen.</p>') + '</div>';
-    h += keSec(id, k) + reKundeSec(id);
+    h += rlListSec(id) + keSec(id, k) + reKundeSec(id);
     h += '<div class="tot"><div><span>Erledigte Arbeiten</span><b>' + nWork + '</b></div><div><span>Summe</span><b>' + esc(eur(sum)) + '</b></div></div>';
     if (k.einwilligung && isDay(String(k.einwilligung.am || '').slice(0, 10))) h += '<p class="help">' + esc('Einverständnis zur Speicherung über das Formular am ' + datum(String(k.einwilligung.am).slice(0, 10)) + '.') + '</p>';
     h += '<p class="err" id="sh-err" role="alert"></p><div class="sh-foot">' + (can ? '<button type="button" class="btn ghost" data-act="kunde-edit" data-id="' + esc(id) + '">Bearbeiten</button>' : '') +
@@ -13128,7 +13147,7 @@ input.fs-mono { text-transform: uppercase; }
       });
       var rs = reifenSaison(car);
       if (rs && rs.now) out.push({ key: 'rf-' + cid + '-' + rs.auf + '-' + today.slice(0, 4), car: cid, s: rs.title,
-        t: rs.title + (rs.auf === 'winter' ? ' (Winterreifenpflicht bei Schnee, Schneematsch oder Eis vom 1.11. bis 15.4.)' : '') });
+        t: rs.title + (rs.auf === 'winter' ? ' (Winterreifenpflicht bei Schnee, Schneematsch oder Eis vom 1.11. bis 15.4.)' : '') + rlKeTxt(car, rs.auf) });
     });
     var done = k.erinnert && typeof k.erinnert === 'object' ? k.erinnert : {};
     return out.map(function (it) { var d = done[it.key]; it.am = isDay(d) ? d : null; it.ruhe = !!(it.am && dayNum(today) - dayNum(it.am) < KE_RUHE); return it; });
@@ -15582,6 +15601,398 @@ input.fs-mono { text-transform: uppercase; }
     openRepForm(null, { fahrzeug: carId, titel: ('Fehlercode ' + c + (e.t ? ': ' + e.t : '')).slice(0, 80),
       notiz: ('Aus dem Fehlerspeicher: ' + c + (B ? ', ' + B.text : '') + '. ' + (e.n > 1 ? e.n + '-mal ausgelesen, zuerst am ' + datum(e.first) + '.' : 'Ausgelesen am ' + datum(e.first) + '.') + (e.zurueck ? ' Nach dem Löschen wiedergekommen.' : '')).slice(0, 500) });
   }
+  /* ---------- Reifeneinlagerung für Kunden (Version 40) ---------- */
+  function rlOf(s) { var e = s && s.einlagerung; return e && typeof e === 'object' && isDay(e.seit) ? e : null; }
+  function rlNextNr() {
+    var y = dayKey(new Date()).slice(0, 4), max = 0;
+    var f = function (nr) { var m = /^RL-(\d{4})-(\d+)$/.exec(String(nr || '')); if (m && m[1] === y) max = Math.max(max, Number(m[2])); };
+    S.cars.forEach(function (c) {
+      var r = reifenDoc(c);
+      ['sommer', 'winter'].forEach(function (k) { var e = rlOf(r[k]); if (e) f(e.nr); });
+      arr(r.lagerLog).forEach(function (x) { if (x) f(x.nr); });
+    });
+    return 'RL-' + y + '-' + String(max + 1).padStart(3, '0');
+  }
+  function rlNrTaken(nr, carId, k) {
+    var key = String(nr || '').trim().toLowerCase(), hit = false;
+    S.cars.forEach(function (c, id) {
+      var r = reifenDoc(c);
+      ['sommer', 'winter'].forEach(function (kk) { var e = rlOf(r[kk]); if (!hit && e && !(id === carId && kk === k) && String(e.nr || '').trim().toLowerCase() === key) hit = true; });
+      arr(r.lagerLog).forEach(function (x) { if (!hit && x && String(x.nr || '').trim().toLowerCase() === key) hit = true; });
+    });
+    return hit;
+  }
+  function rlDot(s, p) { var d = s && s.dotPos && typeof s.dotPos === 'object' ? String(s.dotPos[p] || '') : ''; return d || String((s && s.dot) || ''); }
+  function rlDotTxt(dot) { var d = dotInfo(dot); return d ? String(d.wk).padStart(2, '0') + '/' + String(d.year).slice(2) : '–'; }
+  function rlPlatz(s) { return String((s && s.lager) || '').trim(); }
+  /* Alle eingelagerten Sätze (nur Kundenautos) */
+  function rlAll(kid) {
+    var out = [];
+    S.cars.forEach(function (c, id) {
+      if (!c || !c.fremd || (kid && c.kunde !== kid)) return;
+      var r = reifenDoc(c);
+      ['sommer', 'winter'].forEach(function (k) { var s = r[k], e = rlOf(s); if (e) out.push({ car: id, c: c, k: k, s: s, e: e }); });
+    });
+    return out.sort(function (a, b) { return coll.compare(rlPlatz(a.s) || '~', rlPlatz(b.s) || '~') || String(a.e.nr || '').localeCompare(String(b.e.nr || '')); });
+  }
+  /* Im Reifen-Abschnitt eines Kundenautos */
+  function rlSec(id, car) {
+    if (!car.fremd || car.archiviert) return '';
+    var r = reifenDoc(car), can = canWrite(), h = '';
+    ['sommer', 'winter'].forEach(function (k) {
+      var s = r[k], e = rlOf(s);
+      if (!e || r.montiert === k) return;
+      h += '<div class="rl-box"><div class="rl-h"><b>' + esc(RSET[k].n + ' eingelagert') + '</b><span class="wst ok">' + esc(e.nr || 'ohne Nr.') + '</span></div>' +
+        '<span class="rl-s">' + esc([rlPlatz(s) ? 'Platz: ' + rlPlatz(s) : 'Platz noch nicht eingetragen', 'seit ' + datum(e.seit) + (numOrNull(e.km) !== null ? ' bei ' + nf.format(e.km) + ' km' : '')].join(' · ')) + '</span>' +
+        '<div class="kva-act">' + (S.dl ? '<button type="button" class="btn small" data-act="rl-schein" data-id="' + esc(id) + '" data-set="' + k + '">Einlagerungsschein</button><button type="button" class="btn ghost small" data-act="rl-et" data-id="' + esc(id) + '" data-set="' + k + '">Etiketten</button>' : '') +
+        (can ? '<button type="button" class="btn ghost small" data-act="rl-edit" data-id="' + esc(id) + '" data-set="' + k + '">Bearbeiten</button><button type="button" class="btn ghost small" data-act="rl-aus" data-id="' + esc(id) + '" data-set="' + k + '">Ausgelagert</button>' : '') + '</div></div>';
+    });
+    var free = ['sommer', 'winter'].filter(function (k) { return !rlOf(r[k]) && r.montiert !== k; });
+    if (can && free.length) h += '<button type="button" class="linkbtn" data-act="rl-new" data-id="' + esc(id) + '" data-set="' + (free.length === 1 ? free[0] : rlGuess(r)) + '">Reifen einlagern</button>';
+    var log = arr(r.lagerLog).filter(function (x) { return x && isDay(x.seit); });
+    if (log.length) h += '<p class="help">' + esc('Früher eingelagert: ' + log.slice(-3).reverse().map(function (x) { return (RSET[x.set] ? RSET[x.set].k : '') + ' ' + datum(x.seit) + ' bis ' + (isDay(x.bis) ? datum(x.bis) : '?') + (x.nr ? ' (' + x.nr + ')' : ''); }).join(', ') + '.') + '</p>';
+    return h ? '<div class="rl-sec">' + h + '</div>' : '';
+  }
+  /* Welcher Satz wird eingelagert: der nicht montierte, sonst nach der Jahreszeit */
+  function rlGuess(r) {
+    if (r.montiert === 'sommer') return 'winter';
+    if (r.montiert === 'winter') return 'sommer';
+    var md = dayKey(new Date()).slice(5);
+    return md >= '10-01' || md <= '03-31' ? 'sommer' : 'winter';
+  }
+  /* ---------- Einlagern ---------- */
+  function openRlForm(carId, k) {
+    var car = S.cars.get(carId);
+    if (!car || !RSET[k]) return;
+    if (!canWrite()) { toast(S.readOnly ? 'Du kannst dieses Inventar nur ansehen.' : 'Inventar ist hier nicht verfügbar.'); return; }
+    var s = reifenSet(car, k) || {}, e = rlOf(s), p = s.profil && typeof s.profil === 'object' ? s.profil : {}, today = dayKey(new Date()), ck = curKmEst(car), kunde = kundeOf(car);
+    var nv = function (v) { return numOrNull(v) === null ? '' : nfIn.format(v).replace('.', ','); };
+    var places = [];
+    rlAll(null).forEach(function (x) { var pl = rlPlatz(x.s); if (pl && places.indexOf(pl) < 0) places.push(pl); });
+    openSheet('rlform', { id: carId, set: k, bl: BL ? { keep: blList(s.fotos), pend: [] } : null },
+      '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Reifeneinlagerung · ' + (car.name || 'Auto')) + '</p>' +
+      '<h2 class="sh-title" id="sheet-title">' + (e ? 'Einlagerung bearbeiten' : 'Reifen einlagern') + '</h2>' +
+      '<p class="buy">' + esc(kunde ? kunde.name + (car.kennzeichen ? ' · ' + car.kennzeichen : '') : 'Noch kein Kunde zugeordnet.') + '</p></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div>' +
+      '<form class="form" id="rlform" novalidate>' +
+      '<div class="f"><span id="rl-set-l">Welcher Satz?</span><div class="seg two rf-seg" role="radiogroup" aria-labelledby="rl-set-l">' +
+      ['sommer', 'winter'].map(function (x) { return '<label><input type="radio" name="rl-set" value="' + x + '"' + (x === k ? ' checked' : '') + (e ? ' disabled' : '') + '><span>' + R_ICON[x] + RSET[x].n + '</span></label>'; }).join('') + '</div></div>' +
+      '<div class="kva-row3"><label class="f"><span>Nummer</span><input id="rl-nr" value="' + esc(e ? e.nr || '' : rlNextNr()) + '" maxlength="20" autocomplete="off" spellcheck="false"><small>Steht auf Schein und Etiketten.</small></label>' +
+      '<label class="f"><span>Eingelagert am</span><input type="date" id="rl-d" value="' + esc(e ? e.seit : today) + '" max="' + today + '"></label>' +
+      '<label class="f"><span>Kilometerstand</span><input id="rl-km" inputmode="numeric" value="' + (e && numOrNull(e.km) !== null ? e.km : '') + '" placeholder="' + (ck ? esc('zuletzt ' + nf.format(ck.km)) : 'optional') + '" autocomplete="off"></label></div>' +
+      '<label class="f"><span>Lagerplatz</span><input id="rl-pl" value="' + esc(rlPlatz(s)) + '" maxlength="40" autocomplete="off" placeholder="z. B. Reifenregal 2, oben links" list="rl-pls">' +
+      (places.length ? '<datalist id="rl-pls">' + places.map(function (x) { return '<option value="' + esc(x) + '"></option>'; }).join('') + '</datalist>' : '') + '</label>' +
+      '<label class="f"><span>Größe</span><input id="rl-gr" value="' + esc(s.groesse || '') + '" maxlength="40" placeholder="z. B. 205/55 R16 91H" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>' +
+      '<div class="row2"><label class="f"><span>Marke</span><input id="rl-ma" value="' + esc(s.marke || '') + '" maxlength="40" autocomplete="off"></label>' +
+      '<label class="f"><span>Modell</span><input id="rl-mo" value="' + esc(s.modell || '') + '" maxlength="40" autocomplete="off"></label></div>' +
+      '<label class="f"><span>Felgen</span><input id="rl-fe" value="' + esc(s.felge || '') + '" maxlength="40" placeholder="z. B. Alu 7×16 ET47 oder ohne Felgen" autocomplete="off"></label>' +
+      '<fieldset class="f rf-pf"><legend>Je Reifen: DOT und Profil</legend><div class="rl-pg"><span></span><b>DOT</b><b>Profil mm</b>' + RPOS.map(function (x) {
+        return '<span class="rl-pn">' + esc(x[1]) + '</span><label><span class="vh">' + esc('DOT ' + x[1]) + '</span><input id="rl-dot-' + x[0] + '" inputmode="numeric" value="' + esc(rlDot(s, x[0])) + '" maxlength="4" placeholder="z. B. 2319" autocomplete="off"></label>' +
+          '<label><span class="vh">' + esc('Profil ' + x[1]) + '</span><input id="rl-p-' + x[0] + '" inputmode="decimal" value="' + nv(p[x[0]]) + '" placeholder="–" autocomplete="off"></label>';
+      }).join('') + '</div><small>DOT: die letzten vier Ziffern auf der Flanke, 2319 heißt Woche 23 im Jahr 2019.</small></fieldset>' +
+      '<label class="f"><span>Mit eingelagert <span class="muted">(optional)</span></span><input id="rl-zu" value="' + esc(e && e.zubehoer || '') + '" maxlength="80" autocomplete="off" placeholder="z. B. Radschrauben, Radkappen, Felgenschloss"></label>' +
+      '<label class="f"><span>Zustand und Schäden <span class="muted">(optional)</span></span><textarea id="rl-zs" rows="2" maxlength="300" placeholder="z. B. hinten links Bordsteinschaden an der Felge">' + esc(e && e.zustand || '') + '</textarea></label>' +
+      blField(s.fotos, 'z. B. jeder Reifen mit DOT und Profil, Schäden.') +
+      '<p class="err" id="rl-err" role="alert"></p>' +
+      '<div class="sh-foot"><button type="submit" class="btn">Speichern</button>' + (S.dl ? '<button type="button" class="btn ghost" data-act="rl-save-pdf">Speichern und Schein</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Zurück</button></div></form>');
+  }
+  function rlChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'rlform' || !t || t.name !== 'rl-set') return false;
+    if (RSET[t.value] && t.value !== s.set) openRlForm(s.id, t.value);
+    return true;
+  }
+  async function saveRl(andPdf) {
+    var s = S.sheet;
+    if (!s || s.type !== 'rlform' || S.busy) return;
+    var car = S.cars.get(s.id), err = function (m) { var el = $('#rl-err'); if (el) el.textContent = m; };
+    var g = function (id) { var el = $('#' + id); return el ? el.value.trim() : ''; };
+    err('');
+    if (!car) { err('Dieses Auto gibt es nicht mehr.'); return; }
+    if (!canWrite()) { err('Du kannst dieses Inventar nur ansehen.'); return; }
+    var k = s.set, nr = g('rl-nr').slice(0, 20), d = g('rl-d'), km = parseNum(g('rl-km')), today = dayKey(new Date());
+    if (!nr) { err('Bitte eine Nummer eintragen, z. B. ' + rlNextNr() + '.'); return; }
+    if (rlNrTaken(nr, s.id, k)) { err('Die Nummer ' + nr + ' ist schon vergeben. Frei ist ' + rlNextNr() + '.'); return; }
+    if (!isDay(d) || d > today) { err('Bitte das Datum der Einlagerung eintragen, nicht in der Zukunft.'); return; }
+    if (km !== null && (isNaN(km) || km < 0 || km > 3000000)) { err('Den Kilometerstand bitte als Zahl eintragen.'); return; }
+    if (!g('rl-pl')) { err('Bitte den Lagerplatz eintragen, damit du die Reifen wiederfindest.'); var pf = $('#rl-pl'); if (pf) { try { pf.focus(); } catch (_) {} } return; }
+    var dots = {}, prof = {}, bad = '';
+    RPOS.forEach(function (x) {
+      var dt = g('rl-dot-' + x[0]).replace(/\s/g, ''), v = parseNum(g('rl-p-' + x[0]));
+      if (dt && !dotInfo(dt) && !bad) bad = 'DOT ' + x[1] + ': bitte vier Ziffern, Woche und Jahr, z. B. 2319.';
+      if (v !== null && (isNaN(v) || v < 0 || v > 20) && !bad) bad = 'Profil ' + x[1] + ': bitte in mm, z. B. 6,5.';
+      dots[x[0]] = dt || null; prof[x[0]] = v === null || isNaN(v) ? null : round2(v);
+    });
+    if (bad) { err(bad); return; }
+    var old = reifenSet(car, k) || {}, oe = rlOf(old), now = new Date().toISOString(), anyP = RPOS.some(function (x) { return prof[x[0]] !== null; });
+    var op = old.profil && typeof old.profil === 'object' ? old.profil : {}, chg = RPOS.some(function (x) { return prof[x[0]] !== (numOrNull(op[x[0]]) === null ? null : round2(num(op[x[0]]))); });
+    prof.am = anyP ? (chg || !isDay(op.am) ? d : op.am) : null;
+    var dl = RPOS.map(function (x) { return dots[x[0]]; }).filter(Boolean), same = dl.length && dl.every(function (v) { return v === dl[0]; });
+    setBusy(true);
+    try {
+      var fotos = BL && s.bl ? await blCommitForm(s.id, 'Reifeneinlagerung') : null;
+      car = S.cars.get(s.id) || car;
+      var set = Object.assign({}, reifenSet(car, k) || old, { groesse: g('rl-gr').slice(0, 40) || null, marke: g('rl-ma').slice(0, 40) || null, modell: g('rl-mo').slice(0, 40) || null,
+        felge: g('rl-fe').slice(0, 40) || null, lager: g('rl-pl').slice(0, 40), profil: prof, dotPos: dots, dot: same ? dl[0] : (old.dot || dl[0] || null),
+        einlagerung: Object.assign({}, oe || { erstellt: now }, { nr: nr, seit: d, km: km === null ? null : Math.round(km), zubehoer: g('rl-zu').slice(0, 80) || null, zustand: g('rl-zs').slice(0, 300) || null, geaendert: now }) });
+      if (fotos) set.fotos = fotos;
+      var rd = Object.assign({}, reifenDoc(car));
+      rd[k] = set;
+      if (!rd.montiert || rd.montiert === k) rd.montiert = k === 'winter' ? 'sommer' : 'winter';
+      var patch = { reifen: rd, geaendert: now };
+      if (set.einlagerung.km !== null && (numOrNull(car.km) === null || set.einlagerung.km >= num(car.km)) && (!isDay(car.kmDatum) || d >= car.kmDatum)) { patch.km = set.einlagerung.km; patch.kmDatum = d; patch.kmLog = kmLogWith(car, d, set.einlagerung.km); }
+      await write(function () { return S.db.doc('fahrzeuge/' + s.id).update(patch); });
+      S.cars.set(s.id, Object.assign({}, car, patch));
+      setBusy(false);
+      openCar(s.id); renderAll();
+      toast(RSET[k].n + ' eingelagert: ' + nr + ', ' + set.lager + '.');
+      if (andPdf) await saveRlSchein(s.id, k);
+    } catch (e) { setBusy(false); writeError(e, err); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Auslagern: Satz geht zurück an den Kunden oder wird montiert; die Einlagerung bleibt in lagerLog */
+  function rlClose(rd, k, bis) {
+    var s = rd[k], e = rlOf(s);
+    if (!e) return false;
+    rd.lagerLog = arr(rd.lagerLog).concat([{ nr: e.nr || null, set: k, seit: e.seit, bis: bis, platz: rlPlatz(s) || null }]).slice(-40);
+    rd[k] = Object.assign({}, s, { einlagerung: null, lager: null });
+    return true;
+  }
+  async function rlAus(carId, k, btn) {
+    var car = S.cars.get(carId);
+    if (!car || !canWrite() || S.busy || !btn) return;
+    var e = rlOf(reifenSet(car, k));
+    if (!e) return;
+    if (!(btn.dataset.armed && Number(btn.dataset.armed) > Date.now())) {
+      btn.dataset.armed = String(Date.now() + 4000);
+      btn.textContent = 'Wirklich ausgelagert?';
+      setTimeout(function () { if (btn.isConnected && btn.dataset.armed && Number(btn.dataset.armed) <= Date.now()) { delete btn.dataset.armed; btn.textContent = 'Ausgelagert'; } }, 4100);
+      return;
+    }
+    var rd = Object.assign({}, reifenDoc(car)), now = new Date().toISOString();
+    rlClose(rd, k, dayKey(new Date()));
+    var patch = { reifen: rd, geaendert: now };
+    setBusy(true);
+    try {
+      await write(function () { return S.db.doc('fahrzeuge/' + carId).update(patch); });
+      S.cars.set(carId, Object.assign({}, car, patch));
+      setBusy(false);
+      refreshSheet(); renderAll();
+      toast(RSET[k].n + ' ausgelagert (' + (e.nr || 'ohne Nr.') + ').');
+    } catch (er) { setBusy(false); writeError(er, function (m) { toast(m); }); } finally { if (S.busy) setBusy(false); }
+  }
+  /* Reifenwechsel bei Kundenautos: montierter Satz kommt aus dem Lager, der abmontierte auf Wunsch hinein */
+  function rlWechselHtml(car) {
+    if (!car || !car.fremd) return '';
+    /* Vorausgewählt nur, wenn der Kunde schon Reifen bei dir eingelagert hat oder hatte */
+    var r = reifenDoc(car), pl = '', used = arr(r.lagerLog).length > 0;
+    ['sommer', 'winter'].forEach(function (k) { if (rlOf(r[k])) { used = true; if (!pl) pl = rlPlatz(r[k]); } });
+    return '<fieldset class="rf-pf rl-wf"><legend>Einlagerung</legend><label class="check"><input type="checkbox" id="rw-rl"' + (used ? ' checked' : '') + '><span>Abmontierte Reifen hier einlagern</span></label>' +
+      '<label class="f"><span>Lagerplatz</span><input id="rw-rlp" value="' + esc(pl) + '" maxlength="40" autocomplete="off" placeholder="z. B. Reifenregal 2, oben links"></label>' +
+      '<small>Die montierten Reifen gelten dann als ausgelagert. Nummer, Schein und Etiketten gibt es danach im Reifen-Abschnitt.</small></fieldset>';
+  }
+  function rlWechsel(car, rd, auf, ab, d, km) {
+    if (!car || !car.fremd) return '';
+    var out = [], closed = rlClose(rd, auf, d);
+    if (closed) out.push(RSET[auf].n + ' ausgelagert');
+    var on = !!(($('#rw-rl') || {}).checked), pl = ((($('#rw-rlp') || {}).value) || '').trim().slice(0, 40);
+    if (on && !rlOf(rd[ab])) {
+      var nr = rlNextNr(), now = new Date().toISOString();
+      rd[ab] = Object.assign({}, rd[ab] || {}, { lager: pl || null, einlagerung: { nr: nr, seit: d, km: km, zubehoer: null, zustand: null, erstellt: now, geaendert: now } });
+      out.push(RSET[ab].n + ' eingelagert: ' + nr + (pl ? ', ' + pl : ''));
+    }
+    return out.length ? ' ' + out.join('. ') + '.' : '';
+  }
+  function rlKeTxt(car, auf) {
+    var e = car && car.fremd ? rlOf(reifenSet(car, auf)) : null;
+    return e ? '; deine ' + RSET[auf].n + ' liegen bei mir eingelagert' : '';
+  }
+  /* ---------- Reifenlager: Übersicht bei den Kunden ---------- */
+  function rlListSec(kid) {
+    var list = rlAll(kid);
+    if (!list.length) return '';
+    return '<div class="sh-sec"><h3 class="sec">' + esc('Reifenlager · ' + list.length) + '</h3><ul class="works">' + list.map(function (x) {
+      var k = kundeOf(x.c), min = reifenMin(x.s);
+      var sub = [!kid && k ? k.name : '', String(x.c.name || 'Auto') + (x.c.kennzeichen ? ' (' + x.c.kennzeichen + ')' : ''), 'seit ' + datum(x.e.seit), min !== null ? 'Profil min. ' + mmTxt(min) : '', x.c.archiviert ? 'Auto archiviert, zum Auslagern wieder aktivieren' : ''].filter(Boolean).join(' · ');
+      return '<li><button type="button" class="wbtn" data-act="open-car" data-id="' + esc(x.car) + '"><span class="i-n">' + esc(RSET[x.k].n + (x.s.groesse ? ' ' + x.s.groesse : '') + ' · ' + (rlPlatz(x.s) || 'Platz offen')) +
+        '<small>' + esc(sub) + '</small></span><span class="i-p"><span class="wst ok">' + esc(x.e.nr || 'ohne Nr.') + '</span></span></button></li>';
+    }).join('') + '</ul></div>';
+  }
+  /* ---------- Einlagerungsschein als PDF ---------- */
+  function rlScheinPdf(lib, car, k, s, kunde, conf, imgs) {
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    var W = 210, H = 297, M = 18, X1 = W - M, BOT = H - 22, y = M, PT = 0.3528;
+    var C = { ink: [23, 32, 36], mut: [86, 99, 108], line: [196, 204, 209], soft: [238, 241, 243] };
+    var T = function (v) { return String(v == null ? '' : v).replace(/[\u00a0\u2007\u2009\u202f]/g, ' ').replace(/−/g, '-').replace(/×/g, 'x').replace(/[^\u0000-ÿ€„“”‘’–—…•]/g, '?'); };
+    var txt = function (v, xx, yy, o) { doc.text(Array.isArray(v) ? v.map(T) : T(v), xx, yy, o); };
+    var tc = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    var dc = function (c) { doc.setDrawColor(c[0], c[1], c[2]); };
+    var fc = function (c) { doc.setFillColor(c[0], c[1], c[2]); };
+    var f = function (st, sz) { doc.setFont('helvetica', st); doc.setFontSize(sz); };
+    var lh = function (sz) { return sz * PT * 1.3; };
+    var split = function (t, w) { return doc.splitTextToSize(T(t), w); };
+    var lines = function (v) { return String(v || '').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean); };
+    var e = rlOf(s), p = s.profil && typeof s.profil === 'object' ? s.profil : {};
+    doc.setLineHeightFactor(1.3);
+    doc.setProperties({ title: 'Einlagerungsschein ' + (e.nr || ''), subject: RSET[k].n, creator: 'Werkstatt-Inventar' });
+    f('bold', 20); tc(C.ink); txt('Einlagerungsschein', M, y + 7);
+    var ly = y + 12.5;
+    [['Nummer', e.nr || '–'], ['Eingelagert am', datum(e.seit)], ['Lagerplatz', rlPlatz(s) || '–']].concat(numOrNull(e.km) !== null ? [['Kilometerstand', nf.format(e.km) + ' km']] : []).forEach(function (q) {
+      f('normal', 9.5); tc(C.mut); txt(q[0], M, ly + 3.5); tc(C.ink); f('bold', 9.5); txt(split(q[1], 60)[0], M + 32, ly + 3.5); ly += lh(9.5) + 0.4;
+    });
+    var ry = y;
+    if (conf.name) { f('bold', 11); tc(C.ink); txt(split(conf.name, 78)[0], X1, ry + 4.5, { align: 'right' }); ry += 6; }
+    f('normal', 9); tc(C.mut);
+    lines(conf.adresse).concat(conf.telefon ? ['Tel. ' + conf.telefon] : [], conf.email ? [conf.email] : []).forEach(function (l) { txt(split(l, 78)[0], X1, ry + 3.5, { align: 'right' }); ry += lh(9); });
+    y = Math.max(ly, ry) + 8;
+    var box = function (lab, rows) {
+      f('normal', 9.5); var all = []; rows.forEach(function (r) { all = all.concat(split(r, X1 - M - 8)); });
+      var bh = 8.6 + all.length * lh(9.5);
+      fc(C.soft); doc.roundedRect(M, y, X1 - M, bh, 2, 2, 'F');
+      f('normal', 8.5); tc(C.mut); txt(lab, M + 4, y + 4.8);
+      f('normal', 9.5); tc(C.ink); txt(all, M + 4, y + 9.3);
+      y += bh + 5;
+    };
+    box('Kunde', kunde ? [kunde.name || ''].concat(lines(kunde.adresse), kunde.telefon ? ['Tel. ' + kunde.telefon] : []) : ['–']);
+    box('Fahrzeug', [[car.name || 'Auto', car.kennzeichen ? 'Kennzeichen ' + car.kennzeichen : ''].filter(Boolean).join(' · ')]);
+    f('bold', 13); tc(C.ink); txt(RSET[k].n + (s.groesse ? ' ' + s.groesse : ''), M, y + 4.6); y += lh(13) + 3;
+    f('normal', 9.5); tc(C.ink);
+    [[s.marke || s.modell ? 'Reifen' : '', [s.marke, s.modell].filter(Boolean).join(' ')], ['Felgen', s.felge || ''], ['Mit eingelagert', e.zubehoer || '']].forEach(function (q) {
+      if (!q[1]) return;
+      f('normal', 9.5); tc(C.mut); txt(q[0], M, y + 3.5); tc(C.ink); var l = split(q[1], X1 - M - 34); txt(l, M + 34, y + 3.5); y += l.length * lh(9.5) + 1;
+    });
+    y += 3;
+    var cols = [{ t: 'Rad', w: 46 }, { t: 'DOT (Woche/Jahr)', w: 46 }, { t: 'Alter', w: 34 }, { t: 'Profil', w: X1 - M - 126, r: true }], pad = 1.6;
+    f('bold', 8.5); tc(C.mut); var xx = M;
+    cols.forEach(function (c) { txt(c.t, c.r ? xx + c.w - pad : xx + pad, y + 4, c.r ? { align: 'right' } : undefined); xx += c.w; });
+    y += 6; dc(C.ink); doc.setLineWidth(0.4); doc.line(M, y, X1, y); y += 0.6;
+    RPOS.forEach(function (q) {
+      var dt = rlDot(s, q[0]), di = dotInfo(dt), pv = numOrNull(p[q[0]]), cells = [q[1], dt ? rlDotTxt(dt) : '–', di ? ageTxt(di.age) : '–', pv !== null ? mmTxt(pv) : '–'], x2 = M;
+      f('normal', 9.5); tc(C.ink);
+      cells.forEach(function (c, i) { txt(c, cols[i].r ? x2 + cols[i].w - pad : x2 + pad, y + 5, cols[i].r ? { align: 'right' } : undefined); x2 += cols[i].w; });
+      y += 7.4; dc(C.line); doc.setLineWidth(0.2); doc.line(M, y, X1, y);
+    });
+    y += 3;
+    if (isDay(p.am)) { f('normal', 8.5); tc(C.mut); txt('Profil gemessen am ' + datum(p.am) + '.', M, y + 3.4); y += 5.5; }
+    if (e.zustand) { f('bold', 10); tc(C.ink); txt('Zustand und Schäden', M, y + 4); y += 6; f('normal', 9.5); var zl = split(e.zustand, X1 - M); txt(zl, M, y + 3.5); y += zl.length * lh(9.5) + 3; }
+    y += 8;
+    if (y + 40 > BOT) { doc.addPage(); y = M; }
+    var sig = function (lab, x0, w) { dc(C.ink); doc.setLineWidth(0.3); doc.line(x0, y + 14, x0 + w, y + 14); f('normal', 8.5); tc(C.mut); txt(lab, x0, y + 18.5); };
+    f('bold', 10); tc(C.ink); txt('Übergabe zur Einlagerung', M, y + 4);
+    sig('Datum, Unterschrift Kunde', M, 80); sig('Datum, Unterschrift ' + (conf.name || 'Werkstatt'), X1 - 80, 80);
+    y += 28;
+    f('bold', 10); tc(C.ink); txt('Rückgabe', M, y + 4);
+    sig('Datum, Unterschrift Kunde', M, 80); sig('Datum, Unterschrift ' + (conf.name || 'Werkstatt'), X1 - 80, 80);
+    y += 26;
+    (imgs || []).forEach(function (im, i) {
+      if (i % 4 === 0) { doc.addPage(); y = M; f('bold', 11); tc(C.ink); txt('Fotos bei der Einlagerung' + ((imgs.length > 4) ? ' (' + (i / 4 + 1) + ')' : ''), M, y + 5); y += 10; }
+      var gap = 6, cw = (X1 - M - gap) / 2, bh = 110, col = i % 2, row = Math.floor((i % 4) / 2), x0 = M + col * (cw + gap), y0 = y + row * (bh + gap), sc = Math.min(cw / im.w, bh / im.h), w2 = im.w * sc, h2 = im.h * sc;
+      fc(C.soft); doc.rect(x0, y0, cw, bh, 'F');
+      try { doc.addImage(im.data, im.fmt, x0 + (cw - w2) / 2, y0 + (bh - h2) / 2, w2, h2, undefined, 'FAST'); } catch (_) {}
+    });
+    var n = doc.getNumberOfPages();
+    for (var i = 1; i <= n; i++) {
+      doc.setPage(i); f('normal', 7.5); tc(C.mut); dc(C.line); doc.setLineWidth(0.2); doc.line(M, H - 13, X1, H - 13);
+      txt('Einlagerungsschein ' + (e.nr || '') + (conf.name ? ' · ' + conf.name : ''), M, H - 9);
+      txt('Seite ' + i + ' von ' + n, X1, H - 9, { align: 'right' });
+    }
+    return doc;
+  }
+  async function saveRlSchein(carId, k) {
+    var car = S.cars.get(carId), s = car ? reifenSet(car, k) : null, err = function (m) { var el = $('#rl-err') || $('#car-err'); if (el) el.textContent = m; else toast(m); };
+    if (!s || !rlOf(s)) { err('Erst die Einlagerung speichern.'); return; }
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    if (S.busy) return;
+    var lib, imgs = [], failed = 0;
+    setBusy(true);
+    try {
+      try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+      var fl = BL ? blList(s.fotos).filter(function (r) { return r.typ !== 'pdf'; }).slice(0, 8) : [];
+      for (var i = 0; i < fl.length; i++) { try { imgs.push(await vmImg(fl[i])); } catch (e) { failed++; } }
+      var blob;
+      try { blob = rlScheinPdf(lib, car, k, s, kundeOf(car), kvaConf(), imgs).output('blob'); } catch (e) { err('Das PDF konnte nicht erstellt werden.'); return; }
+      var name = 'Einlagerungsschein ' + fileSafe(rlOf(s).nr || '') + ' ' + fileSafe(car.kennzeichen || car.name || 'Auto') + '.pdf';
+      setBusy(false);
+      try { await S.dl.save({ filename: name, data: blob }); toast('Gespeichert: ' + name + (failed ? '. ' + failed + (failed === 1 ? ' Foto fehlt.' : ' Fotos fehlen.') : '')); }
+      catch (e) { if (!e || e.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+    } finally { if (S.busy) setBusy(false); }
+  }
+  /* ---------- Etiketten je Reifen: gleicher Etikettenbogen wie die Service-Aufkleber ---------- */
+  function rlLabels(car, k) {
+    var s = reifenSet(car, k) || {}, e = rlOf(s) || {}, kunde = kundeOf(car);
+    return RPOS.map(function (q) {
+      var dt = rlDot(s, q[0]);
+      return { nr: e.nr || '', pos: q[0].toUpperCase(), posN: q[1], l1: [kunde ? kunde.name : '', car.kennzeichen || car.name || ''].filter(Boolean).join(' · '), l2: [s.groesse || RSET[k].n, dt ? 'DOT ' + rlDotTxt(dt) : ''].filter(Boolean).join(' · '), l3: [rlPlatz(s), e.seit ? 'seit ' + datum(e.seit) : ''].filter(Boolean).join(' · ') };
+    });
+  }
+  function rlEtSvg(lb, f) {
+    var w = f.w, h = f.h, k = Math.min(w / 63.5, h / 33.9), m = 2.2 * k, hb = 8.4 * k, pt = 0.3528;
+    var t = function (x, y, s, size, weight, fill, anchor) { return '<text x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" font-size="' + size.toFixed(2) + '" font-weight="' + weight + '" fill="' + fill + '"' + (anchor ? ' text-anchor="' + anchor + '"' : '') + ' font-family="Helvetica, Arial, sans-serif">' + esc(s) + '</text>'; };
+    return '<svg class="et-svg" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + esc('Etikett ' + lb.nr + ' ' + lb.posN) + '">' +
+      '<rect x="0.15" y="0.15" width="' + (w - 0.3) + '" height="' + (h - 0.3) + '" rx="' + (2 * k).toFixed(2) + '" fill="#fff" stroke="#c4ccd1" stroke-width="0.3"></rect>' +
+      '<rect x="' + m + '" y="' + m + '" width="' + (w - 2 * m) + '" height="' + hb + '" rx="' + (1.2 * k).toFixed(2) + '" fill="#111"></rect>' +
+      t(m + 2 * k, m + hb * 0.72, lb.nr, 11 * pt * k, 700, '#fff') + t(w - m - 2 * k, m + hb * 0.74, lb.pos, 14 * pt * k, 700, '#fff', 'end') +
+      t(m + 0.4 * k, m + hb + 5 * k, lb.l1, 8 * pt * k, 700, '#111') + t(m + 0.4 * k, m + hb + 10 * k, lb.l2, 7.5 * pt * k, 400, '#111') + t(m + 0.4 * k, m + hb + 15 * k, lb.l3, 7 * pt * k, 400, '#333') + '</svg>';
+  }
+  function rlEtDraw(doc, x, y, f, lb, T) {
+    var w = f.w, h = f.h, k = Math.min(w / 63.5, h / 33.9), m = 2.2 * k, hb = 8.4 * k, inner = w - 2 * m - 0.8 * k;
+    doc.setFillColor(17, 17, 17);
+    doc.roundedRect(x + m, y + m, w - 2 * m, hb, 1.2 * k, 1.2 * k, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14 * k); var pw = doc.getTextWidth(T(lb.pos));
+    doc.text(T(lb.pos), x + w - m - 2 * k, y + m + hb * 0.74, { align: 'right' });
+    doc.text(etFit(doc, T(lb.nr), w - 2 * m - 6 * k - pw, 11 * k, 7 * k), x + m + 2 * k, y + m + hb * 0.72);
+    doc.setTextColor(17, 17, 17);
+    doc.text(etFit(doc, T(lb.l1), inner, 8 * k, 5.5 * k), x + m + 0.4 * k, y + m + hb + 5 * k);
+    doc.setFont('helvetica', 'normal');
+    doc.text(etFit(doc, T(lb.l2), inner, 7.5 * k, 5.5 * k), x + m + 0.4 * k, y + m + hb + 10 * k);
+    doc.setTextColor(51, 51, 51);
+    doc.text(etFit(doc, T(lb.l3), inner, 7 * k, 5 * k), x + m + 0.4 * k, y + m + hb + 15 * k);
+  }
+  function openRlEt(carId, k) {
+    var car = S.cars.get(carId);
+    if (!car || !rlOf(reifenSet(car, k))) return;
+    openSheet('rlet', { id: carId, set: k, start: 0 }, sheetRlEt(carId, k, 0));
+    loadJsPdf().catch(function () {});
+  }
+  function sheetRlEt(carId, k, start) {
+    var car = S.cars.get(carId) || {}, st = etSettings(), f = etFormat(st), n = f.cols * f.rows, labels = rlLabels(car, k), opts = '';
+    for (var i = 0; i < n; i++) opts += '<option value="' + i + '"' + (i === start ? ' selected' : '') + '>' + (i + 1) + (i + 4 > n ? ' (Rest auf einem zweiten Bogen)' : '') + '</option>';
+    return '<div class="sh-head"><div class="sh-title-wrap"><p class="eyebrow">' + esc('Reifeneinlagerung · ' + (car.name || 'Auto')) + '</p><h2 class="sh-title" id="sheet-title">Etiketten für die Reifen</h2></div>' +
+      '<button type="button" class="x" data-act="close" aria-label="Schließen">×</button></div><div class="form">' +
+      '<div class="et-prev rl-prev">' + labels.map(function (lb) { return '<figure class="et-p">' + rlEtSvg(lb, f) + '</figure>'; }).join('') + '</div>' +
+      '<p class="help">' + esc('Vier Etiketten, eines je Reifen, auf demselben Bogen wie die Service-Aufkleber: ' + (st.fmt === 'eigen' ? 'eigenes Format' : ET_FMT.l4773.n) + '. Format und Versatz stellst du bei den Service-Aufklebern ein.') + '</p>' +
+      '<label class="f"><span>Erstes freies Etikett auf dem Bogen</span><select id="rl-et-start">' + opts + '</select></label>' +
+      '<p class="err" id="rl-et-err" role="alert"></p><div class="sh-foot">' + (S.dl ? '<button type="button" class="btn" data-act="rl-et-pdf">PDF erstellen</button>' : '') +
+      '<button type="button" class="btn ghost" data-act="back-car" data-id="' + esc(carId) + '">Zurück</button></div></div>';
+  }
+  function rlEtChange(t) {
+    var s = S.sheet;
+    if (!s || s.type !== 'rlet' || !t || t.id !== 'rl-et-start') return false;
+    s.start = Math.max(0, Number(t.value) || 0);
+    return true;
+  }
+  async function rlEtPdf() {
+    var s = S.sheet, err = function (m) { var el = $('#rl-et-err'); if (el) el.textContent = m; else toast(m); };
+    if (!s || s.type !== 'rlet') return;
+    var car = S.cars.get(s.id);
+    if (!car || !rlOf(reifenSet(car, s.set))) return;
+    if (!S.dl) { err('Speichern geht in dieser Ansicht nicht.'); return; }
+    var lib;
+    try { lib = await loadJsPdf(); } catch (e) { err('Das PDF-Modul konnte nicht geladen werden. Mit Internet nochmal versuchen.'); return; }
+    var st = etSettings(), f = etFormat(st), n = f.cols * f.rows;
+    if (f.left + (f.cols - 1) * f.px + f.w > 210.5 || f.top + (f.rows - 1) * f.py + f.h > 297.5) { err('Das Format passt nicht auf A4. Bitte bei den Service-Aufklebern die Maße prüfen.'); return; }
+    var doc = new lib.jsPDF({ unit: 'mm', format: 'a4', compress: true }), labels = rlLabels(car, s.set), at = s.start, e = rlOf(reifenSet(car, s.set));
+    doc.setProperties({ title: 'Reifen-Etiketten ' + (e.nr || ''), creator: 'Werkstatt-Inventar' });
+    labels.forEach(function (lb) {
+      if (at >= n) { doc.addPage(); at = 0; }
+      rlEtDraw(doc, f.left + (at % f.cols) * f.px + st.dx, f.top + Math.floor(at / f.cols) * f.py + st.dy, f, lb, etPdfT);
+      at++;
+    });
+    var name = 'Reifen-Etiketten ' + fileSafe(e.nr || '') + ' ' + fileSafe(car.kennzeichen || car.name || 'Auto') + '.pdf';
+    try { await S.dl.save({ filename: name, data: doc.output('blob') }); toast('Gespeichert: ' + name); }
+    catch (er) { if (!er || er.code !== 'declined') err('Speichern ging in dieser Ansicht nicht.'); }
+  }
   /* Kalender-Export (.ics) */
   function icsEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
   function icsFold(line) {
@@ -15979,6 +16390,12 @@ input.fs-mono { text-transform: uppercase; }
       case 'fs-rm': fsRm(t.dataset.i); break;
       case 'fs-req': fsRequest(t.dataset.id); break;
       case 'fs-plan': fsPlan(t.dataset.id, t.dataset.c); break;
+      case 'rl-new': case 'rl-edit': openRlForm(t.dataset.id, t.dataset.set); break;
+      case 'rl-aus': rlAus(t.dataset.id, t.dataset.set, t); break;
+      case 'rl-schein': saveRlSchein(t.dataset.id, t.dataset.set); break;
+      case 'rl-save-pdf': saveRl(true); break;
+      case 'rl-et': openRlEt(t.dataset.id, t.dataset.set); break;
+      case 'rl-et-pdf': rlEtPdf(); break;
       case 'kva-open': openKva(t.dataset.id); break;
       case 'kva-pdf': saveKvaPdf(t.dataset.id); break;
       case 'kva-save-pdf': saveKva(true); break;
@@ -16084,6 +16501,8 @@ input.fs-mono { text-transform: uppercase; }
     if (rkChange(t)) return;
     if (avChange(t)) return;
     if (gaAnxChange(t)) return;
+    if (rlChange(t)) return;
+    if (rlEtChange(t)) return;
     if (brChange(t)) return;
     if (pvChange(t)) return;
     if (gaChange(t)) return;
@@ -16153,6 +16572,7 @@ input.fs-mono { text-transform: uppercase; }
       else if (e.target.id === 'rkform') { e.preventDefault(); saveRk(); }
       else if (e.target.id === 'avform') { e.preventDefault(); saveAv(); }
       else if (e.target.id === 'fsform') { e.preventDefault(); saveFs(); }
+      else if (e.target.id === 'rlform') { e.preventDefault(); saveRl(false); }
       else if (e.target.id === 'keein') { e.preventDefault(); saveKeEin(); }
       else if (e.target.id === 'bremsform') { e.preventDefault(); saveBremsen(); }
       else if (e.target.id === 'ganeu') { e.preventDefault(); saveGaNew(); }
